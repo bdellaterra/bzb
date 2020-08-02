@@ -238,7 +238,7 @@ main() {
   [[ $SHALLOW ]] && FIND=$(echo "$SHALLOW_FIND") || FIND=$(echo "$RECURSIVE_FIND")
   [[ $NO_SORT ]] && SORT_PIPE='' || SORT_PIPE=$(bash -c "echo \"| $SORT\"")
   [[ $NO_PREVIEW ]] && PREVIEW_OPTS='' || PREVIEW_OPTS="--preview='$(echo "$PREVIEW")' --preview-window='$PREVIEW_WINDOW'"
-  FZF="fzf --multi --layout='reverse' --expect='$FZF_KEYS' --prompt='${PWD#$BASE_DIR}>' $PREVIEW_OPTS"
+  FZF="fzf --no-clear --multi --layout='reverse' --expect='$FZF_KEYS' --prompt='${PWD#$BASE_DIR}>' $PREVIEW_OPTS"
   { read command; readarray -t targets; } < <(bash -c "$FIND $SORT_PIPE | $FZF ${OPTS[@]}")
 
   # Use Escape or ctrl-c to exit
