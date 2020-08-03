@@ -12,7 +12,7 @@ fi
 
 # Grep Comands: Prefer 'rg' over 'grep' so ignored files are not listed
 if command -v rg &>/dev/null; then
-  GREP='rg -l ${BZB_HIDDEN:+--hidden} ${BZB_NO_IGNORE:+--no-ignore} "${BZB_GREP_QUERY}" . 2>/dev/null'
+  GREP='rg -l ${BZB_SHALLOW:+--max-depth 1} ${BZB_HIDDEN:+--hidden} ${BZB_NO_IGNORE:+--no-ignore} "${BZB_GREP_QUERY}" . 2>/dev/null'
 else
   # TODO: Set 'grep' fallback
   GREP=''
@@ -248,6 +248,7 @@ main() {
     [[ ! $PERSIST ]] && exit 0
   fi
 
+  export BZB_SHALLOW="$SHALLOW"
   export BZB_COLOR="$COLOR"
   export BZB_HIDDEN="$HIDDEN"
   export BZB_NO_IGNORE="$NO_IGNORE"
