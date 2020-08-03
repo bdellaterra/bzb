@@ -3,29 +3,29 @@ set -e
 
 # Find Comands: Prefer 'fd' over 'find' so ignored files are not listed
 if command -v fd &>/dev/null; then
-  RECURSIVE_FIND='fd ${BZB_COLOR:+--color always} ${BZB_HIDDEN:+--hidden} ${BZB_NO_IGNORE:+--no-ignore}'
-  SHALLOW_FIND='fd --max-depth 1 ${BZB_COLOR:+--color always} ${BZB_HIDDEN:+--hidden} ${BZB_NO_IGNORE:+--no-ignore} --exec echo {/}'
+  RECURSIVE_FIND="fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
+  SHALLOW_FIND="fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --exec echo '{/}'"
 else
-  RECURSIVE_FIND='find . -not -name '.' ${BZB_HIDDEN:+-not -path "*/.*"} | sed "s:^\./::"'
-  SHALLOW_FIND='find . -maxdepth 1 -not -name '.' ${BZB_HIDDEN:+-not -path "*/.*"} -execdir basename "{}" \;'
+  RECURSIVE_FIND="find . -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'} | sed 's:^\./::'"
+  SHALLOW_FIND="find . -maxdepth 1 -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'} -execdir basename '{}' \;"
 fi
 
 # Grep Comands: Prefer 'rg' over 'grep' so ignored files are not listed
 if command -v rg &>/dev/null; then
-  GREP='rg -l ${BZB_SHALLOW:+--max-depth 1} ${BZB_HIDDEN:+--hidden} ${BZB_NO_IGNORE:+--no-ignore} "${BZB_GREP_QUERY}" . 2>/dev/null'
+  GREP="rg -l \${BZB_SHALLOW:+--max-depth 1} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
 else
   # TODO: Set 'grep' fallback
   GREP=''
 fi
 
 # Sort Command:
-SORT='LC_ALL=C sort ${BZB_REVERSE:+-r} -fiu'
+SORT="LC_ALL=C sort ${BZB_REVERSE:+-r} -fiu"
 
 # Preview Commands:
-FILE_PREVIEW='cat {}'
-DIRECTORY_PREVIEW='ls ${BZB_COLOR:+--color=always} ${BZB_HIDDEN:+-a} -lh {}'
-FIND_PREVIEW="[ -d {} ] && $DIRECTORY_PREVIEW || $FILE_PREVIEW"
-GREP_PREVIEW='rg ${BZB_COLOR:+--color always} ${BZB_HIDDEN:+--hidden} ${BZB_NO_IGNORE:+--no-ignore} -C 1 ${BZB_GREP_QUERY} {} 2>/dev/null'
+FILE_PREVIEW="cat '{}'"
+DIRECTORY_PREVIEW="ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh '{}'"
+FIND_PREVIEW="[ -d '{}' ] && $DIRECTORY_PREVIEW || $FILE_PREVIEW"
+GREP_PREVIEW="rg \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages -C 1 '\${BZB_GREP_QUERY}' '{}'"
 
 # Quick-launch Command: Used to open targets in their native client
 LAUNCH=''
@@ -259,9 +259,10 @@ main() {
   [[ $NO_SORT ]] && SORT_PIPE='' || SORT_PIPE=$(bash -c "echo \"| $SORT\"")
 
   # CYCLE INTO FZF
-  if [[ "$GREP_MODE" ]]; then
-    export BZB_GREP_QUERY="'$GREP_QUERY'"
-    [[ $NO_PREVIEW ]] && PREVIEW_OPTS='' || PREVIEW_OPTS="--preview='=$(bash -c "echo \"$GREP_PREVIEW\"")' --preview-window='$PREVIEW_WINDOW'"
+  if [[ $GREP_MODE ]]; then
+    export BZB_GREP_QUERY="$GREP_QUERY"
+    [[ $NO_PREVIEW ]] && PREVIEW_OPTS='' || PREVIEW_OPTS="--preview='$(bash -c echo\ "$GREP_PREVIEW")' --preview-window='$PREVIEW_WINDOW'"
+    echo "opts: $PREVIEW_OPTS"
     FZF_INPUT=$(bash -c "echo \"$GREP $SORT_PIPE | sed 's:^\./::'\"")
     FZF_PROMPT="/$GREP_QUERY/"
   else
@@ -270,6 +271,7 @@ main() {
     FZF_PROMPT="${PWD#$BASE_DIR}>"
   fi
   FZF_OPTIONS="--print-query --multi --layout='reverse' --expect='$FZF_KEYS' --prompt='$FZF_PROMPT' $PREVIEW_OPTS ${OPTS[@]}"
+  echo "fzf: $FZF_OPTIONS"
   { read query; read command; readarray -t targets; } < <(bash -c "$FZF_INPUT | fzf $FZF_OPTIONS")
 
   # Use Escape or ctrl-c to exit
@@ -281,6 +283,7 @@ main() {
     # Use again to update search pattern. Enter empty pattern to exit grep mode
     alt-/)
       read -ep "Grep for Pattern: " -i "$GREP_QUERY" GREP_QUERY
+      echo "grep_query: $GREP_QUERY"
       [[ $GREP_QUERY ]] && GREP_MODE=1 || GREP_MODE=''
     ;;
 
