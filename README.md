@@ -54,7 +54,7 @@ alt-/       | grep for pattern specified at prompt ('left' will exit grep mode)
 alt-n       | toggle listing nested vs. only top-level files
 alt-i       | toggle visibility of ignored files (if supported)
 alt-v       | toggle visibility of hidden files
-ctrl-alt-v  | toggle visibility of preview pane
+ctrl-alt-p  | toggle visibility of preview pane
 alt-o       | toggle between ascending/descending sort order
 ctrl-alt-o  | toggle whether sorting is enabled/disabled (affects performance)
 alt-s       | load session from file named at prompt

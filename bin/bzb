@@ -109,7 +109,7 @@ declareKeymap 'alt-/'      "grep for pattern specified at prompt ('left' will ex
 declareKeymap 'alt-n'      "toggle listing nested vs. only top-level files"
 declareKeymap 'alt-i'      "toggle visibility of ignored files (if supported)"
 declareKeymap 'alt-v'      "toggle visibility of hidden files"
-declareKeymap 'ctrl-alt-v' "toggle visibility of preview pane"
+declareKeymap 'ctrl-alt-p' "toggle visibility of preview pane"
 declareKeymap 'alt-o'      "toggle between ascending/descending sort order"
 declareKeymap 'ctrl-alt-o' "toggle whether sorting is enabled/disabled (affects performance)"
 declareKeymap 'alt-s'      "load session from file named at prompt"
@@ -329,8 +329,8 @@ main() {
       [[ $HIDDEN ]] && HIDDEN='' || HIDDEN=1
     ;;
 
-    # Use ctrl-alt-v to toggle visibility of preview pane
-    ctrl-alt-v)
+    # Use ctrl-alt-p to toggle visibility of preview pane
+    ctrl-alt-p)
       [[ $NO_PREVIEW ]] && NO_PREVIEW='' || NO_PREVIEW=1
     ;;
 
