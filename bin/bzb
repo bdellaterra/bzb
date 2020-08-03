@@ -160,6 +160,12 @@ options:
                                    default: $FILE_PREVIEW
 --directory-preview=CMD,-dp=CMD    Command to preview currently focused directory
                                    default: $DIRECTORY_PREVIEW
+--shallow-grep=CMD,-sg=CMD         Command to grep for pattern in top-level files/directories
+                                   default: $SHALLOW_GREP
+--recursive-grep=CMD,-rg=CMD       Command to grep for pattern recursively
+                                   default: $RECURSIVE_GREP
+--grep-preview=CMD,-gp=CMD         Command to preview grep results for currently focused file
+                                   default: $GREP_PREVIEW
 --quick-launch=CMD,-ql=CMD         Command to launch files/directories using os-native client
                                    default: $LAUNCH
 --base-directory=DIR,-bd=DIR       Specify a base directory instead of deriving it from target
@@ -188,6 +194,9 @@ for arg in "$@"; do
     -rf=*|--recursive-find=*) RECURSIVE_FIND="${arg#*=}"; shift ;;
     -fp=*|--file-preview=*) FILE_PREVIEW="${arg#*=}"; shift ;;
     -dp=*|--directory-preview=*) DIRECTORY_PREVIEW="${arg#*=}"; shift ;;
+    -sg=*|--shallow-grep=*) SHALLOW_GREP="${arg#*=}"; shift ;;
+    -rg=*|--recursive-grep=*) RECURSIVE_GREP="${arg#*=}"; shift ;;
+    -gp=*|--grep-preview=*) GREP_PREVIEW="${arg#*=}"; shift ;;
     -ql=*|--quick-launch=*) LAUNCH="${arg#*=}"; shift ;;
     -bd=*|--base-dir=*|--base_directory=*) BASE_DIR="${arg#*=}"; shift ;;
     -ad=*|--alt-dir=*|--alternate-directory=*) ALT_DIR="${arg#*=}"; shift ;;
