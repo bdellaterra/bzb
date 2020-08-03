@@ -10,6 +10,14 @@ else
   SHALLOW_FIND="find . -maxdepth 1 -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
 fi
 
+# Sort Command:
+SORT="LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
+
+# Preview Commands:
+FILE_PREVIEW="cat '{}'"
+DIRECTORY_PREVIEW="ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh '{}'"
+FIND_PREVIEW="[[ -d {} ]] && $DIRECTORY_PREVIEW || $FILE_PREVIEW"
+
 # Grep Comands: Prefer 'rg' over 'grep' so ignored files are not listed
 if command -v rg &>/dev/null; then
   RECURSIVE_GREP="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
@@ -21,14 +29,6 @@ else
   SHALLOW_GREP="grep --files-with-matches --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
   GREP_PREVIEW="grep \${BZB_COLOR:+--color=always} --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' {}"
 fi
-
-# Sort Command:
-SORT="LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
-
-# Preview Commands:
-FILE_PREVIEW="cat '{}'"
-DIRECTORY_PREVIEW="ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh '{}'"
-FIND_PREVIEW="[[ -d {} ]] && $DIRECTORY_PREVIEW || $FILE_PREVIEW"
 
 # Quick-launch Command: Used to open targets in their native client
 LAUNCH=''
