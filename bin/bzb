@@ -238,6 +238,14 @@ if [[ "$AUTOLOAD_SESSION" ]]; then
 fi
 
 main() {
+  export BZB_QUERY=''
+  export BZB_COLOR="$COLOR"
+  export BZB_HIDDEN="$HIDDEN"
+  export BZB_NO_IGNORE="$NO_IGNORE"
+  export BZB_NO_PREVIEW="$NO_PREVIEW"
+  export BZB_REVERSE="$REVERSE"
+
+  # Edit file or enter directory
   if [[ $# -eq 1 && -d "$1" ]]; then
     cd "$1"
   elif [[ $# -ge 1 ]]; then
@@ -247,17 +255,10 @@ main() {
     done
     bash -c "$EDIT"
     [[ ! $PERSIST ]] && exit 0
+    export BZB_QUERY="$query"
   fi
 
-  export BZB_COLOR="$COLOR"
-  export BZB_HIDDEN="$HIDDEN"
-  export BZB_NO_IGNORE="$NO_IGNORE"
-  export BZB_NO_PREVIEW="$NO_PREVIEW"
-  export BZB_REVERSE="$REVERSE"
-
   [[ $NO_SORT ]] && SORT_PIPE='' || SORT_PIPE=$(bash -c "echo \"| $SORT\"")
-
-  # CYCLE INTO FZF
   if [[ $GREP_MODE ]]; then
     export BZB_GREP_QUERY="$GREP_QUERY"
     [[ $SHALLOW ]] && GREP=$(echo "$SHALLOW_GREP") || GREP=$(echo "$RECURSIVE_GREP")
@@ -270,7 +271,9 @@ main() {
     FZF_INPUT=$(bash -c "echo \"$FIND $SORT_PIPE\"")
     FZF_PROMPT="${PWD#$BASE_DIR}>"
   fi
-  FZF_OPTIONS="--print-query --multi --layout='reverse' --expect='$FZF_KEYS' --prompt='$FZF_PROMPT' $PREVIEW_OPTS ${OPTS[@]}"
+  FZF_OPTIONS="--print-query --multi --layout='reverse' --expect='$FZF_KEYS' --query='$BZB_QUERY' --prompt='$FZF_PROMPT' $PREVIEW_OPTS ${OPTS[@]}"
+
+  # CYCLE INTO FZF
   { read query; read command; readarray -t targets; } < <(bash -c "$FZF_INPUT | sed 's:^\./::' | fzf $FZF_OPTIONS")
 
   # Use Escape or ctrl-c to exit
