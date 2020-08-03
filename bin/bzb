@@ -134,10 +134,10 @@ usage: $(basename "${BASH_SOURCE[0]}") [options] [target file or directory]
 
 Browse files using fzf. If no target specified start in the current directory.
 
-Key mappings are as follows:
+Key mappings:
 $(echo "$KEY_USAGE" | column -t -s ':')
 
-options:
+Options:
 --help,-h                          Show this help text
 --grep,-g                          Start in grep mode
 --once,-o                          Exit browser after editing a file
@@ -151,23 +151,14 @@ options:
 --auto-save-session,-s             Save bookmarks and view/sort settings continuously
 --auto-load-session,-l             Load bookmarks and view/sort settings at start
 --sort=CMD,-so=CMD                 Command to sort files/directories
-                                   default: $SORT
 --shallow-find=CMD,-sf=CMD         Command to list only top-level files/directories
-                                   default: $SHALLOW_FIND
 --recursive-find=CMD,-rf=CMD       Command to list nested files/directories
-                                   default: $RECURSIVE_FIND
 --file-preview=CMD,-fp=CMD         Command to preview currently focused file
-                                   default: $FILE_PREVIEW
 --directory-preview=CMD,-dp=CMD    Command to preview currently focused directory
-                                   default: $DIRECTORY_PREVIEW
 --shallow-grep=CMD,-sg=CMD         Command to grep for pattern in top-level files/directories
-                                   default: $SHALLOW_GREP
 --recursive-grep=CMD,-rg=CMD       Command to grep for pattern recursively
-                                   default: $RECURSIVE_GREP
 --grep-preview=CMD,-gp=CMD         Command to preview grep results for currently focused file
-                                   default: $GREP_PREVIEW
 --quick-launch=CMD,-ql=CMD         Command to launch files/directories using os-native client
-                                   default: $LAUNCH
 --base-directory=DIR,-bd=DIR       Specify a base directory instead of deriving it from target
 --alternate-directory=DIR,-ad=DIR  Initialize alternate directory at start
 
