@@ -310,9 +310,8 @@ main() {
     # Exit grep-mode if any of the other directory navigation is used
     alt-right|alt-l|alt-left|alt-h|alt-up|alt-k|alt-down|alt-j|alt-u|alt-g|ctrl-alt-g|alt-a|alt-p)
       GREP_MODE=''
-      # Fall through to remaining cases
-      command="$command"
-    ;;
+    # Fall through to remaining cases
+    ;;&
 
     # Use alt-n to toggle listing nested vs only top-level files/directories
     alt-n)
@@ -514,13 +513,14 @@ main() {
     # Use ctrl-alt-g to set/enter new base directory
     # Use alt-u to go to base directory, or go back
     # to previous directory if already in base directory
-    alt-u|ctrl-alt-g)
+    # Use alt-s to load session
+    alt-u|ctrl-alt-g|alt-s)
       if [[ "$command" = 'ctrl-alt-g' || ! -d "$BASE_DIR" ]]; then
         read -ep "Set base directory: " -i "$PWD" DIR
         if [[ -d "$DIR" ]]; then
           BASE_DIR="${DIR%/}"
           pushd "$BASE_DIR" >/dev/null && pushd +1 >/dev/null
-          # Fall through to load-session case below
+          echo "autoload: $AUTOLOAD_SESSION"
           [[ ! "$AUTOLOAD_SESSION" ]] && command='alt-s'
         else
           echo "Not a directory"
@@ -529,15 +529,14 @@ main() {
       if [[ -d "$BASE_DIR" ]]; then
         [[ "$PWD" = "$BASE_DIR" ]] && cd "$OLDPWD" || cd "$BASE_DIR"
       fi
-    ;;
-
-    # Use alt-s to load session
-    alt-s)
-      SESSION="${BZB_DIR:+$BZB_DIR/sessions$BASE_DIR/session.bzb}"
-      read -ep "Load session: " -i "$SESSION" SESSION
-      if [[ -r "$SESSION" ]]; then
-        . -- "$SESSION"
-        load_session
+      if [[ "$command" = 'alt-s' ]]; then
+        echo "fallthrough: $command"
+        SESSION="${BZB_DIR:+$BZB_DIR/sessions$BASE_DIR/session.bzb}"
+        read -ep "Load session: " -i "$SESSION" SESSION
+        if [[ -r "$SESSION" ]]; then
+          . -- "$SESSION"
+          load_session
+        fi
       fi
     ;;
 
