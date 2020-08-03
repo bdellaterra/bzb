@@ -238,6 +238,7 @@ if [[ "$AUTOLOAD_SESSION" ]]; then
 fi
 
 main() {
+  # Export variables for use in subshells
   export BZB_QUERY=''
   export BZB_COLOR="$COLOR"
   export BZB_HIDDEN="$HIDDEN"
@@ -258,6 +259,7 @@ main() {
     export BZB_QUERY="$query"
   fi
 
+  # Setup list/sort/preview commands
   [[ $NO_SORT ]] && SORT_PIPE='' || SORT_PIPE=$(bash -c "echo \"| $SORT\"")
   if [[ $GREP_MODE ]]; then
     export BZB_GREP_QUERY="$GREP_QUERY"
@@ -282,14 +284,14 @@ main() {
   next_targets=()
   case $command in
     # Use alt-/ to enter grep mode using search pattern specified at prompt
-    # Use again to update search pattern. Enter empty pattern to exit grep mode
+    # Use again to update search pattern. Enter empty pattern to cancel
     alt-/)
       read -ep "Grep for Pattern: " -i "$GREP_QUERY" GREP_QUERY
       [[ $GREP_QUERY ]] && GREP_MODE=1 || GREP_MODE=''
     ;;
 
-    # Use left arrow to move up a directory (not above base directory)
-    # If in grep mode this exist returns to browsing current directory, not its parent
+    # Use left arrow to move up a directory, but not above base directory
+    # If in grep mode, exit and resume browsing current directory
     left)
       if [[ ! $GREP_MODE && "$PWD" != "$BASE_DIR" ]]; then
         next_targets=("..")
@@ -299,7 +301,7 @@ main() {
       fi
     ;;
 
-    # Exit grep-mode if any of the other directory navigation is used
+    # Exit grep-mode if any other directory navigation is used
     alt-right|alt-l|alt-left|alt-h|alt-up|alt-k|alt-down|alt-j|alt-u|alt-g|ctrl-alt-g|alt-a|alt-p)
       GREP_MODE=''
     # Fall through to remaining cases
@@ -489,9 +491,9 @@ main() {
       [[ -d "$DIR" ]] && cd "$DIR" || echo "Not a directory"
     ;;
 
-    # Use alt-z to set alternate directory
     # Use alt-a to go to alternate directory, or go back
     # to previous directory if already in alternate directory
+    # Use alt-z to set alternate directory
     alt-a|alt-z)
       if [[ "$command" = 'alt-z' || ! -d "$ALT_DIR" ]]; then
         read -ep "Set alternate directory: " -i "$PWD" DIR
