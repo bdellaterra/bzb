@@ -12,20 +12,23 @@ fi
 
 # Grep Comands: Prefer 'rg' over 'grep' so ignored files are not listed
 if command -v rg &>/dev/null; then
-  GREP="rg -l \${BZB_SHALLOW:+--max-depth 1} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
+  RECURSIVE_GREP="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
+  SHALLOW_GREP="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --max-depth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
+  GREP_PREVIEW="rg \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
-  # TODO: Set 'grep' fallback
-  GREP=''
+  # TODO: Support ignoring hidden files
+  RECURSIVE_GREP="grep --recursive --files-with-matches --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' ."
+  SHALLOW_GREP="grep --files-with-matches --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
+  GREP_PREVIEW="grep \${BZB_COLOR:+--color=always} --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' {}"
 fi
 
 # Sort Command:
-SORT="LC_ALL=C sort ${BZB_REVERSE:+-r} -fiu"
+SORT="LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
 
 # Preview Commands:
 FILE_PREVIEW="cat '{}'"
 DIRECTORY_PREVIEW="ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh '{}'"
-FIND_PREVIEW="[ -d '{}' ] && $DIRECTORY_PREVIEW || $FILE_PREVIEW"
-GREP_PREVIEW="rg \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages -C 1 '\${BZB_GREP_QUERY}' '{}'"
+FIND_PREVIEW="[[ -d {} ]] && $DIRECTORY_PREVIEW || $FILE_PREVIEW"
 
 # Quick-launch Command: Used to open targets in their native client
 LAUNCH=''
@@ -248,30 +251,28 @@ main() {
     [[ ! $PERSIST ]] && exit 0
   fi
 
-  export BZB_SHALLOW="$SHALLOW"
   export BZB_COLOR="$COLOR"
   export BZB_HIDDEN="$HIDDEN"
   export BZB_NO_IGNORE="$NO_IGNORE"
   export BZB_NO_PREVIEW="$NO_PREVIEW"
   export BZB_REVERSE="$REVERSE"
 
-  [[ $SHALLOW ]] && FIND=$(echo "$SHALLOW_FIND") || FIND=$(echo "$RECURSIVE_FIND")
   [[ $NO_SORT ]] && SORT_PIPE='' || SORT_PIPE=$(bash -c "echo \"| $SORT\"")
 
   # CYCLE INTO FZF
   if [[ $GREP_MODE ]]; then
     export BZB_GREP_QUERY="$GREP_QUERY"
+    [[ $SHALLOW ]] && GREP=$(echo "$SHALLOW_GREP") || GREP=$(echo "$RECURSIVE_GREP")
     [[ $NO_PREVIEW ]] && PREVIEW_OPTS='' || PREVIEW_OPTS="--preview='$(bash -c echo\ "$GREP_PREVIEW")' --preview-window='$PREVIEW_WINDOW'"
-    echo "opts: $PREVIEW_OPTS"
-    FZF_INPUT=$(bash -c "echo \"$GREP $SORT_PIPE\"")
+    FZF_INPUT=$(bash -c "echo \"$GREP\"")
     FZF_PROMPT="/$GREP_QUERY/"
   else
+    [[ $SHALLOW ]] && FIND=$(echo "$SHALLOW_FIND") || FIND=$(echo "$RECURSIVE_FIND")
     [[ $NO_PREVIEW ]] && PREVIEW_OPTS='' || PREVIEW_OPTS="--preview='$(echo "$FIND_PREVIEW")' --preview-window='$PREVIEW_WINDOW'"
     FZF_INPUT=$(bash -c "echo \"$FIND $SORT_PIPE\"")
     FZF_PROMPT="${PWD#$BASE_DIR}>"
   fi
   FZF_OPTIONS="--print-query --multi --layout='reverse' --expect='$FZF_KEYS' --prompt='$FZF_PROMPT' $PREVIEW_OPTS ${OPTS[@]}"
-  echo "fzf: $FZF_OPTIONS"
   { read query; read command; readarray -t targets; } < <(bash -c "$FZF_INPUT | sed 's:^\./::' | fzf $FZF_OPTIONS")
 
   # Use Escape or ctrl-c to exit
@@ -283,7 +284,6 @@ main() {
     # Use again to update search pattern. Enter empty pattern to exit grep mode
     alt-/)
       read -ep "Grep for Pattern: " -i "$GREP_QUERY" GREP_QUERY
-      echo "grep_query: $GREP_QUERY"
       [[ $GREP_QUERY ]] && GREP_MODE=1 || GREP_MODE=''
     ;;
 
