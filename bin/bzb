@@ -237,8 +237,6 @@ if [[ "$AUTOLOAD_SESSION" ]]; then
   fi
 fi
 
-# Setup conditional preview for files vs directories
-
 main() {
   if [[ $# -eq 1 && -d "$1" ]]; then
     cd "$1"
