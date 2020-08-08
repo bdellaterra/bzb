@@ -3,74 +3,74 @@ set -e
 
 # Find Comands: Prefer 'fd' over 'find' so ignored files are not listed
 if command -v fd &>/dev/null; then
-  RECURSIVE_FIND="fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
-  SHALLOW_FIND="fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
+  recursive_find="fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
+  shallow_find="fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
 else
-  RECURSIVE_FIND="find . -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
-  SHALLOW_FIND="find . -maxdepth 1 -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
+  recursive_find="find . -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
+  shallow_find="find . -maxdepth 1 -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
 fi
 
 # Sort Command:
-SORT="LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
+sort="LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
 
 # Preview Commands:
-FILE_PREVIEW="cat '{}'"
-DIRECTORY_PREVIEW="ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh '{}'"
-FIND_PREVIEW="[[ -d {} ]] && $DIRECTORY_PREVIEW || $FILE_PREVIEW"
+file_preview="cat '{}'"
+directory_preview="ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh '{}'"
+find_preview="[[ -d {} ]] && $directory_preview || $file_preview"
 
 # Grep Comands: Prefer 'rg' over 'grep' so ignored files are not listed
 if command -v rg &>/dev/null; then
-  RECURSIVE_GREP="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
-  SHALLOW_GREP="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --max-depth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
-  GREP_PREVIEW="rg \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
+  recursive_grep="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
+  shallow_grep="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --max-depth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
+  grep_preview="rg \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
   # TODO: Support ignoring hidden files
-  RECURSIVE_GREP="grep --recursive --files-with-matches --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' ."
-  SHALLOW_GREP="grep --files-with-matches --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
-  GREP_PREVIEW="grep \${BZB_COLOR:+--color=always} --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' {}"
+  recursive_grep="grep --recursive --files-with-matches --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' ."
+  shallow_grep="grep --files-with-matches --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
+  grep_preview="grep \${BZB_COLOR:+--color=always} --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' {}"
 fi
 
 # Quick-launch Command: Used to open targets in their native client
-LAUNCH=''
-command -v xdg-open &>/dev/null && LAUNCH='xdg-open'
-command -v open &>/dev/null && LAUNCH='open'
+launch=''
+command -v xdg-open &>/dev/null && launch='xdg-open'
+command -v open &>/dev/null && launch='open'
 
 # Directory where data for loading/restoring sessions is saved (optional)
 BZB_DIR="$HOME/.bzb"
 
 # Stay in browser after editing files
-PERSIST=1
+persist=1
 
 # Start with only top-level files/directories displayed
-SHALLOW=1
+shallow=1
 
 # No color output
-COLOR=''
+color=''
 
 # Don't show hidden files
-HIDDEN=''
+hidden=''
 
 # Don't show ignored files
-NO_IGNORE=''
+no_ignore=''
 
 # Don't start in grep mode
-GREP_MODE=''
+grep_mode=''
 
 # Sort ascending
-NO_SORT=''
-REVERSE=''
+no_sort=''
+reverse=''
 
 # Display preview pane
-NO_PREVIEW=''
-PREVIEW_WINDOW='right:62%:wrap'
+no_preview=''
+preview_window='right:62%:wrap'
 
 # Save/Load sessions manually
-AUTOSAVE_SESSION=''
-AUTOLOAD_SESSION=''
+autosave_session=''
+autoload_session=''
 
-declare -A KEYMAP
+declare -A keymap
 declareKeymap() {
-  KEYS[${#KEYS[@]}]="$1" && KEYMAP["$1"]="$2"
+  keys[${#keys[@]}]="$1" && keymap["$1"]="$2"
 }
 
 declareKeymap 'right'      "enter directory or edit file"
@@ -118,24 +118,24 @@ declareKeymap 'ctrl-alt-r' "reset initial view/sort settings"
 declareKeymap 'ctrl-alt-u' "kill all bookmarks (except base directory)"
 
 # comma-separated list of custom mappings for fzf
-FZF_KEYS="$(printf ",%s" "${KEYS[@]}" | cut -c2-)"
+fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
 
-KEY_USAGE=$(cat <<KEYMAPS
+key_usage=$(cat <<keymaps
 escape:exit file browser
 ctrl-c:exit file browser
 enter:enter directory or edit file
-$(for k in "${!KEYS[@]}"; do echo "${KEYS[$k]}:${KEYMAP[${KEYS[$k]}]}"; done)
-KEYMAPS
+$(for k in "${!keys[@]}"; do echo "${keys[$k]}:${keymap[${keys[$k]}]}"; done)
+keymaps
 )
 
 usage() {
-cat <<USAGE
+cat <<usage
 usage: $(basename "${BASH_SOURCE[0]}") [options] [target file or directory]
 
 Browse files using fzf. If no target specified start in the current directory.
 
 Key mappings:
-$(echo "$KEY_USAGE" | column -t -s ':')
+$(echo "$key_usage" | column -t -s ':')
 
 Options:
 --help,-h                          Show this help text
@@ -163,76 +163,76 @@ Options:
 --alternate-directory=DIR,-ad=DIR  Initialize alternate directory at start
 
 Any additional options will be passed to fzf.
-USAGE
+usage
 }
 
 for arg in "$@"; do
   case $arg in
     -h|--help) usage; exit 0 ;;
-    -g|--grep) GREP_MODE=''; shift ;;
-    -o|--once) PERSIST=''; shift ;;
-    -c|--color) COLOR=1; shift ;;
-    -r|--recursive) SHALLOW=''; shift ;;
-    -H|--hidden) HIDDEN=1; shift ;;
-    -I|--no-ignore) NO_IGNORE=1; shift ;;
-    -P|--no-preview) NO_PREVIEW=1; shift ;;
-    -S|--no-sort) NO_PREVIEW=1; shift ;;
-    -R|--reverse-sort) REVERSE=1; shift ;;
-    -s|--auto-save-session) AUTOSAVE_SESSION=1; shift ;;
-    -l|--auto-load-session) AUTOLOAD_SESSION=1; shift ;;
-    -so=*|--sort=*) SORT="${arg#*=}"; shift ;;
-    -sf=*|--shallow-find=*) SHALLOW_FIND="${arg#*=}"; shift ;;
-    -rf=*|--recursive-find=*) RECURSIVE_FIND="${arg#*=}"; shift ;;
-    -fp=*|--file-preview=*) FILE_PREVIEW="${arg#*=}"; shift ;;
-    -dp=*|--directory-preview=*) DIRECTORY_PREVIEW="${arg#*=}"; shift ;;
-    -sg=*|--shallow-grep=*) SHALLOW_GREP="${arg#*=}"; shift ;;
-    -rg=*|--recursive-grep=*) RECURSIVE_GREP="${arg#*=}"; shift ;;
-    -gp=*|--grep-preview=*) GREP_PREVIEW="${arg#*=}"; shift ;;
-    -ql=*|--quick-launch=*) LAUNCH="${arg#*=}"; shift ;;
-    -bd=*|--base-dir=*|--base_directory=*) BASE_DIR="${arg#*=}"; shift ;;
-    -ad=*|--alt-dir=*|--alternate-directory=*) ALT_DIR="${arg#*=}"; shift ;;
+    -g|--grep) grep_mode=''; shift ;;
+    -o|--once) persist=''; shift ;;
+    -c|--color) color=1; shift ;;
+    -r|--recursive) shallow=''; shift ;;
+    -H|--hidden) hidden=1; shift ;;
+    -I|--no-ignore) no_ignore=1; shift ;;
+    -P|--no-preview) no_preview=1; shift ;;
+    -S|--no-sort) no_preview=1; shift ;;
+    -R|--reverse-sort) reverse=1; shift ;;
+    -s|--auto-save-session) autosave_session=1; shift ;;
+    -l|--auto-load-session) autoload_session=1; shift ;;
+    -so=*|--sort=*) sort="${arg#*=}"; shift ;;
+    -sf=*|--shallow-find=*) shallow_find="${arg#*=}"; shift ;;
+    -rf=*|--recursive-find=*) recursive_find="${arg#*=}"; shift ;;
+    -fp=*|--file-preview=*) file_preview="${arg#*=}"; shift ;;
+    -dp=*|--directory-preview=*) directory_preview="${arg#*=}"; shift ;;
+    -sg=*|--shallow-grep=*) shallow_grep="${arg#*=}"; shift ;;
+    -rg=*|--recursive-grep=*) recursive_grep="${arg#*=}"; shift ;;
+    -gp=*|--grep-preview=*) grep_preview="${arg#*=}"; shift ;;
+    -ql=*|--quick-launch=*) launch="${arg#*=}"; shift ;;
+    -bd=*|--base-dir=*|--base_directory=*) base_dir="${arg#*=}"; shift ;;
+    -ad=*|--alt-dir=*|--alternate-directory=*) alt_dir="${arg#*=}"; shift ;;
     # Save remaining options for fzf with quoting preserved
     # TODO: Capture non '=' style arguments 
-    -*) OPTS+=("${arg%%=*}=\"${arg#*=}\""); shift ;;
+    -*) fzf_opts+=("${arg%%=*}=\"${arg#*=}\""); shift ;;
   esac
 done
 
 # Derive base directory from target, or use current directory if none given
-if [[ -z "$BASE_DIR" ]]; then
-  [[ -d "$1" ]] && BASE_DIR="$1" || BASE_DIR="$(dirname "${1:-$PWD/.}")"
+if [[ -z "$base_dir" ]]; then
+  [[ -d "$1" ]] && base_dir="$1" || base_dir="$(dirname "${1:-$PWD/.}")"
 fi
-pushd "$BASE_DIR" >/dev/null && pushd +1 >/dev/null
+pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
 
 function save_session() {
-  mkdir -p "$(dirname $SESSION)" && touch "$SESSION"
-  readarray -t BOOKMARKS < <(dirs -p -l)
-  if [[ -w "$SESSION" ]]; then
-    declare -p PWD > "$SESSION"
-    [[ "$BASE_DIR" ]] && declare -p BASE_DIR >> "$SESSION"
-    [[ "$ALT_DIR" ]] && declare -p ALT_DIR >> "$SESSION"
-    declare -p BOOKMARKS >> "$SESSION"
-    declare -p SHALLOW >> "$SESSION"
-    declare -p HIDDEN >> "$SESSION"
-    declare -p NO_IGNORE >> "$SESSION"
-    declare -p NO_SORT >> "$SESSION"
-    declare -p REVERSE >> "$SESSION"
-    declare -p NO_PREVIEW >> "$SESSION"
+  mkdir -p "$(dirname $session)" && touch "$session"
+  readarray -t bookmarks < <(dirs -p -l)
+  if [[ -w "$session" ]]; then
+    declare -p PWD > "$session"
+    [[ "$base_dir" ]] && declare -p base_dir >> "$session"
+    [[ "$alt_dir" ]] && declare -p alt_dir >> "$session"
+    declare -p bookmarks >> "$session"
+    declare -p shallow >> "$session"
+    declare -p hidden >> "$session"
+    declare -p no_ignore >> "$session"
+    declare -p no_sort >> "$session"
+    declare -p reverse >> "$session"
+    declare -p no_preview >> "$session"
   fi
 }
 
 function load_session() {
   dirs -c
-  pushd "$BASE_DIR" >/dev/null && pushd +1 >/dev/null
-  for b in "${BOOKMARKS[@]}"; do
+  pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
+  for b in "${bookmarks[@]}"; do
     [[ -d "$b" ]] && pushd "$b" >/dev/null
   done
-  cd "$BASE_DIR"
+  cd "$base_dir"
 }
 
-if [[ "$AUTOLOAD_SESSION" ]]; then
-  SESSION="${BZB_DIR:+$BZB_DIR/sessions$BASE_DIR/session.bzb}"
-  if [[ -r "$SESSION" ]]; then
-    . -- "$SESSION"
+if [[ "$autoload_session" ]]; then
+  session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
+  if [[ -r "$session" ]]; then
+    . -- "$session"
     load_session;
   fi
 fi
@@ -240,43 +240,43 @@ fi
 main() {
   # Export variables for use in subshells
   export BZB_QUERY=''
-  export BZB_COLOR="$COLOR"
-  export BZB_HIDDEN="$HIDDEN"
-  export BZB_NO_IGNORE="$NO_IGNORE"
-  export BZB_NO_PREVIEW="$NO_PREVIEW"
-  export BZB_REVERSE="$REVERSE"
+  export BZB_COLOR="$color"
+  export BZB_HIDDEN="$hidden"
+  export BZB_NO_IGNORE="$no_ignore"
+  export BZB_NO_PREVIEW="$no_preview"
+  export BZB_REVERSE="$reverse"
 
   # Edit file or enter directory
   if [[ $# -eq 1 && -d "$1" ]]; then
     cd "$1"
   elif [[ $# -ge 1 ]]; then
-    EDIT="${EDITOR:vi}"
+    edit="${EDITOR:vi}"
     for f in "$@"; do
-      EDIT="$EDIT '$f'"
+      edit="$edit '$f'"
     done
-    bash -c "$EDIT"
-    [[ ! $PERSIST ]] && exit 0
+    bash -c "$edit"
+    [[ ! $persist ]] && exit 0
     export BZB_QUERY="$query"
   fi
 
   # Setup list/sort/preview commands
-  [[ $NO_SORT ]] && SORT_PIPE='' || SORT_PIPE=$(bash -c "echo \"| $SORT\"")
-  if [[ $GREP_MODE ]]; then
-    export BZB_GREP_QUERY="$GREP_QUERY"
-    [[ $SHALLOW ]] && GREP=$(echo "$SHALLOW_GREP") || GREP=$(echo "$RECURSIVE_GREP")
-    [[ $NO_PREVIEW ]] && PREVIEW_OPTS='' || PREVIEW_OPTS="--preview='$(bash -c echo\ "$GREP_PREVIEW")' --preview-window='$PREVIEW_WINDOW'"
-    FZF_INPUT=$(bash -c "echo \"$GREP\"")
-    FZF_PROMPT="/$GREP_QUERY/"
+  [[ $no_sort ]] && sort_pipe='' || sort_pipe=$(bash -c "echo \"| $sort\"")
+  if [[ $grep_mode ]]; then
+    export BZB_GREP_QUERY="$grep_query"
+    [[ $shallow ]] && grep=$(echo "$shallow_grep") || grep=$(echo "$recursive_grep")
+    [[ $no_preview ]] && preview_opts='' || preview_opts="--preview='$(bash -c echo\ "$grep_preview")' --preview-window='$preview_window'"
+    fzf_input=$(bash -c "echo \"$grep\"")
+    fzf_prompt="/$grep_query/"
   else
-    [[ $SHALLOW ]] && FIND=$(echo "$SHALLOW_FIND") || FIND=$(echo "$RECURSIVE_FIND")
-    [[ $NO_PREVIEW ]] && PREVIEW_OPTS='' || PREVIEW_OPTS="--preview='$(echo "$FIND_PREVIEW")' --preview-window='$PREVIEW_WINDOW'"
-    FZF_INPUT=$(bash -c "echo \"$FIND $SORT_PIPE\"")
-    FZF_PROMPT="${PWD#$BASE_DIR}>"
+    [[ $shallow ]] && find=$(echo "$shallow_find") || find=$(echo "$recursive_find")
+    [[ $no_preview ]] && preview_opts='' || preview_opts="--preview='$(echo "$find_preview")' --preview-window='$preview_window'"
+    fzf_input=$(bash -c "echo \"$find $sort_pipe\"")
+    fzf_prompt="${PWD#$base_dir}>"
   fi
-  FZF_OPTIONS="--print-query --multi --layout='reverse' --expect='$FZF_KEYS' --query='$BZB_QUERY' --prompt='$FZF_PROMPT' $PREVIEW_OPTS ${OPTS[@]}"
+  fzf_options="--print-query --multi --layout='reverse' --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
 
   # CYCLE INTO FZF
-  { read query; read command; readarray -t targets; } < <(bash -c "$FZF_INPUT | sed 's:^\./::' | fzf $FZF_OPTIONS")
+  { read query; read command; readarray -t targets; } < <(bash -c "$fzf_input | sed 's:^\./::' | fzf $fzf_options")
 
   # Use Escape or ctrl-c to exit
   [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && exit 0
@@ -286,62 +286,62 @@ main() {
     # Use alt-/ to enter grep mode using search pattern specified at prompt
     # Use again to update search pattern. Enter empty pattern to cancel
     alt-/)
-      read -ep "Grep for Pattern: " -i "$GREP_QUERY" GREP_QUERY
-      [[ $GREP_QUERY ]] && GREP_MODE=1 || GREP_MODE=''
+      read -ep "Grep for Pattern: " -i "$grep_query" grep_query
+      [[ $grep_query ]] && grep_mode=1 || grep_mode=''
     ;;
 
     # Use left arrow to move up a directory, but not above base directory
     # If in grep mode, exit and resume browsing current directory
     left)
-      if [[ ! $GREP_MODE && "$PWD" != "$BASE_DIR" ]]; then
+      if [[ ! $grep_mode && "$PWD" != "$base_dir" ]]; then
         next_targets=("..")
       else
         next_targets=('.')
-        GREP_MODE=''
+        grep_mode=''
       fi
     ;;
 
     # Exit grep-mode if any other directory navigation is used
     alt-right|alt-l|alt-left|alt-h|alt-up|alt-k|alt-down|alt-j|alt-u|alt-g|ctrl-alt-g|alt-a|alt-p)
-      GREP_MODE=''
+      grep_mode=''
     # Fall through to remaining cases
     ;;&
 
     # Use alt-n to toggle listing nested vs only top-level files/directories
     alt-n)
-      [[ $SHALLOW ]] && SHALLOW='' || SHALLOW=1
+      [[ $shallow ]] && shallow='' || shallow=1
     ;;
 
     # Use alt-i to toggle visibility of ignored files/directories
     alt-i)
-      [[ $NO_IGNORE ]] && NO_IGNORE='' || NO_IGNORE=1
+      [[ $no_ignore ]] && no_ignore='' || no_ignore=1
     ;;
 
     # Use alt-v to toggle visibility of hidden files/directories
     alt-v)
-      [[ $HIDDEN ]] && HIDDEN='' || HIDDEN=1
+      [[ $hidden ]] && hidden='' || hidden=1
     ;;
 
     # Use ctrl-alt-p to toggle visibility of preview pane
     ctrl-alt-p)
-      [[ $NO_PREVIEW ]] && NO_PREVIEW='' || NO_PREVIEW=1
+      [[ $no_preview ]] && no_preview='' || no_preview=1
     ;;
 
     # Use alt-o to toggle between normal and reverse sort order
     alt-o)
-      [[ $REVERSE ]] && REVERSE='' || REVERSE=1
+      [[ $reverse ]] && reverse='' || reverse=1
     ;;
 
     # Use ctrl-alt-o to enable/disable sorting
     ctrl-alt-o)
-      [[ $NO_SORT ]] && NO_SORT='' || NO_SORT=1
+      [[ $no_sort ]] && no_sort='' || no_sort=1
     ;;
 
     # Use alt-enter or alt-q to quick-launch targets in their native client
     alt-enter|alt-q)
-      if [[ "$LAUNCH" ]]; then
+      if [[ "$launch" ]]; then
         for t in "${targets[@]}"; do
-          bash -c "$LAUNCH '$t'"
+          bash -c "$launch '$t'"
         done
       fi
     ;;
@@ -350,20 +350,20 @@ main() {
     alt-r)
       for t in "${targets[@]}"; do
         if [[ -r "$t" ]]; then
-          read -ep 'Move/Rename File: ' -i "mv \"$t\" \"$t\"" CMD
-          [[ -n "$CMD" ]] && bash -c "$CMD"
+          read -ep 'Move/Rename File: ' -i "mv \"$t\" \"$t\"" cmd
+          [[ -n "$cmd" ]] && bash -c "$cmd"
         fi
       done
     ;;
 
     # Use ctrl-alt-m to move and rename targets
     ctrl-alt-m)
-      read -ep 'Move/Rename to Directory: ' -i "${ALT_DIR:-$BASE_DIR}" DIR
-      if [[ -n "$DIR" ]]; then
+      read -ep 'Move/Rename to Directory: ' -i "${alt_dir:-$base_dir}" dir
+      if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
           if [[ -r "$t" ]]; then
-            read -ep 'Move/Rename File: ' -i "mv '$PWD/$t' '${DIR%/}/$t'" CMD
-            [[ -n "$CMD" ]] && bash -c "$CMD"
+            read -ep 'Move/Rename File: ' -i "mv '$PWD/$t' '${dir%/}/$t'" cmd
+            [[ -n "$cmd" ]] && bash -c "$cmd"
           fi
         done
       fi
@@ -371,8 +371,8 @@ main() {
 
     # Use alt-m to move targets
     alt-m)
-      read -ep 'Move to Directory: ' -i "${ALT_DIR:-$BASE_DIR}" DIR
-      [[ -n "$DIR" ]] && mv -i "${targets[@]}" "$DIR"
+      read -ep 'Move to Directory: ' -i "${alt_dir:-$base_dir}" dir
+      [[ -n "$dir" ]] && mv -i "${targets[@]}" "$dir"
     ;;
 
     # Use alt-x to delete targets
@@ -382,18 +382,18 @@ main() {
 
     # Use alt-c to copy targets
     alt-c)
-      read -ep 'Copy to Directory: ' -i "${ALT_DIR:-$BASE_DIR}" DIR
-      [[ -n "$DIR" ]] && cp -ir "${targets[@]}" "$DIR"
+      read -ep 'Copy to Directory: ' -i "${alt_dir:-$base_dir}" dir
+      [[ -n "$dir" ]] && cp -ir "${targets[@]}" "$dir"
     ;;
 
     # Use ctrl-alt-c to copy and rename targets
     ctrl-alt-c)
-      read -ep 'Copy/Rename to Directory: ' -i "${ALT_DIR:-$BASE_DIR}" DIR
-      if [[ -n "$DIR" ]]; then
+      read -ep 'Copy/Rename to Directory: ' -i "${alt_dir:-$base_dir}" dir
+      if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
           if [[ -r "$t" ]]; then
-            read -ep 'Copy/Rename File: ' -i "cp -ir '$PWD/$t' '$DIR/$t'" CMD
-            [[ -n "$CMD" ]] && bash -c "$CMD"
+            read -ep 'Copy/Rename File: ' -i "cp -ir '$PWD/$t' '$dir/$t'" cmd
+            [[ -n "$cmd" ]] && bash -c "$cmd"
           fi
         done
       fi
@@ -421,22 +421,22 @@ main() {
 
     # Use alt-b to bookmark selected targets
     alt-b)
-      DIR="$PWD"
+      dir="$PWD"
       for b in "${targets[@]}"; do
-        if [[ -d "$DIR/$b" ]]; then
-          cd "$DIR/$b"
+        if [[ -d "$dir/$b" ]]; then
+          cd "$dir/$b"
           [[ ! "$(dirs -l)" =~ " $PWD" ]] && pushd "$PWD" >/dev/null
         fi
       done
-      cd "$DIR"
+      cd "$dir"
     ;;
 
     # Use ctrl-alt-b to un-bookmark select targets
     ctrl-alt-b)
       for b in "${targets[@]}"; do
-        readarray -t DIRS < <(dirs -p -l)
-        for i in "${!DIRS[@]}"; do
-          if [[ $i -ge 1 && -d "${DIRS[$i]}" && "${DIRS[$i]}" = "$PWD/$b" ]]; then
+        readarray -t dirs < <(dirs -p -l)
+        for i in "${!dirs[@]}"; do
+          if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$PWD/$b" ]]; then
             popd +$i >/dev/null
           fi
         done
@@ -450,9 +450,9 @@ main() {
 
     # Use ctrl-alt-w to un-bookmark current working directory
     ctrl-alt-w)
-      readarray -t DIRS < <(dirs -p -l)
-      for i in "${!DIRS[@]}"; do
-        [[ $i -ge 1 && "${DIRS[$i]}" = "$PWD" ]] && popd +$i >/dev/null
+      readarray -t dirs < <(dirs -p -l)
+      for i in "${!dirs[@]}"; do
+        [[ $i -ge 1 && "${dirs[$i]}" = "$PWD" ]] && popd +$i >/dev/null
       done
     ;;
 
@@ -470,14 +470,14 @@ main() {
 
     # Use alt-up or alt-k to select bookmarked directory using fzf
     alt-up|alt-k)
-      readarray -t DIRS < <(dirs -p -l | LC_ALL=C sort -u)
-      next_targets=("$(printf '%s\n' "${DIRS[@]}" | fzf)")
+      readarray -t dirs < <(dirs -p -l | LC_ALL=C sort -u)
+      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf)")
     ;;
 
     # Use alt-down or alt-j to select bookmarked directory under current directory
     alt-down|alt-j)
-      readarray -t DIRS < <(dirs -p -l | grep "$PWD" | LC_ALL=C sort -u)
-      next_targets=("$(printf '%s\n' "${DIRS[@]}" | fzf)")
+      readarray -t dirs < <(dirs -p -l | grep "$PWD" | LC_ALL=C sort -u)
+      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf)")
     ;;
 
     # Use alt-p to go to previous directory
@@ -487,20 +487,20 @@ main() {
 
     # Use alt-g to go to directory named at prompt
     alt-g)
-      read -ep "Go to directory: " -i "$PWD" DIR
-      [[ -d "$DIR" ]] && cd "$DIR" || echo "Not a directory"
+      read -ep "Go to directory: " -i "$PWD" dir
+      [[ -d "$dir" ]] && cd "$dir" || echo "Not a directory"
     ;;
 
     # Use alt-a to go to alternate directory, or go back
     # to previous directory if already in alternate directory
     # Use alt-z to set alternate directory
     alt-a|alt-z)
-      if [[ "$command" = 'alt-z' || ! -d "$ALT_DIR" ]]; then
-        read -ep "Set alternate directory: " -i "$PWD" DIR
-        [[ -d "$DIR" ]] && ALT_DIR="${DIR%/}" || echo "Not a directory"
+      if [[ "$command" = 'alt-z' || ! -d "$alt_dir" ]]; then
+        read -ep "Set alternate directory: " -i "$PWD" dir
+        [[ -d "$dir" ]] && alt_dir="${dir%/}" || echo "Not a directory"
       fi
-      if [[ "$command" = 'alt-a' && -d "$ALT_DIR" ]]; then
-        [[ "$PWD" = "$ALT_DIR" ]] && cd "$OLDPWD" || cd "$ALT_DIR"
+      if [[ "$command" = 'alt-a' && -d "$alt_dir" ]]; then
+        [[ "$PWD" = "$alt_dir" ]] && cd "$OLDPWD" || cd "$alt_dir"
       fi
     ;;
 
@@ -509,26 +509,26 @@ main() {
     # to previous directory if already in base directory
     # Use alt-s to load session
     alt-u|ctrl-alt-g|alt-s)
-      if [[ "$command" = 'ctrl-alt-g' || ! -d "$BASE_DIR" ]]; then
-        read -ep "Set base directory: " -i "$PWD" DIR
-        if [[ -d "$DIR" ]]; then
-          BASE_DIR="${DIR%/}"
-          pushd "$BASE_DIR" >/dev/null && pushd +1 >/dev/null
-          echo "autoload: $AUTOLOAD_SESSION"
-          [[ ! "$AUTOLOAD_SESSION" ]] && command='alt-s'
+      if [[ "$command" = 'ctrl-alt-g' || ! -d "$base_dir" ]]; then
+        read -ep "Set base directory: " -i "$PWD" dir
+        if [[ -d "$dir" ]]; then
+          base_dir="${dir%/}"
+          pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
+          echo "autoload: $autoload_session"
+          [[ ! "$autoload_session" ]] && command='alt-s'
         else
           echo "Not a directory"
         fi
       fi
-      if [[ -d "$BASE_DIR" ]]; then
-        [[ "$PWD" = "$BASE_DIR" ]] && cd "$OLDPWD" || cd "$BASE_DIR"
+      if [[ -d "$base_dir" ]]; then
+        [[ "$PWD" = "$base_dir" ]] && cd "$OLDPWD" || cd "$base_dir"
       fi
       if [[ "$command" = 'alt-s' ]]; then
         echo "fallthrough: $command"
-        SESSION="${BZB_DIR:+$BZB_DIR/sessions$BASE_DIR/session.bzb}"
-        read -ep "Load session: " -i "$SESSION" SESSION
-        if [[ -r "$SESSION" ]]; then
-          . -- "$SESSION"
+        session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
+        read -ep "Load session: " -i "$session" session
+        if [[ -r "$session" ]]; then
+          . -- "$session"
           load_session
         fi
       fi
@@ -536,27 +536,27 @@ main() {
 
     # Use ctrl-alt-s to save session
     ctrl-alt-s)
-      SESSION="${BZB_DIR:+$BZB_DIR/sessions$BASE_DIR/session.bzb}"
-      read -ep "Save session: " -i "$SESSION" SESSION
-      if [[ -n "$SESSION" ]]; then
+      session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
+      read -ep "Save session: " -i "$session" session
+      if [[ -n "$session" ]]; then
         save_session
       fi
     ;;
 
     # Use ctrl-alt-r to reset view/sort settings
     ctrl-alt-r)
-      SHALLOW=1
-      HIDDEN=''
-      NO_IGNORE=''
-      NO_SORT=''
-      REVERSE=''
-      NO_PREVIEW=''
+      shallow=1
+      hidden=''
+      no_ignore=''
+      no_sort=''
+      reverse=''
+      no_preview=''
     ;;
 
     # Use ctrl-alt-u to unbookmark all directories (except base)
     ctrl-alt-u)
       dirs -c
-      [[ "$BASE_DIR" ]] && pushd "$BASE_DIR" >/dev/null && pushd +1 >/dev/null
+      [[ "$base_dir" ]] && pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
     ;;
 
     *)
@@ -567,9 +567,9 @@ main() {
     ;;
   esac
 
-  if [[ "$AUTOSAVE_SESSION" ]]; then
-    SESSION="${BZB_DIR:+$BZB_DIR/sessions$BASE_DIR/session.bzb}"
-    if [[ -n "$SESSION" ]]; then
+  if [[ "$autosave_session" ]]; then
+    session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
+    if [[ -n "$session" ]]; then
       save_session
     fi
   fi
@@ -578,4 +578,4 @@ main() {
 }
 
 # Default initial target is current directory
-main "$BASE_DIR"
+main "$base_dir"
