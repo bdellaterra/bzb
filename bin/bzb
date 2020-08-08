@@ -514,7 +514,6 @@ main() {
         if [[ -d "$dir" ]]; then
           base_dir="${dir%/}"
           pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
-          echo "autoload: $autoload_session"
           [[ ! "$autoload_session" ]] && command='alt-s'
         else
           echo "Not a directory"
@@ -524,7 +523,6 @@ main() {
         [[ "$PWD" = "$base_dir" ]] && cd "$OLDPWD" || cd "$base_dir"
       fi
       if [[ "$command" = 'alt-s' ]]; then
-        echo "fallthrough: $command"
         session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
         read -ep "Load session: " -i "$session" session
         if [[ -r "$session" ]]; then
