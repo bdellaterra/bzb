@@ -118,7 +118,7 @@ declareKeymap 'ctrl-alt-r' "reset initial view/sort settings"
 declareKeymap 'ctrl-alt-u' "kill all bookmarks (except base directory)"
 
 # comma-separated list of custom mappings for fzf
-FZF_KEYS="$(printf ",%s" "${!KEYMAP[@]}" | cut -c2-)"
+FZF_KEYS="$(printf ",%s" "${KEYS[@]}" | cut -c2-)"
 
 KEY_USAGE=$(cat <<KEYMAPS
 escape:exit file browser
