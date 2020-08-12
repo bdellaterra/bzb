@@ -68,76 +68,82 @@ preview_window='right:62%:wrap'
 autosave_session=''
 autoload_session=''
 
-declare -A keymap
+declare -A key_definitions key_actions action_keys
 declareKeymap() {
-  keys[${#keys[@]}]="$1" && keymap["$1"]="$2"
+  keys[${#keys[@]}]="$2"
+  key_definitions["$2"]="$3"
+  key_actions["$2"]="$1"
+  action_keys["$1"]="$2"
 }
 
-declareKeymap 'right'      "enter directory or edit file"
-declareKeymap 'left'       "go to parent directory (not moving past base directory)"
-declareKeymap 'alt-enter'  "quick-launch targets using native client"
-declareKeymap 'alt-q'      "quick-launch targets using native client"
-declareKeymap 'alt-r'      "rename targets in current directory"
-declareKeymap 'alt-m'      "move targets to directory named at prompt"
-declareKeymap 'ctrl-alt-m' "move/rename targets into directory named at prompt"
-declareKeymap 'alt-x'      "delete targets"
-declareKeymap 'alt-c'      "copy targets to directory named at prompt"
-declareKeymap 'ctrl-alt-c' "copy/rename targets into directory named at prompt"
-declareKeymap 'alt-e'      "create/edit file named at prompt"
-declareKeymap 'alt-f'      "create file without editing"
-declareKeymap 'alt-d'      "create directory named at prompt"
-declareKeymap 'ctrl-alt-d' "create/enter directory named at prompt"
-declareKeymap 'alt-b'      "bookmark target directories"
-declareKeymap 'ctrl-alt-b' "un-bookmark target directories"
-declareKeymap 'alt-w'      "bookmark current working directory"
-declareKeymap 'ctrl-alt-w' "un-bookmark current working directory"
-declareKeymap 'alt-right'  "go to next bookmarked directory"
-declareKeymap 'alt-l'      "go to next bookmarked directory"
-declareKeymap 'alt-left'   "go to previous bookmarked directory"
-declareKeymap 'alt-h'      "go to previous bookmarked directory"
-declareKeymap 'alt-up'     "select and enter bookmarked directory"
-declareKeymap 'alt-k'      "select and enter bookmarked directory"
-declareKeymap 'alt-down'   "select and enter bookmarked directory under current directory"
-declareKeymap 'alt-j'      "select and enter bookmarked directory under current directory"
-declareKeymap 'alt-u'      "go up to base directory"
-declareKeymap 'alt-g'      "go to directory named at prompt"
-declareKeymap 'ctrl-alt-g' "set new base directory at prompt and go to it"
-declareKeymap 'alt-a'      "toggle between current and alternate directory"
-declareKeymap 'alt-z'      "set alternate directory (default for copy/move prompts)"
-declareKeymap 'alt-p'      "go to previous directory"
-declareKeymap 'alt-/'      "grep for pattern specified at prompt ('left' will exit grep mode)"
-declareKeymap 'alt-n'      "toggle listing nested vs. only top-level files"
-declareKeymap 'alt-i'      "toggle visibility of ignored files (if supported)"
-declareKeymap 'alt-v'      "toggle visibility of hidden files"
-declareKeymap 'ctrl-alt-p' "toggle visibility of preview pane"
-declareKeymap 'alt-o'      "toggle between ascending/descending sort order"
-declareKeymap 'ctrl-alt-o' "toggle whether sorting is enabled/disabled (affects performance)"
-declareKeymap 'alt-s'      "load session from file named at prompt"
-declareKeymap 'ctrl-alt-s' "save session to file named at prompt"
-declareKeymap 'ctrl-alt-r' "reset initial view/sort settings"
-declareKeymap 'ctrl-alt-u' "kill all bookmarks (except base directory)"
+declareKeymap 'enter'                   'right'       "enter directory or edit file"
+declareKeymap 'back'                    'left'        "go to parent directory (not moving past base directory)"
+declareKeymap 'launch'                  'alt-enter'   "quick-launch targets using native client"
+declareKeymap 'launch2'                 'alt-q'       "quick-launch targets using native client"
+declareKeymap 'rename'                  'alt-r'       "rename targets in current directory"
+declareKeymap 'move'                    'alt-m'       "move targets to directory named at prompt"
+declareKeymap 'move-rename'             'ctrl-alt-m'  "move/rename targets into directory named at prompt"
+declareKeymap 'delete'                  'alt-x'       "delete targets"
+declareKeymap 'copy'                    'alt-c'       "copy targets to directory named at prompt"
+declareKeymap 'copy-rename'             'ctrl-alt-c'  "copy/rename targets into directory named at prompt"
+declareKeymap 'create-edit-file'        'alt-e'       "create/edit file named at prompt"
+declareKeymap 'create-file'             'alt-f'       "create file without editing"
+declareKeymap 'create-dir'              'alt-d'       "create directory named at prompt"
+declareKeymap 'create-enter-dir'        'ctrl-alt-d'  "create/enter directory named at prompt"
+declareKeymap 'bookmark-target'         'alt-b'       "bookmark target directories"
+declareKeymap 'unbookmark-target'       'ctrl-alt-b'  "un-bookmark target directories"
+declareKeymap 'bookmark-current-dir'    'alt-w'       "bookmark current working directory"
+declareKeymap 'unbookmark-current-dir'  'ctrl-alt-w'  "un-bookmark current working directory"
+declareKeymap 'next-bookmark'           'alt-right'   "go to next bookmarked directory"
+declareKeymap 'next-bookmark2'          'alt-l'       "go to next bookmarked directory"
+declareKeymap 'prev-bookmark'           'alt-left'    "go to previous bookmarked directory"
+declareKeymap 'prev-bookmark2'          'alt-h'       "go to previous bookmarked directory"
+declareKeymap 'select-bookmark'         'alt-up'      "select and enter bookmarked directory"
+declareKeymap 'select-bookmark2'        'alt-k'       "select and enter bookmarked directory"
+declareKeymap 'select-nested-bookmark'  'alt-down'    "select and enter bookmarked directory under current directory"
+declareKeymap 'select-nested-bookmark2' 'alt-j'       "select and enter bookmarked directory under current directory"
+declareKeymap 'enter-base-dir'          'alt-u'       "go up to base directory"
+declareKeymap 'prompt-dir'              'alt-g'       "go to directory named at prompt"
+declareKeymap 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt and go to it"
+declareKeymap 'enter-alt-dir'           'alt-a'       "toggle between current and alternate directory"
+declareKeymap 'set-alt-dir'             'alt-z'       "set alternate directory (default for copy/move prompts)"
+declareKeymap 'enter-prev-dir'          'alt-p'       "go to previous directory"
+declareKeymap 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
+declareKeymap 'toggle-nested'           'alt-n'       "toggle listing nested vs. only top-level files"
+declareKeymap 'toggle-ignored'          'alt-i'       "toggle visibility of ignored files (if supported)"
+declareKeymap 'toggle-hidden'           'alt-v'       "toggle visibility of hidden files"
+declareKeymap 'toggle-preview'          'ctrl-alt-p'  "toggle visibility of preview pane"
+declareKeymap 'toggle-sort-order'       'alt-o'       "toggle between ascending/descending sort order"
+declareKeymap 'toggle-sort'             'ctrl-alt-o'  "toggle whether sorting is enabled/disabled (affects performance)"
+declareKeymap 'load-session'            'alt-s'       "load session from file named at prompt"
+declareKeymap 'save-session'            'ctrl-alt-s'  "save session to file named at prompt"
+declareKeymap 'reset-view'              'ctrl-alt-r'  "reset initial view/sort settings"
+declareKeymap 'clear-bookmarks'         'ctrl-alt-u'  "kill all bookmarks (except base directory)"
 
 # comma-separated list of custom mappings for fzf
 fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
 
-key_usage=$(cat <<keymaps
-escape:exit file browser
-ctrl-c:exit file browser
-enter:enter directory or edit file
-$(for k in "${!keys[@]}"; do echo "${keys[$k]}:${keymap[${keys[$k]}]}"; done)
-keymaps
+key_usage=$(cat <<KEY_USAGE
+KEYMAP:DESCRIPTION:ACTION_NAME
+escape:exit file browser:
+ctrl-c:exit file browser:
+enter:enter directory or edit file:
+$(for k in "${keys[@]}"; do echo "$k:${key_definitions[$k]}:${key_actions[$k]}"; done)
+KEY_USAGE
 )
 
 usage() {
-cat <<usage
+cat <<USAGE
 usage: $(basename "${BASH_SOURCE[0]}") [options] [target file or directory]
 
 Browse files using fzf. If no target specified start in the current directory.
 
 Key mappings:
+
 $(echo "$key_usage" | column -t -s ':')
 
 Options:
+
 --help,-h                          Show this help text
 --grep,-g                          Start in grep mode
 --once,-o                          Exit browser after editing a file
@@ -163,7 +169,7 @@ Options:
 --alternate-directory=DIR,-ad=DIR  Initialize alternate directory at start
 
 Any additional options will be passed to fzf.
-usage
+USAGE
 }
 
 for arg in "$@"; do
@@ -278,21 +284,30 @@ main() {
   # CYCLE INTO FZF
   { read query; read command; readarray -t targets; } < <(bash -c "$fzf_input | sed 's:^\./::' | fzf $fzf_options")
 
-  # Use Escape or ctrl-c to exit
+  # Parse empty command and empty target as 'exit' (fzf-native 'escape' or 'ctrl-c' mapping)
   [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && exit 0
 
+  # Parse empty command as 'enter' action
+  [[ -z "$command" ]] && command='right'
+
+  action="${key_actions[$command]}"
+
+  echo "command: $command"
+  echo "action: $action"
+  echo "targets: ${targets[@]}"
+
   next_targets=()
-  case $command in
+  case $action in
     # Use alt-/ to enter grep mode using search pattern specified at prompt
     # Use again to update search pattern. Enter empty pattern to cancel
-    alt-/)
+    grep)
       read -ep "Grep for Pattern: " -i "$grep_query" grep_query
       [[ $grep_query ]] && grep_mode=1 || grep_mode=''
     ;;
 
     # Use left arrow to move up a directory, but not above base directory
     # If in grep mode, exit and resume browsing current directory
-    left)
+    back)
       if [[ ! $grep_mode && "$PWD" != "$base_dir" ]]; then
         next_targets=("..")
       else
@@ -302,43 +317,43 @@ main() {
     ;;
 
     # Exit grep-mode if any other directory navigation is used
-    alt-right|alt-l|alt-left|alt-h|alt-up|alt-k|alt-down|alt-j|alt-u|alt-g|ctrl-alt-g|alt-a|alt-p)
+    next-bookmark|next-bookmark2|prev-bookmark|prev-bookmark2|select-bookmark|select-bookmark2|select-nested-bookmark|select-nested-bookmark2|enter-base-dir|prompt-dir|set-base-dir|enter-alt-dir|enter-prev-dir)
       grep_mode=''
     # Fall through to remaining cases
     ;;&
 
     # Use alt-n to toggle listing nested vs only top-level files/directories
-    alt-n)
+    toggle-nested)
       [[ $shallow ]] && shallow='' || shallow=1
     ;;
 
     # Use alt-i to toggle visibility of ignored files/directories
-    alt-i)
+    toggle-ignored)
       [[ $no_ignore ]] && no_ignore='' || no_ignore=1
     ;;
 
     # Use alt-v to toggle visibility of hidden files/directories
-    alt-v)
+    toggle-hidden)
       [[ $hidden ]] && hidden='' || hidden=1
     ;;
 
     # Use ctrl-alt-p to toggle visibility of preview pane
-    ctrl-alt-p)
+    toggle-preview)
       [[ $no_preview ]] && no_preview='' || no_preview=1
     ;;
 
     # Use alt-o to toggle between normal and reverse sort order
-    alt-o)
+    toggle-sort-order)
       [[ $reverse ]] && reverse='' || reverse=1
     ;;
 
     # Use ctrl-alt-o to enable/disable sorting
-    ctrl-alt-o)
+    toggle-sort)
       [[ $no_sort ]] && no_sort='' || no_sort=1
     ;;
 
     # Use alt-enter or alt-q to quick-launch targets in their native client
-    alt-enter|alt-q)
+    launch|launch2)
       if [[ "$launch" ]]; then
         for t in "${targets[@]}"; do
           bash -c "$launch '$t'"
@@ -347,7 +362,7 @@ main() {
     ;;
 
     # Use alt-r to rename targets in current directory
-    alt-r)
+    rename)
       for t in "${targets[@]}"; do
         if [[ -r "$t" ]]; then
           read -ep 'Move/Rename File: ' -i "mv \"$t\" \"$t\"" cmd
@@ -357,7 +372,7 @@ main() {
     ;;
 
     # Use ctrl-alt-m to move and rename targets
-    ctrl-alt-m)
+    move-rename)
       read -ep 'Move/Rename to Directory: ' -i "${alt_dir:-$base_dir}" dir
       if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
@@ -370,24 +385,24 @@ main() {
     ;;
 
     # Use alt-m to move targets
-    alt-m)
+    move)
       read -ep 'Move to Directory: ' -i "${alt_dir:-$base_dir}" dir
       [[ -n "$dir" ]] && mv -i "${targets[@]}" "$dir"
     ;;
 
     # Use alt-x to delete targets
-    alt-x)
+    delete)
       rm -rI "${targets[@]}"
     ;;
 
     # Use alt-c to copy targets
-    alt-c)
+    copy)
       read -ep 'Copy to Directory: ' -i "${alt_dir:-$base_dir}" dir
       [[ -n "$dir" ]] && cp -ir "${targets[@]}" "$dir"
     ;;
 
     # Use ctrl-alt-c to copy and rename targets
-    ctrl-alt-c)
+    copy-rename)
       read -ep 'Copy/Rename to Directory: ' -i "${alt_dir:-$base_dir}" dir
       if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
@@ -399,28 +414,28 @@ main() {
       fi
     ;;
 
-    # Use ctrl-alt-d to create and enter directory
-    # Use alt-d to create a directory without changing current directory
-    alt-d|ctrl-alt-d)
+    # Use alt-d to create directory named at prompt
+    # Use ctrl-alt-d to create directory and enter it
+    create-dir|create-enter-dir)
       read -p "Create directory: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$target"
-        [[ "$command" = 'ctrl-alt-d' ]] && next_targets=("$target")
+        [[ "$command" = "${action_keys[create-enter-dir]}" ]] && next_targets=("$target")
       fi
     ;;
 
-    # Use alt-e to create a file and edit it immediately
-    # Use alt-f to create a file without editing
-    alt-e|alt-f)
+    # Use alt-f to create file named at prompt
+    # Use alt-e to create file and edit it immediately
+    create-file|create-edit-file)
       read -p "Create file: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$(dirname "$target")" && touch "$target"
-        [[ "$command" = 'alt-e' ]] && next_targets=("$target")
+        [[ "$command" = "${action_keys[create-edit-file]}" ]] && next_targets=("$target")
       fi
     ;;
 
     # Use alt-b to bookmark selected targets
-    alt-b)
+   bookmark-target)
       dir="$PWD"
       for b in "${targets[@]}"; do
         if [[ -d "$dir/$b" ]]; then
@@ -432,7 +447,7 @@ main() {
     ;;
 
     # Use ctrl-alt-b to un-bookmark select targets
-    ctrl-alt-b)
+    unbookmark-target)
       for b in "${targets[@]}"; do
         readarray -t dirs < <(dirs -p -l)
         for i in "${!dirs[@]}"; do
@@ -444,49 +459,62 @@ main() {
     ;;
 
     # Use alt-w to bookmark current working directory
-    alt-w)
+    bookmark-current-dir)
       [[ ! "$(dirs -l)" =~ " $PWD" ]] && pushd "$PWD" >/dev/null
     ;;
 
     # Use ctrl-alt-w to un-bookmark current working directory
-    ctrl-alt-w)
-      readarray -t dirs < <(dirs -p -l)
+    unbookmark-current-dir)
       for i in "${!dirs[@]}"; do
-        [[ $i -ge 1 && "${dirs[$i]}" = "$PWD" ]] && popd +$i >/dev/null
+        if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$PWD/$b" ]]; then
+          popd +$i >/dev/null
+        fi
       done
-    ;;
-
-    # Use alt-right or alt-l to go to next bookmarked directory
-    alt-right|alt-l)
-      cd "$(dirs -l +1)"
       pushd +1 >/dev/null 
     ;;
 
+    # Use alt-right or alt-l to go to next bookmarked directory
+    next-bookmark|next-bookmark2)
+      for i in "${!dirs[@]}"; do
+        if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$PWD" ]]; then
+          popd +$i >/dev/null
+        fi
+      done
+      pushd +1 >/dev/null 
+      echo "DIRS: $(dirs)"
+    ;;
+
     # Use alt-left or alt-h to go to previous bookmarked directory
-    alt-left|alt-h)
-      cd "$(dirs -l -0)"
+    prev-bookmark|prev-bookmark2)
+      # for i in "${!dirs[@]}"; do
+      #   if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$PWD" ]]; then
+      #     popd -n +$i >/dev/null
+      #   fi
+      # done
       pushd -0 >/dev/null 
+      pushd -n "$PWD" >/dev/null
+      echo "DIRS: $(dirs)"
     ;;
 
     # Use alt-up or alt-k to select bookmarked directory using fzf
-    alt-up|alt-k)
+    select-bookmark|select-bookmark2)
       readarray -t dirs < <(dirs -p -l | LC_ALL=C sort -u)
       next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf)")
     ;;
 
     # Use alt-down or alt-j to select bookmarked directory under current directory
-    alt-down|alt-j)
+    select-nested-bookmark|select-nested-bookmark2)
       readarray -t dirs < <(dirs -p -l | grep "$PWD" | LC_ALL=C sort -u)
       next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf)")
     ;;
 
     # Use alt-p to go to previous directory
-    alt-p)
+    enter-prev-dir)
       cd "$OLDPWD"
     ;;
 
     # Use alt-g to go to directory named at prompt
-    alt-g)
+    prompt-dir)
       read -ep "Go to directory: " -i "$PWD" dir
       [[ -d "$dir" ]] && cd "$dir" || echo "Not a directory"
     ;;
@@ -494,12 +522,12 @@ main() {
     # Use alt-a to go to alternate directory, or go back
     # to previous directory if already in alternate directory
     # Use alt-z to set alternate directory
-    alt-a|alt-z)
-      if [[ "$command" = 'alt-z' || ! -d "$alt_dir" ]]; then
+    set-alt-dir|enter-alt-dir)
+      if [[ "$action" = "set-alt-dir" || ! -d "$alt_dir" ]]; then
         read -ep "Set alternate directory: " -i "$PWD" dir
         [[ -d "$dir" ]] && alt_dir="${dir%/}" || echo "Not a directory"
       fi
-      if [[ "$command" = 'alt-a' && -d "$alt_dir" ]]; then
+      if [[ "$action" = "enter-alt-dir" && -d "$alt_dir" ]]; then
         [[ "$PWD" = "$alt_dir" ]] && cd "$OLDPWD" || cd "$alt_dir"
       fi
     ;;
@@ -508,13 +536,13 @@ main() {
     # Use alt-u to go to base directory, or go back
     # to previous directory if already in base directory
     # Use alt-s to load session
-    alt-u|ctrl-alt-g|alt-s)
-      if [[ "$command" = 'ctrl-alt-g' || ! -d "$base_dir" ]]; then
+    set-base-dir|enter-base-dir|load-session)
+      if [[ "$action" = "set-base-dir" || ! -d "$base_dir" ]]; then
         read -ep "Set base directory: " -i "$PWD" dir
         if [[ -d "$dir" ]]; then
           base_dir="${dir%/}"
           pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
-          [[ ! "$autoload_session" ]] && command='alt-s'
+          [[ ! "$autoload_session" ]] && action="load-session"
         else
           echo "Not a directory"
         fi
@@ -522,7 +550,7 @@ main() {
       if [[ -d "$base_dir" ]]; then
         [[ "$PWD" = "$base_dir" ]] && cd "$OLDPWD" || cd "$base_dir"
       fi
-      if [[ "$command" = 'alt-s' ]]; then
+      if [[ "$action" = 'load-session' ]]; then
         session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
         read -ep "Load session: " -i "$session" session
         if [[ -r "$session" ]]; then
@@ -533,7 +561,7 @@ main() {
     ;;
 
     # Use ctrl-alt-s to save session
-    ctrl-alt-s)
+    save-session)
       session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
       read -ep "Save session: " -i "$session" session
       if [[ -n "$session" ]]; then
@@ -542,7 +570,7 @@ main() {
     ;;
 
     # Use ctrl-alt-r to reset view/sort settings
-    ctrl-alt-r)
+    reset-view)
       shallow=1
       hidden=''
       no_ignore=''
@@ -552,16 +580,14 @@ main() {
     ;;
 
     # Use ctrl-alt-u to unbookmark all directories (except base)
-    ctrl-alt-u)
+    clear-bookmarks)
       dirs -c
       [[ "$base_dir" ]] && pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
     ;;
 
-    *)
-      # Use enter (parsed as empty string) or right arrow for default action
-      if [[ -z "$command" || "$command" = 'right' ]]; then
-        next_targets=("${targets[@]}")
-      fi
+    # Use enter or right arrow to edit file or enter directory
+    enter)
+      next_targets=("${targets[@]}")
     ;;
   esac
 
