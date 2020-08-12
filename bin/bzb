@@ -78,8 +78,7 @@ declareKeymap() {
 
 declareKeymap 'enter'                   'right'       "enter directory or edit file"
 declareKeymap 'back'                    'left'        "go to parent directory (not moving past base directory)"
-declareKeymap 'launch'                  'alt-enter'   "quick-launch targets using native client"
-declareKeymap 'launch2'                 'alt-q'       "quick-launch targets using native client"
+declareKeymap 'launch'                  'alt-q'       "quick-launch targets using native client"
 declareKeymap 'rename'                  'alt-r'       "rename targets in current directory"
 declareKeymap 'move'                    'alt-m'       "move targets to directory named at prompt"
 declareKeymap 'move-rename'             'ctrl-alt-m'  "move/rename targets into directory named at prompt"
@@ -352,8 +351,8 @@ main() {
       [[ $no_sort ]] && no_sort='' || no_sort=1
     ;;
 
-    # Use alt-enter or alt-q to quick-launch targets in their native client
-    launch|launch2)
+    # Use alt-q to quick-launch targets in their native client
+    launch)
       if [[ "$launch" ]]; then
         for t in "${targets[@]}"; do
           bash -c "$launch '$t'"
