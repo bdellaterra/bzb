@@ -79,9 +79,11 @@ declareKeymap() {
 declareKeymap 'enter'                   'right'       "enter directory or edit file"
 declareKeymap 'back'                    'left'        "go to parent directory (not moving past base directory)"
 declareKeymap 'launch'                  'alt-q'       "quick-launch targets using native client"
-declareKeymap 'rename'                  'alt-r'       "rename targets in current directory"
+declareKeymap 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
 declareKeymap 'move'                    'alt-m'       "move targets to directory named at prompt"
+declareKeymap 'rename'                  'alt-r'       "rename targets in current directory"
 declareKeymap 'move-rename'             'ctrl-alt-m'  "move/rename targets into directory named at prompt"
+declareKeymap 'move-rename2'            'ctrl-alt-r'  "move/rename targets into directory named at prompt"
 declareKeymap 'delete'                  'alt-x'       "delete targets"
 declareKeymap 'copy'                    'alt-c'       "copy targets to directory named at prompt"
 declareKeymap 'copy-rename'             'ctrl-alt-c'  "copy/rename targets into directory named at prompt"
@@ -101,23 +103,22 @@ declareKeymap 'select-bookmark'         'alt-up'      "select and enter bookmark
 declareKeymap 'select-bookmark2'        'alt-k'       "select and enter bookmarked directory"
 declareKeymap 'select-nested-bookmark'  'alt-down'    "select and enter bookmarked directory under current directory"
 declareKeymap 'select-nested-bookmark2' 'alt-j'       "select and enter bookmarked directory under current directory"
+declareKeymap 'set-alt-dir'             'alt-s'       "set alternate directory (default for copy/move prompts)"
+declareKeymap 'enter-alt-dir'           'alt-a'       "toggle between current and alternate directory"
 declareKeymap 'enter-base-dir'          'alt-u'       "go up to base directory"
+declareKeymap 'enter-prev-dir'          'alt-p'       "go to previous directory"
 declareKeymap 'prompt-dir'              'alt-g'       "go to directory named at prompt"
 declareKeymap 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt and go to it"
-declareKeymap 'enter-alt-dir'           'alt-a'       "toggle between current and alternate directory"
-declareKeymap 'set-alt-dir'             'alt-z'       "set alternate directory (default for copy/move prompts)"
-declareKeymap 'enter-prev-dir'          'alt-p'       "go to previous directory"
-declareKeymap 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
-declareKeymap 'load-session'            'alt-s'       "load session from file named at prompt"
-declareKeymap 'save-session'            'ctrl-alt-s'  "save session to file named at prompt"
-declareKeymap 'toggle-nested'           'alt-n'       "toggle listing nested vs. only top-level files"
+declareKeymap 'toggle-preview'          'ctrl-alt-p'  "toggle visibility of preview pane"
 declareKeymap 'toggle-ignored'          'alt-i'       "toggle visibility of ignored files (if supported)"
 declareKeymap 'toggle-hidden'           'alt-v'       "toggle visibility of hidden files"
-declareKeymap 'toggle-preview'          'ctrl-alt-p'  "toggle visibility of preview pane"
+declareKeymap 'toggle-nested'           'alt-n'       "toggle listing nested vs. only top-level files"
 declareKeymap 'toggle-sort-order'       'alt-o'       "toggle sort order ascending/descending"
-declareKeymap 'reset-view'              'ctrl-alt-o'  "reset normal view/sort settings"
-declareKeymap 'toggle-sort'             'ctrl-alt-u'  "toggle ordered/unordered results (sorting affects performance)"
-declareKeymap 'clear-bookmarks'         'ctrl-alt-n'  "reset to no bookmarks (except base directory)"
+declareKeymap 'toggle-sort'             'ctrl-alt-s'  "toggle sorted/unsorted results (affects performance)"
+declareKeymap 'reset-view'              'ctrl-alt-n'  "restore normal view settings (nested/hidden/ignored)"
+declareKeymap 'clear-bookmarks'         'ctrl-alt-u'  "un-bookmark all bookmarks (except base directory)"
+declareKeymap 'load-session'            'alt-y'       "load session from file named at prompt"
+declareKeymap 'save-session'            'ctrl-alt-y'  "save session to file named at prompt"
 
 # comma-separated list of custom mappings for fzf
 fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
@@ -366,8 +367,8 @@ main() {
       done
     ;;
 
-    # Use ctrl-alt-m to move and rename targets
-    move-rename)
+    # Use ctrl-alt-r to move and rename targets
+    move-rename|move-rename2)
       read -ep 'Move/Rename to Directory: ' -i "${alt_dir:-$base_dir}" dir
       if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
@@ -516,7 +517,7 @@ main() {
 
     # Use alt-a to go to alternate directory, or go back
     # to previous directory if already in alternate directory
-    # Use alt-z to set alternate directory
+    # Use alt-s to set alternate directory
     set-alt-dir|enter-alt-dir)
       if [[ "$action" = "set-alt-dir" || ! -d "$alt_dir" ]]; then
         read -ep "Set alternate directory: " -i "$PWD" dir
@@ -530,7 +531,7 @@ main() {
     # Use ctrl-alt-g to set/enter new base directory
     # Use alt-u to go to base directory, or go back
     # to previous directory if already in base directory
-    # Use alt-s to load session
+    # Use alt-y to load session
     set-base-dir|enter-base-dir|load-session)
       if [[ "$action" = "set-base-dir" || ! -d "$base_dir" ]]; then
         read -ep "Set base directory: " -i "$PWD" dir
@@ -555,7 +556,7 @@ main() {
       fi
     ;;
 
-    # Use ctrl-alt-s to save session
+    # Use ctrl-alt-y to save session
     save-session)
       session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
       read -ep "Save session: " -i "$session" session
@@ -564,7 +565,7 @@ main() {
       fi
     ;;
 
-    # Use ctrl-alt-r to reset view/sort settings
+    # Use ctrl-alt-n to restore normal view/sort settings
     reset-view)
       shallow=1
       hidden=''
