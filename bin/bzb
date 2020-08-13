@@ -91,10 +91,10 @@ declareKeymap 'create-edit-file'        'alt-e'       "create/edit file named at
 declareKeymap 'create-file'             'alt-f'       "create file without editing"
 declareKeymap 'create-dir'              'alt-d'       "create directory named at prompt"
 declareKeymap 'create-enter-dir'        'ctrl-alt-d'  "create/enter directory named at prompt"
-declareKeymap 'bookmark-target'         'alt-b'       "bookmark target directories"
-declareKeymap 'unbookmark-target'       'ctrl-alt-b'  "un-bookmark target directories"
-declareKeymap 'bookmark-current-dir'    'alt-w'       "bookmark current working directory"
-declareKeymap 'unbookmark-current-dir'  'ctrl-alt-w'  "un-bookmark current working directory"
+declareKeymap 'bookmark-targets'        'alt-b'       "bookmark target directories"
+declareKeymap 'bookmark-current-dir'    'ctrl-alt-b'  "bookmark current directory"
+declareKeymap 'unbookmark-dirs'         'alt-u'       "un-bookmark selected directories"
+declareKeymap 'unbookmark-current-dir'  'ctrl-alt-u'  "un-bookmark current directory"
 declareKeymap 'next-bookmark'           'alt-right'   "go to next bookmarked directory"
 declareKeymap 'next-bookmark2'          'alt-l'       "go to next bookmarked directory"
 declareKeymap 'prev-bookmark'           'alt-left'    "go to previous bookmarked directory"
@@ -104,9 +104,9 @@ declareKeymap 'select-bookmark2'        'alt-k'       "select and enter bookmark
 declareKeymap 'select-nested-bookmark'  'alt-down'    "select and enter bookmarked directory under current directory"
 declareKeymap 'select-nested-bookmark2' 'alt-j'       "select and enter bookmarked directory under current directory"
 declareKeymap 'set-alt-dir'             'alt-s'       "set alternate directory (default for copy/move prompts)"
-declareKeymap 'enter-alt-dir'           'alt-a'       "toggle between current and alternate directory"
-declareKeymap 'enter-base-dir'          'alt-u'       "go up to base directory"
-declareKeymap 'enter-prev-dir'          'alt-p'       "go to previous directory"
+declareKeymap 'enter-alt-dir'           'alt-a'       "switch between current and alternate directory"
+declareKeymap 'enter-base-dir'          'alt-z'       "switch between current and base directory"
+declareKeymap 'enter-prev-dir'          'alt-p'       "switch between current and previous directory"
 declareKeymap 'prompt-dir'              'alt-g'       "go to directory named at prompt"
 declareKeymap 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt and go to it"
 declareKeymap 'toggle-preview'          'ctrl-alt-p'  "toggle visibility of preview pane"
@@ -116,7 +116,6 @@ declareKeymap 'toggle-nested'           'alt-n'       "toggle listing nested vs.
 declareKeymap 'toggle-sort-order'       'alt-o'       "toggle sort order ascending/descending"
 declareKeymap 'toggle-sort'             'ctrl-alt-s'  "toggle sorted/unsorted results (affects performance)"
 declareKeymap 'reset-view'              'ctrl-alt-n'  "restore normal view settings (nested/hidden/ignored)"
-declareKeymap 'clear-bookmarks'         'ctrl-alt-u'  "un-bookmark all bookmarks (except base directory)"
 declareKeymap 'load-session'            'alt-y'       "load session from file named at prompt"
 declareKeymap 'save-session'            'ctrl-alt-y'  "save session to file named at prompt"
 
@@ -431,7 +430,7 @@ main() {
     ;;
 
     # Use alt-b to bookmark selected targets
-   bookmark-target)
+    bookmark-targets)
       dir="$PWD"
       for b in "${targets[@]}"; do
         if [[ -d "$dir/$b" ]]; then
@@ -442,27 +441,30 @@ main() {
       cd "$dir"
     ;;
 
-    # Use ctrl-alt-b to un-bookmark select targets
-    unbookmark-target)
-      for b in "${targets[@]}"; do
-        readarray -t dirs < <(dirs -p -l)
-        for i in "${!dirs[@]}"; do
-          if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$PWD/$b" ]]; then
-            popd +$i >/dev/null
-          fi
-        done
-      done
-    ;;
-
-    # Use alt-w to bookmark current working directory
+    # Use ctrl-alt-b to bookmark current directory
     bookmark-current-dir)
       [[ ! "$(dirs -l)" =~ " $PWD" ]] && pushd "$PWD" >/dev/null
     ;;
 
-    # Use ctrl-alt-w to un-bookmark current working directory
+    # Use alt-u to select bookmarks to delete
+    unbookmark-dirs)
+      current_dir="$PWD"
+      readarray -t dirs < <(dirs -p -l)
+      bookmarks=("$(printf '%s\n' "${dirs[@]}" | LC_ALL=C sort -u | fzf --multi)")
+      for b in ${bookmarks[@]}; do
+        for i in "${!dirs[@]}"; do
+          if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$b" ]]; then
+            popd -n +$i >/dev/null
+          fi
+        done
+      done
+      cd "$current_dir"
+    ;;
+
+    # Use ctrl-alt-u to un-bookmark current directory
     unbookmark-current-dir)
       for i in "${!dirs[@]}"; do
-        if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$PWD/$b" ]]; then
+        if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$PWD" ]]; then
           popd +$i >/dev/null
         fi
       done
@@ -471,25 +473,18 @@ main() {
 
     # Use alt-right or alt-l to go to next bookmarked directory
     next-bookmark|next-bookmark2)
-      for i in "${!dirs[@]}"; do
-        if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$PWD" ]]; then
-          popd +$i >/dev/null
-        fi
-      done
-      pushd +1 >/dev/null 
-      echo "DIRS: $(dirs)"
+      cd "$(dirs -l +1)" && pushd -n +1 >/dev/null
+      if [[ "$PWD" = "$OLDPWD" ]]; then
+        cd "$(dirs -l +1)" && pushd -n +1 >/dev/null
+      fi
     ;;
 
     # Use alt-left or alt-h to go to previous bookmarked directory
     prev-bookmark|prev-bookmark2)
-      # for i in "${!dirs[@]}"; do
-      #   if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$PWD" ]]; then
-      #     popd -n +$i >/dev/null
-      #   fi
-      # done
-      pushd -0 >/dev/null 
-      pushd -n "$PWD" >/dev/null
-      echo "DIRS: $(dirs)"
+      cd "$(dirs -l -0)" && pushd -n -0 >/dev/null
+      if [[ "$PWD" = "$OLDPWD" ]]; then
+        cd "$(dirs -l -0)" && pushd -n -0 >/dev/null
+      fi
     ;;
 
     # Use alt-up or alt-k to select bookmarked directory using fzf
@@ -573,12 +568,6 @@ main() {
       no_sort=''
       reverse=''
       no_preview=''
-    ;;
-
-    # Use ctrl-alt-u to unbookmark all directories (except base)
-    clear-bookmarks)
-      dirs -c
-      [[ "$base_dir" ]] && pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
     ;;
 
     # Use enter or right arrow to edit file or enter directory
