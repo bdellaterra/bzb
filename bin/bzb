@@ -108,16 +108,16 @@ declareKeymap 'enter-alt-dir'           'alt-a'       "toggle between current an
 declareKeymap 'set-alt-dir'             'alt-z'       "set alternate directory (default for copy/move prompts)"
 declareKeymap 'enter-prev-dir'          'alt-p'       "go to previous directory"
 declareKeymap 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
+declareKeymap 'load-session'            'alt-s'       "load session from file named at prompt"
+declareKeymap 'save-session'            'ctrl-alt-s'  "save session to file named at prompt"
 declareKeymap 'toggle-nested'           'alt-n'       "toggle listing nested vs. only top-level files"
 declareKeymap 'toggle-ignored'          'alt-i'       "toggle visibility of ignored files (if supported)"
 declareKeymap 'toggle-hidden'           'alt-v'       "toggle visibility of hidden files"
 declareKeymap 'toggle-preview'          'ctrl-alt-p'  "toggle visibility of preview pane"
-declareKeymap 'toggle-sort-order'       'alt-o'       "toggle between ascending/descending sort order"
-declareKeymap 'toggle-sort'             'ctrl-alt-o'  "toggle whether sorting is enabled/disabled (affects performance)"
-declareKeymap 'load-session'            'alt-s'       "load session from file named at prompt"
-declareKeymap 'save-session'            'ctrl-alt-s'  "save session to file named at prompt"
-declareKeymap 'reset-view'              'ctrl-alt-r'  "reset initial view/sort settings"
-declareKeymap 'clear-bookmarks'         'ctrl-alt-u'  "kill all bookmarks (except base directory)"
+declareKeymap 'toggle-sort-order'       'alt-o'       "toggle sort order ascending/descending"
+declareKeymap 'reset-view'              'ctrl-alt-o'  "reset normal view/sort settings"
+declareKeymap 'toggle-sort'             'ctrl-alt-u'  "toggle ordered/unordered results (sorting affects performance)"
+declareKeymap 'clear-bookmarks'         'ctrl-alt-n'  "reset to no bookmarks (except base directory)"
 
 # comma-separated list of custom mappings for fzf
 fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
@@ -290,10 +290,6 @@ main() {
   [[ -z "$command" ]] && command='right'
 
   action="${key_actions[$command]}"
-
-  echo "command: $command"
-  echo "action: $action"
-  echo "targets: ${targets[@]}"
 
   next_targets=()
   case $action in
