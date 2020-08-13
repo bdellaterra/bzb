@@ -260,6 +260,7 @@ main() {
       edit="$edit '$f'"
     done
     bash -c "$edit"
+    tput rmcup # Leave alternate screen manually due to fzf '--no-clear' option
     [[ ! $persist ]] && exit 0
     export BZB_QUERY="$query"
   fi
@@ -278,7 +279,7 @@ main() {
     fzf_input=$(bash -c "echo \"$find $sort_pipe\"")
     fzf_prompt="${PWD#$base_dir}>"
   fi
-  fzf_options="--print-query --multi --layout='reverse' --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
+  fzf_options="--no-clear --print-query --multi --layout='reverse' --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
 
   # CYCLE INTO FZF
   { read query; read command; readarray -t targets; } < <(bash -c "$fzf_input | sed 's:^\./::' | fzf $fzf_options")
@@ -296,7 +297,7 @@ main() {
     # Use alt-/ to enter grep mode using search pattern specified at prompt
     # Use again to update search pattern. Enter empty pattern to cancel
     grep)
-      read -ep "Grep for Pattern: " -i "$grep_query" grep_query
+      clear && read -ep "Grep for Pattern: " -i "$grep_query" grep_query
       [[ $grep_query ]] && grep_mode=1 || grep_mode=''
     ;;
 
@@ -360,7 +361,7 @@ main() {
     rename)
       for t in "${targets[@]}"; do
         if [[ -r "$t" ]]; then
-          read -ep 'Move/Rename File: ' -i "mv \"$t\" \"$t\"" cmd
+          clear && read -ep 'Move/Rename File: ' -i "mv \"$t\" \"$t\"" cmd
           [[ -n "$cmd" ]] && bash -c "$cmd"
         fi
       done
@@ -368,7 +369,7 @@ main() {
 
     # Use ctrl-alt-r to move and rename targets
     move-rename|move-rename2)
-      read -ep 'Move/Rename to Directory: ' -i "${alt_dir:-$base_dir}" dir
+      clear && read -ep 'Move/Rename to Directory: ' -i "${alt_dir:-$base_dir}" dir
       if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
           if [[ -r "$t" ]]; then
@@ -381,28 +382,28 @@ main() {
 
     # Use alt-m to move targets
     move)
-      read -ep 'Move to Directory: ' -i "${alt_dir:-$base_dir}" dir
+      clear && read -ep 'Move to Directory: ' -i "${alt_dir:-$base_dir}" dir
       [[ -n "$dir" ]] && mv -i "${targets[@]}" "$dir"
     ;;
 
     # Use alt-x to delete targets
     delete)
-      rm -rI "${targets[@]}"
+      clear && rm -rI "${targets[@]}"
     ;;
 
     # Use alt-c to copy targets
     copy)
-      read -ep 'Copy to Directory: ' -i "${alt_dir:-$base_dir}" dir
+      clear && read -ep 'Copy to Directory: ' -i "${alt_dir:-$base_dir}" dir
       [[ -n "$dir" ]] && cp -ir "${targets[@]}" "$dir"
     ;;
 
     # Use ctrl-alt-c to copy and rename targets
     copy-rename)
-      read -ep 'Copy/Rename to Directory: ' -i "${alt_dir:-$base_dir}" dir
+      clear && read -ep 'Copy/Rename to Directory: ' -i "${alt_dir:-$base_dir}" dir
       if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
           if [[ -r "$t" ]]; then
-            read -ep 'Copy/Rename File: ' -i "cp -ir '$PWD/$t' '$dir/$t'" cmd
+            clear && read -ep 'Copy/Rename File: ' -i "cp -ir '$PWD/$t' '$dir/$t'" cmd
             [[ -n "$cmd" ]] && bash -c "$cmd"
           fi
         done
@@ -412,7 +413,7 @@ main() {
     # Use alt-d to create directory named at prompt
     # Use ctrl-alt-d to create directory and enter it
     create-dir|create-enter-dir)
-      read -p "Create directory: " target
+      clear && read -p "Create directory: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$target"
         [[ "$command" = "${action_keys[create-enter-dir]}" ]] && next_targets=("$target")
@@ -422,7 +423,7 @@ main() {
     # Use alt-f to create file named at prompt
     # Use alt-e to create file and edit it immediately
     create-file|create-edit-file)
-      read -p "Create file: " target
+      clear && read -p "Create file: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$(dirname "$target")" && touch "$target"
         [[ "$command" = "${action_keys[create-edit-file]}" ]] && next_targets=("$target")
@@ -506,7 +507,7 @@ main() {
 
     # Use alt-g to go to directory named at prompt
     prompt-dir)
-      read -ep "Go to directory: " -i "$PWD" dir
+      clear && read -ep "Go to directory: " -i "$PWD" dir
       [[ -d "$dir" ]] && cd "$dir" || echo "Not a directory"
     ;;
 
@@ -515,7 +516,7 @@ main() {
     # Use alt-s to set alternate directory
     set-alt-dir|enter-alt-dir)
       if [[ "$action" = "set-alt-dir" || ! -d "$alt_dir" ]]; then
-        read -ep "Set alternate directory: " -i "$PWD" dir
+        clear && read -ep "Set alternate directory: " -i "$PWD" dir
         [[ -d "$dir" ]] && alt_dir="${dir%/}" || echo "Not a directory"
       fi
       if [[ "$action" = "enter-alt-dir" && -d "$alt_dir" ]]; then
@@ -529,7 +530,7 @@ main() {
     # Use alt-y to load session
     set-base-dir|enter-base-dir|load-session)
       if [[ "$action" = "set-base-dir" || ! -d "$base_dir" ]]; then
-        read -ep "Set base directory: " -i "$PWD" dir
+        clear && read -ep "Set base directory: " -i "$PWD" dir
         if [[ -d "$dir" ]]; then
           base_dir="${dir%/}"
           pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
@@ -543,7 +544,7 @@ main() {
       fi
       if [[ "$action" = 'load-session' ]]; then
         session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
-        read -ep "Load session: " -i "$session" session
+        clear && read -ep "Load session: " -i "$session" session
         if [[ -r "$session" ]]; then
           . -- "$session"
           load_session
@@ -554,7 +555,7 @@ main() {
     # Use ctrl-alt-y to save session
     save-session)
       session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
-      read -ep "Save session: " -i "$session" session
+      clear && read -ep "Save session: " -i "$session" session
       if [[ -n "$session" ]]; then
         save_session
       fi
