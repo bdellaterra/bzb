@@ -93,8 +93,8 @@ declareKeymap 'create-dir'              'alt-d'       "create directory named at
 declareKeymap 'create-enter-dir'        'ctrl-alt-d'  "create/enter directory named at prompt"
 declareKeymap 'bookmark-targets'        'alt-b'       "bookmark target directories"
 declareKeymap 'bookmark-current-dir'    'ctrl-alt-b'  "bookmark current directory"
-declareKeymap 'unbookmark-dirs'         'alt-u'       "un-bookmark selected directories"
-declareKeymap 'unbookmark-current-dir'  'ctrl-alt-u'  "un-bookmark current directory"
+declareKeymap 'unbookmark-dirs'         'alt-u'       "unbookmark selected directories"
+declareKeymap 'unbookmark-current-dir'  'ctrl-alt-u'  "unbookmark current directory"
 declareKeymap 'next-bookmark'           'alt-right'   "go to next bookmarked directory"
 declareKeymap 'next-bookmark2'          'alt-l'       "go to next bookmarked directory"
 declareKeymap 'prev-bookmark'           'alt-left'    "go to previous bookmarked directory"
@@ -462,7 +462,7 @@ main() {
       cd "$current_dir"
     ;;
 
-    # Use ctrl-alt-u to un-bookmark current directory
+    # Use ctrl-alt-u to unbookmark current directory
     unbookmark-current-dir)
       for i in "${!dirs[@]}"; do
         if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$PWD" ]]; then
