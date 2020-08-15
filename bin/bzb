@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+function finish() {
+  tput rmcup # Leave alternate screen manually due to fzf '--no-clear' option
+}
+trap finish EXIT
+
 # Find Comands: Prefer 'fd' over 'find' so ignored files are not listed
 if command -v fd &>/dev/null; then
   recursive_find="fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
@@ -260,7 +265,6 @@ main() {
       edit="$edit '$f'"
     done
     bash -c "$edit"
-    tput rmcup # Leave alternate screen manually due to fzf '--no-clear' option
     [[ ! $persist ]] && exit 0
     export BZB_QUERY="$query"
   fi
