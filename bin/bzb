@@ -19,8 +19,21 @@ fi
 sort="LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
 
 # Preview Commands:
-file_preview="cat '{}'"
+preview_bytes='8192'
 directory_preview="ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh '{}'"
+text_preview="head -c "$preview_bytes" '{}'"
+if command -v file &>/dev/null; then
+  binary_preview="file -L {}"
+else
+  binary_preview="stat -L {}"
+fi
+
+BZB_IS_BINARY() {
+  head -c 8192 "$1" | grep '.' | grep -i binary &>/dev/null
+}
+
+# find_preview="[[ -d {} ]] && $directory_preview || is_binary {} && $binary_preview || $file_preview"
+file_preview="$(declare -pf BZB_IS_BINARY); BZB_IS_BINARY {} && $binary_preview || $text_preview"
 find_preview="[[ -d {} ]] && $directory_preview || $file_preview"
 
 # Grep Comands: Prefer 'rg' over 'grep' so ignored files are not listed
