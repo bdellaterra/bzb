@@ -56,6 +56,9 @@ launch=''
 hasCmd xdg-open && launch='xdg-open'
 hasCmd open && launch='open'
 
+# Prefer -I option to -i for removing files, if available
+rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && rm_interactive='rm -ri' || rm_interactive='rm -rI'
+
 # Directory where data for loading/restoring sessions is saved (optional)
 BZB_DIR="$HOME/.bzb"
 
@@ -88,9 +91,6 @@ preview_window='right:62%:wrap'
 # Save/Load sessions manually
 autosave_session=''
 autoload_session=''
-
-# Prefer -I option to -i for removing files, if available
-rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && rm_interactive='rm -ri' || rm_interactive='rm -rI'
 
 declare -A key_definitions key_actions action_keys
 declareKeymap() {
