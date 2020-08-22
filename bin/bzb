@@ -3,9 +3,13 @@ set -e
 
 function finish() {
   # Leave alternate screen manually on exit due to fzf '--no-clear' option
-  tput rmcup
+  [[ $no_clear ]] && tput rmcup
 }
 trap finish EXIT
+
+if command -v tput &>/dev/null; then
+  no_clear=1
+fi
 
 # Find Comands: Prefer 'fd' over 'find' so ignored files are not listed
 if command -v fd &>/dev/null; then
@@ -296,7 +300,7 @@ main() {
     fzf_input=$(bash -c "echo \"$find $sort_pipe\"")
     fzf_prompt="${PWD#$base_dir}>"
   fi
-  fzf_options="--no-clear --print-query --multi --layout='reverse' --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
+  fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
 
   # CYCLE INTO FZF
   { read query; read command; readarray -t targets; } < <(bash -c "$fzf_input | sed 's:^\./::' | fzf $fzf_options")
