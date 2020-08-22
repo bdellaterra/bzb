@@ -11,7 +11,7 @@ function hasCmd() {
   command -v "$1" &>/dev/null
 }
 
-# hasCmd tput && no_clear=1
+hasCmd tput && no_clear=1
 
 # OPTIONS
 
@@ -41,7 +41,6 @@ BZB_IS_BINARY() {
   head -c 8192 "$1" | grep '.' | grep -i binary &>/dev/null
 }
 
-# find_preview="[[ -d {} ]] && $directory_preview || is_binary {} && $binary_preview || $file_preview"
 file_preview="$(declare -pf BZB_IS_BINARY); BZB_IS_BINARY {} && $binary_preview || $text_preview"
 find_preview="[[ -d {} ]] && $directory_preview || $file_preview"
 
@@ -94,6 +93,9 @@ preview_window='right:62%:wrap'
 # Save/Load sessions manually
 autosave_session=''
 autoload_session=''
+
+# Prefer -I option to -i for removing files, if available
+rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && rm_interactive='rm -ri' || rm_interactive='rm -rI'
 
 declare -A key_definitions key_actions action_keys
 declareKeymap() {
@@ -413,7 +415,11 @@ main() {
 
     # Use alt-x to delete targets
     delete)
-      clear && rm -rI "${targets[@]}"
+      CMD="$rm_interactive"
+      for t in "${targets[@]}"; do
+        CMD="$CMD '$t'"
+      done
+      clear && bash -c "$CMD"
     ;;
 
     # Use alt-c to copy targets
