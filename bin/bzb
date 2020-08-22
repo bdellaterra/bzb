@@ -140,15 +140,6 @@ declareKeymap 'save-session'            'ctrl-alt-y'  "save session to file name
 # comma-separated list of custom mappings for fzf
 fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
 
-key_usage=$(cat <<KEY_USAGE
-KEYMAP:DESCRIPTION:ACTION_NAME
-escape:exit file browser:
-ctrl-c:exit file browser:
-enter:enter directory or edit file:
-$(for k in "${keys[@]}"; do echo "$k:${key_definitions[$k]}:${key_actions[$k]}"; done)
-KEY_USAGE
-)
-
 usage() {
 cat <<USAGE
 usage: $(basename "${BASH_SOURCE[0]}") [options] [target file or directory]
@@ -157,7 +148,15 @@ Browse files using fzf. If no target specified start in the current directory.
 
 Key mappings:
 
-$(echo "$key_usage" | column -t -s ':')
+$(column -t -s ':' <(
+cat <<KEY_USAGE
+KEYMAP:DESCRIPTION:ACTION_NAME
+escape:exit file browser:
+ctrl-c:exit file browser:
+enter:enter directory or edit file:
+$(for k in "${keys[@]}"; do echo "$k:${key_definitions[$k]}:${key_actions[$k]}"; done)
+KEY_USAGE
+))
 
 Options:
 
