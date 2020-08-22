@@ -7,12 +7,16 @@ function finish() {
 }
 trap finish EXIT
 
-if command -v tput &>/dev/null; then
-  no_clear=1
-fi
+function hasCmd() {
+  command -v "$1" &>/dev/null
+}
+
+# hasCmd tput && no_clear=1
+
+# OPTIONS
 
 # Find Comands: Prefer 'fd' over 'find' so ignored files are not listed
-if command -v fd &>/dev/null; then
+if hasCmd fd; then
   recursive_find="fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
   shallow_find="fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
 else
@@ -27,7 +31,7 @@ sort="LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
 preview_bytes='8192'
 directory_preview="ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh '{}'"
 text_preview="head -c "$preview_bytes" '{}'"
-if command -v file &>/dev/null; then
+if hasCmd file; then
   binary_preview="file -L {}"
 else
   binary_preview="stat -L {}"
@@ -42,7 +46,7 @@ file_preview="$(declare -pf BZB_IS_BINARY); BZB_IS_BINARY {} && $binary_preview 
 find_preview="[[ -d {} ]] && $directory_preview || $file_preview"
 
 # Grep Comands: Prefer 'rg' over 'grep' so ignored files are not listed
-if command -v rg &>/dev/null; then
+if hasCmd rg; then
   recursive_grep="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
   shallow_grep="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --max-depth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
   grep_preview="rg \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
@@ -55,8 +59,8 @@ fi
 
 # Quick-launch Command: Used to open targets in their native client
 launch=''
-command -v xdg-open &>/dev/null && launch='xdg-open'
-command -v open &>/dev/null && launch='open'
+hasCmd xdg-open && launch='xdg-open'
+hasCmd open && launch='open'
 
 # Directory where data for loading/restoring sessions is saved (optional)
 BZB_DIR="$HOME/.bzb"
