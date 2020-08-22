@@ -149,12 +149,12 @@ Browse files using fzf. If no target specified start in the current directory.
 
 Key mappings:
 
-$(column -t -s ':' <(
+$(awk -F ':' '{ printf("%-12s %-66s %s\n", $1, $2, $3) }' <(
 cat <<KEY_USAGE
 KEYMAP:DESCRIPTION:ACTION_NAME
-escape:exit file browser:
-ctrl-c:exit file browser:
-enter:enter directory or edit file:
+escape:exit file browser
+ctrl-c:exit file browser
+enter:enter directory or edit file
 $(for k in "${keys[@]}"; do echo "$k:${key_definitions[$k]}:${key_actions[$k]}"; done)
 KEY_USAGE
 ))
