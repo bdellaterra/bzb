@@ -2,7 +2,8 @@
 set -e
 
 function finish() {
-  tput rmcup # Leave alternate screen manually due to fzf '--no-clear' option
+  # Leave alternate screen manually on exit due to fzf '--no-clear' option
+  tput rmcup
 }
 trap finish EXIT
 
