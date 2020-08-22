@@ -28,19 +28,17 @@ fi
 sort="LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
 
 # Preview Commands:
-directory_preview="ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh '{}'"
-text_preview="cat '{}'"
+directory_preview="ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh {}"
+text_preview="cat {}"
+is_binary='test `head -qc 8192 {} 2>/dev/null | grep -o "[^[:print:]]" 2>/dev/null | wc -c` -gt 16'
 if hasCmd file; then
   binary_preview="file -L {}"
+  is_binary='[[ ! "$(file -L {})" =~ 'text' ]] && '"$is_binary"
 else
   binary_preview="stat -L {}"
 fi
 
-BZB_IS_BINARY() {
-  head -c 8192 "$1" | grep '.' | grep -i binary &>/dev/null
-}
-
-file_preview="$(declare -pf BZB_IS_BINARY); BZB_IS_BINARY {} && $binary_preview || $text_preview"
+file_preview="( $is_binary && $binary_preview || $text_preview )"
 find_preview="[[ -d {} ]] && $directory_preview || $file_preview"
 
 # Grep Comands: Prefer 'rg' over 'grep' so ignored files are not listed
