@@ -48,9 +48,9 @@ if hasCmd rg; then
   grep_preview="rg \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
   # TODO: Support ignoring hidden files
-  recursive_grep="grep --recursive --files-with-matches --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' ."
-  shallow_grep="grep --files-with-matches --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
-  grep_preview="grep \${BZB_COLOR:+--color=always} --ignore-case --no-messages --context=1 '\${BZB_GREP_QUERY}' {}"
+  recursive_grep="grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' ."
+  shallow_grep="grep -l -i -s -C 1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
+  grep_preview="grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}' {}"
 fi
 
 # Quick-launch Command: Used to open targets in their native client
