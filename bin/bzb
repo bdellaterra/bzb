@@ -28,9 +28,8 @@ fi
 sort="LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
 
 # Preview Commands:
-preview_bytes='8192'
 directory_preview="ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh '{}'"
-text_preview="head -c "$preview_bytes" '{}'"
+text_preview="cat '{}'"
 if hasCmd file; then
   binary_preview="file -L {}"
 else
