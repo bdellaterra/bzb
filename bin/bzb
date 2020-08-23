@@ -81,7 +81,7 @@ no_ignore=''
 grep_mode=''
 
 # Sort ascending
-no_sort=''
+sorted=1
 reverse=''
 
 # Display preview pane
@@ -204,7 +204,7 @@ for arg in "$@"; do
     -H|--hidden) hidden=1; shift ;;
     -I|--no-ignore) no_ignore=1; shift ;;
     -P|--no-preview) no_preview=1; shift ;;
-    -S|--no-sort) no_preview=1; shift ;;
+    -S|--no-sort) sorted=''; shift ;;
     -R|--reverse-sort) reverse=1; shift ;;
     -s|--auto-save-session) autosave_session=1; shift ;;
     -l|--auto-load-session) autoload_session=1; shift ;;
@@ -242,7 +242,7 @@ function save_session() {
     declare -p shallow >> "$session"
     declare -p hidden >> "$session"
     declare -p no_ignore >> "$session"
-    declare -p no_sort >> "$session"
+    declare -p sorted >> "$session"
     declare -p reverse >> "$session"
     declare -p no_preview >> "$session"
   fi
@@ -298,7 +298,7 @@ main() {
   else
     [[ $shallow ]] && find="$shallow_find" || find="$recursive_find"
     preview_opts="--preview='$find_preview' --preview-window='$preview_window'"
-    [[ $no_sort ]] && fzf_input="$find" || fzf_input="$find | $sort"
+    fzf_input="$find\${sorted:+ | $sort}"
     fzf_prompt="${PWD#$base_dir}>"
   fi
   [[ $no_preview ]] && preview_opts=''
@@ -374,7 +374,7 @@ main() {
 
     # Use ctrl-alt-o to enable/disable sorting
     toggle-sort)
-      [[ $no_sort ]] && no_sort='' || no_sort=1
+      [[ $sorted ]] && sorted='' || sorted=1
     ;;
 
     # Use alt-q to quick-launch targets in their native client
@@ -599,7 +599,7 @@ main() {
       shallow=1
       hidden=''
       no_ignore=''
-      no_sort=''
+      sorted=1
       reverse=''
       no_preview=''
     ;;
