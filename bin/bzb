@@ -267,7 +267,7 @@ fi
 
 main() {
   # Export variables for use in subshells
-  export BZB_QUERY=''
+  export BZB_QUERY="$query"
   export BZB_COLOR="$color"
   export BZB_HIDDEN="$hidden"
   export BZB_NO_IGNORE="$no_ignore"
@@ -277,6 +277,8 @@ main() {
   # Edit file or enter directory
   if [[ $# -eq 1 && -d "$1" ]]; then
     cd "$1"
+    # clear query after changing directory
+    export BZB_QUERY=''
   elif [[ $# -ge 1 ]]; then
     edit="${EDITOR:vi}"
     for f in "$@"; do
@@ -284,27 +286,30 @@ main() {
     done
     bash -c "$edit"
     [[ ! $persist ]] && exit 0
-    export BZB_QUERY="$query"
   fi
 
   # Setup list/sort/preview commands
-  [[ $no_sort ]] && sort_pipe='' || sort_pipe=$(bash -c "echo \"| $sort\"")
   if [[ $grep_mode ]]; then
     export BZB_GREP_QUERY="$grep_query"
-    [[ $shallow ]] && grep=$(echo "$shallow_grep") || grep=$(echo "$recursive_grep")
-    [[ $no_preview ]] && preview_opts='' || preview_opts="--preview='$(bash -c echo\ "$grep_preview")' --preview-window='$preview_window'"
-    fzf_input=$(bash -c "echo \"$grep\"")
+    [[ $shallow ]] && grep="$shallow_grep" || grep="$recursive_grep"
+    [[ $no_preview ]] && preview_opts='' || preview_opts="--preview='$grep_preview' --preview-window='$preview_window'"
+    fzf_input="$grep"
     fzf_prompt="/$grep_query/"
   else
-    [[ $shallow ]] && find=$(echo "$shallow_find") || find=$(echo "$recursive_find")
-    [[ $no_preview ]] && preview_opts='' || preview_opts="--preview='$(echo "$find_preview")' --preview-window='$preview_window'"
-    fzf_input=$(bash -c "echo \"$find $sort_pipe\"")
+    [[ $shallow ]] && find="$shallow_find" || find="$recursive_find"
+    [[ $no_preview ]] && preview_opts='' || preview_opts="--preview='$find_preview' --preview-window='$preview_window'"
+    fzf_input="$find"
+    [[ ! $no_sort ]] && fzf_input+=" | $sort"
     fzf_prompt="${PWD#$base_dir}>"
   fi
+
+  # Clear dots from paths
+  fzf_input+=" | sed 's:^\./::'"
+
   fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
 
   # CYCLE INTO FZF
-  { read query; read command; readarray -t targets; } < <(bash -c "$fzf_input | sed 's:^\./::' | fzf $fzf_options")
+  { read query; read command; readarray -t targets; } < <(bash -c "$fzf_input | fzf $fzf_options")
 
   # Parse empty command and empty target as 'exit' (fzf-native 'escape' or 'ctrl-c' mapping)
   [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && exit 0
