@@ -85,7 +85,7 @@ sorted=1
 reverse=''
 
 # Display preview pane
-no_preview=''
+preview=1
 preview_window='right:62%:wrap'
 
 # Save/Load sessions manually
@@ -203,7 +203,7 @@ for arg in "$@"; do
     -r|--recursive) shallow=''; shift ;;
     -H|--hidden) hidden=1; shift ;;
     -I|--no-ignore) no_ignore=1; shift ;;
-    -P|--no-preview) no_preview=1; shift ;;
+    -P|--no-preview) preview=''; shift ;;
     -S|--no-sort) sorted=''; shift ;;
     -R|--reverse-sort) reverse=1; shift ;;
     -s|--auto-save-session) autosave_session=1; shift ;;
@@ -244,7 +244,7 @@ function save_session() {
     declare -p no_ignore >> "$session"
     declare -p sorted >> "$session"
     declare -p reverse >> "$session"
-    declare -p no_preview >> "$session"
+    declare -p preview >> "$session"
   fi
 }
 
@@ -271,7 +271,6 @@ main() {
   export BZB_COLOR="$color"
   export BZB_HIDDEN="$hidden"
   export BZB_NO_IGNORE="$no_ignore"
-  export BZB_NO_PREVIEW="$no_preview"
   export BZB_REVERSE="$reverse"
 
   # Edit file or enter directory
@@ -301,7 +300,7 @@ main() {
     fzf_input="$find\${sorted:+ | $sort}"
     fzf_prompt="${PWD#$base_dir}>"
   fi
-  [[ $no_preview ]] && preview_opts=''
+  [[ ! $preview ]] && preview_opts=''
 
   # Clear dots from paths
   fzf_input+=" | sed 's:^\./::'"
@@ -364,7 +363,7 @@ main() {
 
     # Use ctrl-alt-p to toggle visibility of preview pane
     toggle-preview)
-      [[ $no_preview ]] && no_preview='' || no_preview=1
+      [[ $preview ]] && preview='' || preview=1
     ;;
 
     # Use alt-o to toggle between normal and reverse sort order
@@ -601,7 +600,7 @@ main() {
       no_ignore=''
       sorted=1
       reverse=''
-      no_preview=''
+      preview=1
     ;;
 
     # Use enter or right arrow to edit file or enter directory
