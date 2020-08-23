@@ -290,26 +290,28 @@ main() {
 
   # Setup list/sort/preview commands
   if [[ $grep_mode ]]; then
-    export BZB_GREP_QUERY="$grep_query"
     [[ $shallow ]] && grep="$shallow_grep" || grep="$recursive_grep"
-    [[ $no_preview ]] && preview_opts='' || preview_opts="--preview='$grep_preview' --preview-window='$preview_window'"
+    preview_opts="--preview='$grep_preview' --preview-window='$preview_window'"
     fzf_input="$grep"
     fzf_prompt="/$grep_query/"
+    export BZB_GREP_QUERY="$grep_query"
   else
     [[ $shallow ]] && find="$shallow_find" || find="$recursive_find"
-    [[ $no_preview ]] && preview_opts='' || preview_opts="--preview='$find_preview' --preview-window='$preview_window'"
-    fzf_input="$find"
-    [[ ! $no_sort ]] && fzf_input+=" | $sort"
+    preview_opts="--preview='$find_preview' --preview-window='$preview_window'"
+    [[ $no_sort ]] && fzf_input="$find" || fzf_input="$find | $sort"
     fzf_prompt="${PWD#$base_dir}>"
   fi
+  [[ $no_preview ]] && preview_opts=''
 
   # Clear dots from paths
   fzf_input+=" | sed 's:^\./::'"
 
   fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
 
+  fzf_cmd="$fzf_input | fzf $fzf_options"
+
   # CYCLE INTO FZF
-  { read query; read command; readarray -t targets; } < <(bash -c "$fzf_input | fzf $fzf_options")
+  { read query; read command; readarray -t targets; } < <(bash -c "$fzf_cmd")
 
   # Parse empty command and empty target as 'exit' (fzf-native 'escape' or 'ctrl-c' mapping)
   [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && exit 0
