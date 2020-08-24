@@ -15,39 +15,39 @@ hasCmd tput && no_clear=1
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
 if hasCmd fd; then
-  recursive_find="fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
-  shallow_find="fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
+  find_recursive="fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
+  find_shallow="fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
 else
-  recursive_find="find . -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
-  shallow_find="find . -maxdepth 1 -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
+  find_recursive="find . -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
+  find_shallow="find . -maxdepth 1 -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
 fi
 
 # Sort Command:
 sort="LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
 
 # Preview Commands:
-directory_preview="ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh {}"
-text_preview="cat {}"
+preview_directory="ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh {}"
+preview_text="cat {}"
 is_binary='test `head -qc 8192 {} 2>/dev/null | grep -o "[^[:print:]]" 2>/dev/null | wc -c` -gt 16'
 if hasCmd file; then
-  binary_preview="file -L {}"
+  preview_binary="file -L {}"
   is_binary='[[ ! "$(file -L {})" =~ 'text' ]] && '"$is_binary"
 else
-  binary_preview="stat -L {}"
+  preview_binary="stat -L {}"
 fi
 
-file_preview="( $is_binary && $binary_preview || $text_preview )"
-find_preview="[[ -d {} ]] && $directory_preview || $file_preview"
+preview_file="( $is_binary && $preview_binary || $preview_text )"
+find_preview="[[ -d {} ]] && $preview_directory || $preview_file"
 
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed
 if hasCmd rg; then
-  recursive_grep="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
-  shallow_grep="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --max-depth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
+  grep_recursive="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
+  grep_shallow="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --max-depth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
   grep_preview="rg \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
   # TODO: Support ignoring hidden files
-  recursive_grep="grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' ."
-  shallow_grep="grep -l -i -s -C 1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
+  grep_recursive="grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' ."
+  grep_shallow="grep -l -i -s -C 1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
   grep_preview="grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}' {}"
 fi
 
@@ -209,12 +209,12 @@ for arg in "$@"; do
     -s|--auto-save-session) autosave_session=1; shift ;;
     -l|--auto-load-session) autoload_session=1; shift ;;
     -so=*|--sort=*) sort="${arg#*=}"; shift ;;
-    -sf=*|--shallow-find=*) shallow_find="${arg#*=}"; shift ;;
-    -rf=*|--recursive-find=*) recursive_find="${arg#*=}"; shift ;;
-    -fp=*|--file-preview=*) file_preview="${arg#*=}"; shift ;;
-    -dp=*|--directory-preview=*) directory_preview="${arg#*=}"; shift ;;
-    -sg=*|--shallow-grep=*) shallow_grep="${arg#*=}"; shift ;;
-    -rg=*|--recursive-grep=*) recursive_grep="${arg#*=}"; shift ;;
+    -sf=*|--shallow-find=*) find_shallow="${arg#*=}"; shift ;;
+    -rf=*|--recursive-find=*) find_recursive="${arg#*=}"; shift ;;
+    -fp=*|--file-preview=*) preview_file="${arg#*=}"; shift ;;
+    -dp=*|--directory-preview=*) preview_directory="${arg#*=}"; shift ;;
+    -sg=*|--shallow-grep=*) grep_shallow="${arg#*=}"; shift ;;
+    -rg=*|--recursive-grep=*) grep_recursive="${arg#*=}"; shift ;;
     -gp=*|--grep-preview=*) grep_preview="${arg#*=}"; shift ;;
     -ql=*|--quick-launch=*) launch="${arg#*=}"; shift ;;
     -bd=*|--base-dir=*|--base_directory=*) base_dir="${arg#*=}"; shift ;;
@@ -289,13 +289,13 @@ main() {
 
   # Setup list/sort/preview commands
   if [[ $grep_mode ]]; then
-    [[ $shallow ]] && grep="$shallow_grep" || grep="$recursive_grep"
+    [[ $shallow ]] && grep="$grep_shallow" || grep="$grep_recursive"
     preview_opts="--preview='$grep_preview' --preview-window='$preview_window'"
     fzf_input="$grep"
     fzf_prompt="/$grep_query/"
     export BZB_GREP_QUERY="$grep_query"
   else
-    [[ $shallow ]] && find="$shallow_find" || find="$recursive_find"
+    [[ $shallow ]] && find="$find_shallow" || find="$find_recursive"
     preview_opts="--preview='$find_preview' --preview-window='$preview_window'"
     fzf_input="$find\${sorted:+ | $sort}"
     fzf_prompt="${PWD#$base_dir}>"
