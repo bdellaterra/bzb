@@ -231,9 +231,11 @@ for arg in "$@"; do
   esac
 done
 
+initial_target="$1"
+
 # Derive base directory from target, or use current directory if none given
 if [[ -z "$base_dir" ]]; then
-  [[ -d "$1" ]] && base_dir="$1" || base_dir="$(dirname "${1:-$PWD/.}")"
+  [[ -d "$initial_target" ]] && base_dir="$initial_target" || base_dir="$(dirname "${initial_target:-$PWD/.}")"
 fi
 pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
 
@@ -645,4 +647,4 @@ main() {
 }
 
 # Default initial target is current directory
-main "$base_dir"
+main "${initial_target:-$base_dir}"
