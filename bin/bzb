@@ -62,6 +62,10 @@ rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && rm_intera
 # Directory where data for loading/restoring sessions is saved (optional)
 BZB_DIR="$HOME/.bzb"
 
+# Don't exit logging selection to file instead of launching editor
+# For integrating bzb with editor. True implies 'persist' option below is false
+no_edit=''
+
 # Stay in browser after editing files
 persist=1
 
@@ -175,6 +179,7 @@ Options:
 --no-ignore,-I                     Show ignored files/direcories at start
 --no-preview,-P                    Disable preview pane that shows file/directory contents
 --no-sort,-S                       Disable sorting of files/directories
+--no-edit,-E                       Disable launch of editor and just log selection to file
 --reverse-sort,-R                  Reverse the normal sort order
 --auto-save-session,-s             Save bookmarks and view/sort settings continuously
 --auto-load-session,-l             Load bookmarks and view/sort settings at start
@@ -205,6 +210,7 @@ for arg in "$@"; do
     -I|--no-ignore) no_ignore=1; shift ;;
     -P|--no-preview) preview=''; shift ;;
     -S|--no-sort) sorted=''; shift ;;
+    -E|--no-edit) no_edit=1; persist=''; shift ;;
     -R|--reverse-sort) reverse=1; shift ;;
     -s|--auto-save-session) autosave_session=1; shift ;;
     -l|--auto-load-session) autoload_session=1; shift ;;
@@ -230,6 +236,18 @@ if [[ -z "$base_dir" ]]; then
   [[ -d "$1" ]] && base_dir="$1" || base_dir="$(dirname "${1:-$PWD/.}")"
 fi
 pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
+
+function save_selection() {
+  mkdir -p "$(dirname $selection)" && touch "$selection"
+  if [[ -w "$selection" ]]; then
+    > "$selection"
+    for t in "${targets[@]}"; do
+      if [[ -r "$t" ]]; then
+        echo "$PWD/$t" >> "$selection"
+      fi
+    done
+  fi
+}
 
 function save_session() {
   mkdir -p "$(dirname $session)" && touch "$session"
@@ -283,7 +301,7 @@ main() {
     for f in "$@"; do
       edit="$edit '$f'"
     done
-    bash -c "$edit"
+    [[ ! $no_edit ]] && bash -c "$edit"
     [[ ! $persist ]] && exit 0
   fi
 
@@ -317,6 +335,13 @@ main() {
 
   # Parse empty command as 'enter' action
   [[ -z "$command" ]] && command='right'
+
+  if [[ $no_edit && "$command" = 'right' ]]; then
+    selection="${BZB_DIR:+$BZB_DIR/selection.bzb}"
+    if [[ -n "$selection" ]]; then
+      save_selection
+    fi
+  fi
 
   action="${key_actions[$command]}"
 
