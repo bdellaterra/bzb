@@ -106,7 +106,9 @@ declareKeymap() {
 }
 
 declareKeymap 'enter'                   'right'       "enter directory or edit file"
+declareKeymap 'enter2'                  'alt-l'       "enter directory or edit file"
 declareKeymap 'back'                    'left'        "go to parent directory (not moving past base directory)"
+declareKeymap 'back2'                   'alt-h'       "go to parent directory (not moving past base directory)"
 declareKeymap 'launch'                  'alt-q'       "quick-launch targets using native client"
 declareKeymap 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
 declareKeymap 'move'                    'alt-m'       "move targets to directory named at prompt"
@@ -125,13 +127,13 @@ declareKeymap 'bookmark-current-dir'    'ctrl-alt-b'  "bookmark current director
 declareKeymap 'unbookmark-dirs'         'alt-u'       "unbookmark selected directories"
 declareKeymap 'unbookmark-current-dir'  'ctrl-alt-u'  "unbookmark current directory"
 declareKeymap 'next-bookmark'           'alt-right'   "go to next bookmarked directory"
-declareKeymap 'next-bookmark2'          'alt-l'       "go to next bookmarked directory"
+declareKeymap 'next-bookmark2'          'ctrl-alt-l'  "go to next bookmarked directory"
 declareKeymap 'prev-bookmark'           'alt-left'    "go to previous bookmarked directory"
-declareKeymap 'prev-bookmark2'          'alt-h'       "go to previous bookmarked directory"
+declareKeymap 'prev-bookmark2'          'ctrl-alt-h'  "go to previous bookmarked directory"
 declareKeymap 'select-bookmark'         'alt-up'      "select and enter bookmarked directory"
-declareKeymap 'select-bookmark2'        'alt-k'       "select and enter bookmarked directory"
+declareKeymap 'select-bookmark2'        'ctrl-alt-k'  "select and enter bookmarked directory"
 declareKeymap 'select-nested-bookmark'  'alt-down'    "select and enter bookmarked directory under current directory"
-declareKeymap 'select-nested-bookmark2' 'alt-j'       "select and enter bookmarked directory under current directory"
+declareKeymap 'select-nested-bookmark2' 'ctrl-alt-j'  "select and enter bookmarked directory under current directory"
 declareKeymap 'set-alt-dir'             'alt-s'       "set alternate directory (default for copy/move prompts)"
 declareKeymap 'enter-alt-dir'           'alt-a'       "switch between current and alternate directory"
 declareKeymap 'enter-base-dir'          'alt-z'       "switch between current and base directory"
@@ -326,7 +328,7 @@ main() {
   # Clear dots from paths
   fzf_input+=" | sed 's:^\./::'"
 
-  fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' --bind=esc:cancel --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
+  fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' --bind=alt-k:up,alt-j:down,esc:cancel --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
 
   fzf_cmd="$fzf_input | fzf $fzf_options"
 
@@ -359,7 +361,7 @@ main() {
 
     # Use left arrow to move up a directory, but not above base directory
     # If in grep mode, exit and resume browsing current directory
-    back)
+    back|back2)
       if [[ ! $grep_mode && "$PWD" != "$base_dir" ]]; then
         next_targets=("..")
       else
@@ -511,7 +513,7 @@ main() {
     unbookmark-dirs)
       current_dir="$PWD"
       readarray -t dirs < <(dirs -p -l)
-      bookmarks=("$(printf '%s\n' "${dirs[@]}" | LC_ALL=C sort -u | fzf --multi --bind=esc:unix-line-discard+print-query --prompt='[unbookmark]')")
+      bookmarks=("$(printf '%s\n' "${dirs[@]}" | LC_ALL=C sort -u | fzf --multi --bind=alt-k:up,alt-j:down,esc:unix-line-discard+print-query --prompt='[unbookmark]')")
       for b in ${bookmarks[@]}; do
         for i in "${!dirs[@]}"; do
           if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$b" ]]; then
@@ -551,14 +553,14 @@ main() {
     # Use alt-up or alt-k to select bookmarked directory using fzf
     select-bookmark|select-bookmark2)
       readarray -t dirs < <(dirs -p -l | LC_ALL=C sort -u)
-      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --bind=esc:unix-line-discard+print-query --prompt='[go to directory]')")
+      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --bind=alt-k:up,alt-j:down,esc:unix-line-discard+print-query --prompt='[go to directory]')")
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
 
     # Use alt-down or alt-j to select bookmarked directory under current directory
     select-nested-bookmark|select-nested-bookmark2)
       readarray -t dirs < <(dirs -p -l | grep "$PWD" | LC_ALL=C sort -u)
-      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --bind=esc:unix-line-discard+print-query --prompt='[go to subdirectory]')")
+      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --bind=alt-k:up,alt-j:down,esc:unix-line-discard+print-query --prompt='[go to subdirectory]')")
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
 
@@ -634,7 +636,7 @@ main() {
     ;;
 
     # Use enter or right arrow to edit file or enter directory
-    enter)
+    enter|enter2)
       next_targets=("${targets[@]}")
     ;;
   esac
