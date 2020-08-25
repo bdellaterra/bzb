@@ -511,7 +511,7 @@ main() {
     unbookmark-dirs)
       current_dir="$PWD"
       readarray -t dirs < <(dirs -p -l)
-      bookmarks=("$(printf '%s\n' "${dirs[@]}" | LC_ALL=C sort -u | fzf --multi)")
+      bookmarks=("$(printf '%s\n' "${dirs[@]}" | LC_ALL=C sort -u | fzf --multi --prompt='[unbookmark]')")
       for b in ${bookmarks[@]}; do
         for i in "${!dirs[@]}"; do
           if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$b" ]]; then
@@ -551,13 +551,13 @@ main() {
     # Use alt-up or alt-k to select bookmarked directory using fzf
     select-bookmark|select-bookmark2)
       readarray -t dirs < <(dirs -p -l | LC_ALL=C sort -u)
-      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf)")
+      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --prompt='[go to directory]')")
     ;;
 
     # Use alt-down or alt-j to select bookmarked directory under current directory
     select-nested-bookmark|select-nested-bookmark2)
       readarray -t dirs < <(dirs -p -l | grep "$PWD" | LC_ALL=C sort -u)
-      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf)")
+      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --prompt='[go to subdirectory]')")
     ;;
 
     # Use alt-p to go to previous directory
