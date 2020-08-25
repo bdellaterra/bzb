@@ -11,7 +11,7 @@ function hasCmd() {
   command -v "$1" &>/dev/null
 }
 
-# hasCmd tput && no_clear=1
+hasCmd tput && no_clear=1
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
 if hasCmd fd; then
