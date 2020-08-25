@@ -45,7 +45,7 @@ if hasCmd rg; then
   grep_shallow="rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --max-depth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
   grep_preview="rg \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
-  # TODO: Support ignoring hidden files
+  # TODO: Support ignoring hidden files recursively
   grep_recursive="grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' ."
   grep_shallow="grep -l -i -s -C 1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
   grep_preview="grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}' {}"
@@ -62,8 +62,9 @@ rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && rm_intera
 # Directory where data for loading/restoring sessions is saved (optional)
 BZB_DIR="$HOME/.bzb"
 
-# Don't exit logging selection to file instead of launching editor
-# For integrating bzb with editor. True implies 'persist' option below is false
+# Launch editor as the enter-action for files. Enabling this option wil only log selected targets
+# to a 'selection' file in BZB_DIR.  (Useful when integrating/launching bzb from an editor instead.)
+# Enabling implies 'persist' option below is false
 no_edit=''
 
 # Stay in browser after editing files
