@@ -309,15 +309,15 @@ main() {
 
   # Setup list/sort/preview commands
   if [[ $grep_mode ]]; then
+    export BZB_GREP_QUERY="$grep_query"
     [[ $shallow ]] && grep="$grep_shallow" || grep="$grep_recursive"
     preview_opts="--preview='$grep_preview' --preview-window='$preview_window'"
-    fzf_input="$grep"
+    fzf_input=$(bash -c "echo \"$grep\"")
     fzf_prompt="/$grep_query/"
-    export BZB_GREP_QUERY="$grep_query"
   else
     [[ $shallow ]] && find="$find_shallow" || find="$find_recursive"
     preview_opts="--preview='$find_preview' --preview-window='$preview_window'"
-    fzf_input="$find\${sorted:+ | $sort}"
+    fzf_input=$(bash -c "echo \"$find\${sorted:+ | $sort}\"")
     fzf_prompt="${PWD#$base_dir}>"
   fi
   [[ ! $preview ]] && preview_opts=''
