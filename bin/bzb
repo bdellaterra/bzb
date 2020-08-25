@@ -184,12 +184,12 @@ Options:
 --auto-save-session,-s             Save bookmarks and view/sort settings continuously
 --auto-load-session,-l             Load bookmarks and view/sort settings at start
 --sort=CMD,-so=CMD                 Command to sort files/directories
---shallow-find=CMD,-sf=CMD         Command to list only top-level files/directories
---recursive-find=CMD,-rf=CMD       Command to list nested files/directories
+--find-shallow=CMD,-sf=CMD         Command to list only top-level files/directories
+--find-recursive=CMD,-rf=CMD       Command to list nested files/directories
 --file-preview=CMD,-fp=CMD         Command to preview currently focused file
 --directory-preview=CMD,-dp=CMD    Command to preview currently focused directory
---shallow-grep=CMD,-sg=CMD         Command to grep for pattern in top-level files/directories
---recursive-grep=CMD,-rg=CMD       Command to grep for pattern recursively
+--grep-shallow=CMD,-sg=CMD         Command to grep for pattern in top-level files/directories
+--grep-recursive=CMD,-rg=CMD       Command to grep for pattern recursively
 --grep-preview=CMD,-gp=CMD         Command to preview grep results for currently focused file
 --quick-launch=CMD,-ql=CMD         Command to launch files/directories using os-native client
 --base-directory=DIR,-bd=DIR       Specify a base directory instead of deriving it from target
@@ -215,12 +215,12 @@ for arg in "$@"; do
     -s|--auto-save-session) autosave_session=1; shift ;;
     -l|--auto-load-session) autoload_session=1; shift ;;
     -so=*|--sort=*) sort="${arg#*=}"; shift ;;
-    -sf=*|--shallow-find=*) find_shallow="${arg#*=}"; shift ;;
-    -rf=*|--recursive-find=*) find_recursive="${arg#*=}"; shift ;;
+    -sf=*|--find-shallow=*) find_shallow="${arg#*=}"; shift ;;
+    -rf=*|--find-recursive=*) find_recursive="${arg#*=}"; shift ;;
     -fp=*|--file-preview=*) preview_file="${arg#*=}"; shift ;;
     -dp=*|--directory-preview=*) preview_directory="${arg#*=}"; shift ;;
-    -sg=*|--shallow-grep=*) grep_shallow="${arg#*=}"; shift ;;
-    -rg=*|--recursive-grep=*) grep_recursive="${arg#*=}"; shift ;;
+    -sg=*|--grep-shallow=*) grep_shallow="${arg#*=}"; shift ;;
+    -rg=*|--grep-recursive=*) grep_recursive="${arg#*=}"; shift ;;
     -gp=*|--grep-preview=*) grep_preview="${arg#*=}"; shift ;;
     -ql=*|--quick-launch=*) launch="${arg#*=}"; shift ;;
     -bd=*|--base-dir=*|--base_directory=*) base_dir="${arg#*=}"; shift ;;
