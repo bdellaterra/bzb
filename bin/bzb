@@ -111,6 +111,7 @@ declareKeymap 'back'                    'left'        "go to parent directory (n
 declareKeymap 'back2'                   'alt-h'       "go to parent directory (not moving past base directory)"
 declareKeymap 'launch'                  'alt-q'       "quick-launch targets using native client"
 declareKeymap 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
+declareKeymap 'grep2'                   'ctrl-g'      "grep for pattern specified at prompt ('left' will exit grep mode)"
 declareKeymap 'move'                    'alt-m'       "move targets to directory named at prompt"
 declareKeymap 'rename'                  'alt-r'       "rename targets in current directory"
 declareKeymap 'move-rename'             'ctrl-alt-m'  "move/rename targets into directory named at prompt"
@@ -288,6 +289,10 @@ if [[ "$autoload_session" ]]; then
   fi
 fi
 
+# bind readline for cancelling prompts
+bind '"\C-g":"\C-k\C-u
+"' '"\e\e":"\C-g"'; 
+
 main() {
   # Export variables for use in subshells
   export BZB_QUERY="$query"
@@ -328,7 +333,7 @@ main() {
   # Clear dots from paths
   fzf_input+=" | sed 's:^\./::'"
 
-  fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' --bind=alt-k:up,alt-j:down,esc:cancel --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
+  fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' --bind=alt-k:up,alt-j:down,ctrl-g:ignore,esc:cancel --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
 
   fzf_cmd="$fzf_input | fzf $fzf_options"
 
@@ -375,6 +380,11 @@ main() {
       grep_mode=''
     # Fall through to remaining cases
     ;;&
+
+    # Use ctrl-g to toggle in/out of grep mode (not changing search pattern)
+    grep2)
+      [[ $grep_mode ]] && grep_mode='' || grep_mode=1
+    ;;
 
     # Use alt-n to toggle listing nested vs only top-level files/directories
     toggle-nested)
@@ -513,7 +523,7 @@ main() {
     unbookmark-dirs)
       current_dir="$PWD"
       readarray -t dirs < <(dirs -p -l)
-      bookmarks=("$(printf '%s\n' "${dirs[@]}" | LC_ALL=C sort -u | fzf --multi --bind=alt-k:up,alt-j:down,esc:unix-line-discard+print-query --prompt='[unbookmark]')")
+      bookmarks=("$(printf '%s\n' "${dirs[@]}" | LC_ALL=C sort -u | fzf --multi --bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query --prompt='[unbookmark]')")
       for b in ${bookmarks[@]}; do
         for i in "${!dirs[@]}"; do
           if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$b" ]]; then
@@ -553,14 +563,14 @@ main() {
     # Use alt-up or alt-k to select bookmarked directory using fzf
     select-bookmark|select-bookmark2)
       readarray -t dirs < <(dirs -p -l | LC_ALL=C sort -u)
-      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --bind=alt-k:up,alt-j:down,esc:unix-line-discard+print-query --prompt='[go to directory]')")
+      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query --prompt='[go to directory]')")
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
 
     # Use alt-down or alt-j to select bookmarked directory under current directory
     select-nested-bookmark|select-nested-bookmark2)
       readarray -t dirs < <(dirs -p -l | grep "$PWD" | LC_ALL=C sort -u)
-      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --bind=alt-k:up,alt-j:down,esc:unix-line-discard+print-query --prompt='[go to subdirectory]')")
+      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query --prompt='[go to subdirectory]')")
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
 
@@ -599,7 +609,7 @@ main() {
           base_dir="${dir%/}"
           pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
           [[ ! "$autoload_session" ]] && action="load-session"
-        else
+        elif [[ -n "$dir" ]]; then
           echo "Not a directory"
         fi
       fi
