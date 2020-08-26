@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# bind readline macros for cancelling prompts with ctr-g or double-escape
+bind '"\C-g":"\C-k\C-u
+"' '"\e\e":"\C-g"' &>/dev/null
+
 set -e
 
 function finish() {
@@ -288,10 +293,6 @@ if [[ "$autoload_session" ]]; then
     load_session;
   fi
 fi
-
-# bind readline for cancelling prompts
-bind '"\C-g":"\C-k\C-u
-"' '"\e\e":"\C-g"'; 
 
 main() {
   # Export variables for use in subshells
