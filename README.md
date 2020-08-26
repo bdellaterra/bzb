@@ -13,59 +13,61 @@ If no target specified start in the current directory.
 
 ### Key mappings are as follows:
 
-Key         | Action
-------------|------------------------------------------------------------------
-escape      | exit file browser
-ctrl-c      | exit file browser
-enter       | enter directory or edit file
-right       | enter directory or edit file
-left        | go to parent directory (not moving past base directory)
-alt-enter   | quick-launch targets using native client
-alt-q       | quick-launch targets using native client
-alt-r       | rename targets in current directory
-alt-m       | move targets to directory named at prompt
-ctrl-alt-m  | move/rename targets into directory named at prompt
-alt-x       | delete targets
-alt-c       | copy targets to directory named at prompt
-ctrl-alt-c  | copy/rename targets into directory named at prompt
-alt-e       | create/edit file named at prompt
-alt-f       | create file without editing
-alt-d       | create directory named at prompt
-ctrl-alt-d  | create/enter directory named at prompt
-alt-b       | bookmark target directories
-ctrl-alt-b  | un-bookmark target directories
-alt-w       | bookmark current working directory
-ctrl-alt-w  | un-bookmark current working directory
-alt-right   | go to next bookmarked directory
-alt-l       | go to next bookmarked directory
-alt-left    | go to previous bookmarked directory
-alt-h       | go to previous bookmarked directory
-alt-up      | select and enter bookmarked directory
-alt-k       | select and enter bookmarked directory
-alt-down    | select and enter bookmarked directory under current directory
-alt-j       | select and enter bookmarked directory under current directory
-alt-u       | go up to base directory
-alt-g       | go to directory named at prompt
-ctrl-alt-g  | set new base directory at prompt and go to it
-alt-a       | toggle between current and alternate directory
-alt-z       | set alternate directory (default for copy/move prompts)
-alt-p       | go to previous directory
-alt-/       | grep for pattern specified at prompt ('left' will exit grep mode)
-alt-n       | toggle listing nested vs. only top-level files
-alt-i       | toggle visibility of ignored files (if supported)
-alt-v       | toggle visibility of hidden files
-ctrl-alt-p  | toggle visibility of preview pane
-alt-o       | toggle between ascending/descending sort order
-ctrl-alt-o  | toggle whether sorting is enabled/disabled (affects performance)
-alt-s       | load session from file named at prompt
-ctrl-alt-s  | save session to file named at prompt
-ctrl-alt-r  | reset initial view/sort settings
-ctrl-alt-u  | kill all bookmarks (except base directory)
+KEYMAP      | DESCRIPTION                                                       | ACTION
+------------|-------------------------------------------------------------------|------------------------
+escape      | exit file browser                                                 | 
+ctrl-c      | exit file browser                                                 | 
+enter       | enter directory or edit file                                      | 
+right       | enter directory or edit file                                      | enter
+alt-l       | enter directory or edit file                                      | enter2
+left        | go to parent directory (not moving past base directory)           | back
+alt-h       | go to parent directory (not moving past base directory)           | back2
+alt-q       | quick-launch targets using native client                          | launch
+alt-/       | grep for pattern specified at prompt ('left' will exit grep mode) | grep
+ctrl-g      | grep for pattern specified at prompt ('left' will exit grep mode) | grep2
+alt-m       | move targets to directory named at prompt                         | move
+alt-r       | rename targets in current directory                               | rename
+ctrl-alt-m  | move/rename targets into directory named at prompt                | move-rename
+ctrl-alt-r  | move/rename targets into directory named at prompt                | move-rename2
+alt-x       | delete targets                                                    | delete
+alt-c       | copy targets to directory named at prompt                         | copy
+ctrl-alt-c  | copy/rename targets into directory named at prompt                | copy-rename
+alt-e       | create/edit file named at prompt                                  | create-edit-file
+alt-f       | create file without editing                                       | create-file
+alt-d       | create directory named at prompt                                  | create-dir
+ctrl-alt-d  | create/enter directory named at prompt                            | create-enter-dir
+alt-b       | bookmark target directories                                       | bookmark-targets
+ctrl-alt-b  | bookmark current directory                                        | bookmark-current-dir
+alt-u       | unbookmark selected directories                                   | unbookmark-dirs
+ctrl-alt-u  | unbookmark current directory                                      | unbookmark-current-dir
+alt-right   | go to next bookmarked directory                                   | next-bookmark
+ctrl-alt-l  | go to next bookmarked directory                                   | next-bookmark2
+alt-left    | go to previous bookmarked directory                               | prev-bookmark
+ctrl-alt-h  | go to previous bookmarked directory                               | prev-bookmark2
+alt-up      | select and enter bookmarked directory                             | select-bookmark
+ctrl-alt-k  | select and enter bookmarked directory                             | select-bookmark2
+alt-down    | select and enter bookmarked directory under current directory     | select-nested-bookmark
+ctrl-alt-j  | select and enter bookmarked directory under current directory     | select-nested-bookmark2
+alt-s       | set alternate directory (default for copy/move prompts)           | set-alt-dir
+alt-a       | switch between current and alternate directory                    | enter-alt-dir
+alt-z       | switch between current and base directory                         | enter-base-dir
+alt-p       | switch between current and previous directory                     | enter-prev-dir
+alt-g       | go to directory named at prompt                                   | prompt-dir
+ctrl-alt-g  | set new base directory at prompt and go to it                     | set-base-dir
+ctrl-alt-p  | toggle visibility of preview pane                                 | toggle-preview
+alt-i       | toggle visibility of ignored files (if supported)                 | toggle-ignored
+alt-v       | toggle visibility of hidden files                                 | toggle-hidden
+alt-n       | toggle listing nested vs. only top-level files                    | toggle-nested
+alt-o       | toggle sort order ascending/descending                            | toggle-sort-order
+ctrl-alt-s  | toggle sorted/unsorted results (affects performance)              | toggle-sort
+ctrl-alt-n  | restore normal view settings (nested/hidden/ignored)              | reset-view
+alt-y       | load session from file named at prompt                            | load-session
+ctrl-alt-y  | save session to file named at prompt                              | save-session
 
 
 ### Command line options are as follows:
 
-Options                            | Effect
+OPTIONS                            | EFFECT
 -----------------------------------|-------------------------------------------
 --help,-h                          | Show this help text
 --grep,-g                          | Start in grep mode
@@ -76,19 +78,12 @@ Options                            | Effect
 --no-ignore,-I                     | Show ignored files/direcories at start
 --no-preview,-P                    | Disable preview pane that shows file/directory contents
 --no-sort,-S                       | Disable sorting of files/directories
+--no-edit,-E                       | Disable launch of editor and just log selection to file
 --reverse-sort,-R                  | Reverse the normal sort order
 --auto-save-session,-s             | Save bookmarks and view/sort settings continuously
 --auto-load-session,-l             | Load bookmarks and view/sort settings at start
---sort=CMD,-so=CMD                 | Command to sort files/directories
---shallow-find=CMD,-sf=CMD         | Command to list only top-level files/directories
---recursive-find=CMD,-rf=CMD       | Command to list nested files/directories
---file-preview=CMD,-fp=CMD         | Command to preview currently focused file
---directory-preview=CMD,-dp=CMD    | Command to preview currently focused directory
---shallow-grep=CMD,-sg=CMD         | Command to grep for pattern in top-level files/directories
---recursive-grep=CMD,-rg=CMD       | Command to grep for pattern recursively
---grep-preview=CMD,-gp=CMD         | Command to preview grep results for currently focused file
---quick-launch=CMD,-ql=CMD         | Command to launch files/directories using os-native client
 --base-directory=DIR,-bd=DIR       | Specify a base directory instead of deriving it from target
 --alternate-directory=DIR,-ad=DIR  | Initialize alternate directory at start
 
 Any additional options will be passed to fzf.
+
