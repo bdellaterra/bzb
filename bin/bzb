@@ -209,7 +209,6 @@ KEY_USAGE
 Options:
 
 --help,-h                          Show this help text
---grep,-g                          Start in grep mode
 --once,-o                          Exit browser after editing a file
 --color,-c                         Show colorized output
 --recursive,-r                     Show nested files/direcories at start
@@ -221,6 +220,7 @@ Options:
 --reverse-sort,-R                  Reverse the normal sort order
 --auto-save-session,-s             Save bookmarks and view/sort settings continuously
 --auto-load-session,-l             Load bookmarks and view/sort settings at start
+--grep=PATTERN,-g=PATTERN          Start in grep mode
 --base-directory=DIR,-bd=DIR       Specify a base directory instead of deriving it from target
 --alternate-directory=DIR,-ad=DIR  Initialize alternate directory at start
 
@@ -231,7 +231,6 @@ USAGE
 for arg in "$@"; do
   case $arg in
     -h|--help) usage; exit 0 ;;
-    -g|--grep) grep_mode=''; shift ;;
     -o|--once) persist=''; shift ;;
     -c|--color) color=1; shift ;;
     -r|--recursive) shallow=''; shift ;;
@@ -243,6 +242,7 @@ for arg in "$@"; do
     -R|--reverse-sort) reverse=1; shift ;;
     -s|--auto-save-session) autosave_session=1; shift ;;
     -l|--auto-load-session) autoload_session=1; shift ;;
+    -g=*|--grep=*) grep_mode=1; grep_query="${arg#*=}"; shift ;;
     -bd=*|--base-dir=*|--base_directory=*) base_dir="${arg#*=}"; shift ;;
     -ad=*|--alt-dir=*|--alternate-directory=*) alt_dir="${arg#*=}"; shift ;;
     # Save remaining options for fzf with quoting preserved
