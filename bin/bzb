@@ -62,7 +62,7 @@ fi
 
 CMD 'preview_file' \
   "( $is_binary && $preview_binary || $preview_text )"
-CMD 'find_preview' \
+CMD 'find_mode_preview' \
   "[[ -d {} ]] && $preview_directory || $preview_file"
 
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed
@@ -71,7 +71,7 @@ if HAS rg; then
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
   CMD 'grep_shallow' \
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --max-depth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
-  CMD 'grep_preview' \
+  CMD 'grep_mode_preview' \
     "rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
   # TODO: Support ignoring hidden files recursively
@@ -79,7 +79,7 @@ else
     "grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' ."
   CMD 'grep_shallow' \
     "grep -l -i -s -C 1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
-  CMD 'grep_preview' \
+  CMD 'grep_mode_preview' \
     "grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}' {}"
 fi
 
@@ -330,12 +330,12 @@ main() {
   if [[ $grep_mode ]]; then
     export BZB_GREP_QUERY="$grep_query"
     [[ $shallow ]] && grep="$grep_shallow" || grep="$grep_recursive"
-    preview_opts="--preview='$grep_preview' --preview-window='$preview_window'"
+    preview_opts="--preview='$grep_mode_preview' --preview-window='$preview_window'"
     fzf_input=$(bash -c "echo \"$grep\"")
     fzf_prompt="/$grep_query/"
   else
     [[ $shallow ]] && find="$find_shallow" || find="$find_recursive"
-    preview_opts="--preview='$find_preview' --preview-window='$preview_window'"
+    preview_opts="--preview='$find_mode_preview' --preview-window='$preview_window'"
     fzf_input=$(bash -c "echo \"$find\${sorted:+ | $sort}\"")
     fzf_prompt="${PWD#$base_dir}>"
   fi
