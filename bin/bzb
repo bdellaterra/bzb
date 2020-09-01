@@ -1,28 +1,29 @@
 #!/bin/bash
+set -e
 
 # bind readline macros for cancelling prompts with ctr-g or double-escape
 bind '"\C-g":"\C-k\C-u
 "' '"\e\e":"\C-g"' &>/dev/null
 
-set -e
-
-function finish() {
-  # Leave alternate screen manually on exit due to fzf '--no-clear' option
-  [[ $no_clear ]] && tput rmcup
-}
-trap finish EXIT
-
+# Test if command exists
 function HAS() {
   command -v "$1" &>/dev/null
 }
 
-HAS tput && no_clear=1
-
+# Store default command in variable name provided, overriding with command
+# in uppercased, BZB_ prefixed variable if it is defined
 CMD() {
   override="BZB_${1^^}"
   [[ -n "${!override}" ]] && def="${!override}" || def="$2"
   export "$1=$def"
 }
+
+# Leave alternate screen manually on exit due to fzf '--no-clear' option
+function finish() {
+  [[ $no_clear ]] && tput rmcup
+}
+trap finish EXIT
+HAS tput && no_clear=1
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
 if HAS fd; then
