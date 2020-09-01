@@ -145,7 +145,7 @@ MAP 'back'                    'left'        "go to parent directory (not moving 
 MAP 'back2'                   'alt-h'       "go to parent directory (not moving past base directory)"
 MAP 'launch'                  'alt-q'       "quick-launch targets using native client"
 MAP 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
-MAP 'grep2'                   'ctrl-g'      "grep for pattern specified at prompt ('left' will exit grep mode)"
+MAP 'grep2'                   'ctrl-g'      "toggle grep mode / cancel submenu or prompt"
 MAP 'move'                    'alt-m'       "move targets to directory named at prompt"
 MAP 'rename'                  'alt-r'       "rename targets in current directory"
 MAP 'move-rename'             'ctrl-alt-m'  "move/rename targets into directory named at prompt"
