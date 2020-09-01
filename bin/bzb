@@ -95,9 +95,10 @@ rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
 # Directory where data for loading/restoring sessions is saved (optional)
 BZB_DIR="$HOME/.bzb"
 
-# Launch editor as the enter-action for files. Enabling this option wil only log selected targets
-# to a 'selection' file in BZB_DIR.  (Useful when integrating/launching bzb from an editor instead.)
-# Enabling implies 'persist' option below is false
+# Default behavior is to launch $EDITOR as the enter-action for files. Enabling option below
+# will instead only log selected targets to a 'selection' file in BZB_DIR. This communicates
+# user-actions to another program that has launched bzb as an integrated file browser.
+# Enabling this option implies 'persist' option below is false
 no_edit=''
 
 # Stay in browser after editing files
