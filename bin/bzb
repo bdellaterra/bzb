@@ -20,7 +20,7 @@ CMD() {
 
 # Leave alternate screen manually on exit due to fzf '--no-clear' option
 function finish() {
-  [[ $no_clear ]] && tput rmcup
+  [[ $action && $no_clear ]] && tput rmcup
 }
 trap finish EXIT
 HAS tput && no_clear=1
