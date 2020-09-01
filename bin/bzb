@@ -181,7 +181,7 @@ MAP 'toggle-hidden'           'alt-v'       "toggle visibility of hidden files"
 MAP 'toggle-nested'           'alt-n'       "toggle listing nested vs. only top-level files"
 MAP 'toggle-sort-order'       'alt-o'       "toggle sort order ascending/descending"
 MAP 'toggle-sort'             'ctrl-alt-s'  "toggle sorted/unsorted results (affects performance)"
-MAP 'reset-view'              'ctrl-alt-n'  "restore normal view settings (nested/hidden/ignored)"
+MAP 'reset-view'              'ctrl-alt-n'  "restore normal view settings (don't show nested/hidden/ignored)"
 MAP 'load-session'            'alt-y'       "load session from file named at prompt"
 MAP 'save-session'            'ctrl-alt-y'  "save session to file named at prompt"
 
