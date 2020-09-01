@@ -211,7 +211,7 @@ Options:
 --help,-h                          Show this help text
 --once,-o                          Exit browser after editing a file
 --color,-c                         Show colorized output
---recursive,-r                     Show nested files/direcories at start
+--recursive,-r                     List nested files/direcories at start
 --hidden,-H                        Show hidden files/direcories at start
 --no-ignore,-I                     Show ignored files/direcories at start
 --no-preview,-P                    Disable preview pane that shows file/directory contents
@@ -220,7 +220,7 @@ Options:
 --reverse-sort,-R                  Reverse the normal sort order
 --auto-save-session,-s             Save bookmarks and view/sort settings continuously
 --auto-load-session,-l             Load bookmarks and view/sort settings at start
---grep=PATTERN,-g=PATTERN          Start in grep mode
+--grep=PATTERN,-g=PATTERN          Start in grep mode, searching files for specified pattern
 --base-directory=DIR,-bd=DIR       Specify a base directory instead of deriving it from target
 --alternate-directory=DIR,-ad=DIR  Initialize alternate directory at start
 
