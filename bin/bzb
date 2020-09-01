@@ -342,15 +342,13 @@ main() {
   fi
   [[ ! $preview ]] && preview_opts=''
 
-  # Clear dots from paths
+  # Clear leading dots from paths
   fzf_input+=" | sed 's:^\./::'"
 
   fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' --bind=alt-k:up,alt-j:down,ctrl-g:ignore,esc:cancel --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
 
-  fzf_cmd="$fzf_input | fzf $fzf_options"
-
   # CYCLE INTO FZF
-  { read query; read command; readarray -t targets; } < <(bash -c "$fzf_cmd")
+  { read query; read command; readarray -t targets; } < <(bash -c "$fzf_input | fzf $fzf_options")
 
   # Parse empty command and empty target as 'exit' (fzf-native 'escape' or 'ctrl-c' mapping)
   [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && exit 0
@@ -423,7 +421,7 @@ main() {
       [[ $reverse ]] && reverse='' || reverse=1
     ;;
 
-    # Use ctrl-alt-o to enable/disable sorting
+    # Use ctrl-alt-s to enable/disable sorting
     toggle-sort)
       [[ $sorted ]] && sorted='' || sorted=1
     ;;
@@ -447,7 +445,13 @@ main() {
       done
     ;;
 
-    # Use ctrl-alt-r to move and rename targets
+    # Use alt-m to move targets
+    move)
+      clear && read -ep 'Move to Directory: ' -i "${alt_dir:-$base_dir}" dir
+      [[ -n "$dir" ]] && mv -i "${targets[@]}" "$dir"
+    ;;
+
+    # Use ctrl-alt-r or ctrl-alt-m to move and rename targets
     move-rename|move-rename2)
       clear && read -ep 'Move/Rename to Directory: ' -i "${alt_dir:-$base_dir}" dir
       if [[ -n "$dir" ]]; then
@@ -458,12 +462,6 @@ main() {
           fi
         done
       fi
-    ;;
-
-    # Use alt-m to move targets
-    move)
-      clear && read -ep 'Move to Directory: ' -i "${alt_dir:-$base_dir}" dir
-      [[ -n "$dir" ]] && mv -i "${targets[@]}" "$dir"
     ;;
 
     # Use alt-x to delete targets
@@ -556,7 +554,7 @@ main() {
       pushd +1 >/dev/null 
     ;;
 
-    # Use alt-right or alt-l to go to next bookmarked directory
+    # Use alt-right or ctrl-alt-l to go to next bookmarked directory
     next-bookmark|next-bookmark2)
       cd "$(dirs -l +1)" && pushd -n +1 >/dev/null
       if [[ "$PWD" = "$OLDPWD" ]]; then
@@ -564,7 +562,7 @@ main() {
       fi
     ;;
 
-    # Use alt-left or alt-h to go to previous bookmarked directory
+    # Use alt-left or ctrl-alt-h to go to previous bookmarked directory
     prev-bookmark|prev-bookmark2)
       cd "$(dirs -l -0)" && pushd -n -0 >/dev/null
       if [[ "$PWD" = "$OLDPWD" ]]; then
@@ -572,14 +570,14 @@ main() {
       fi
     ;;
 
-    # Use alt-up or alt-k to select bookmarked directory using fzf
+    # Use alt-up or ctrl-alt-k to select bookmarked directory using fzf
     select-bookmark|select-bookmark2)
       readarray -t dirs < <(dirs -p -l | LC_ALL=C sort -u)
       next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query --prompt='[go to directory]')")
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
 
-    # Use alt-down or alt-j to select bookmarked directory under current directory
+    # Use alt-down or ctrl-alt-j to select bookmarked directory under current directory
     select-nested-bookmark|select-nested-bookmark2)
       readarray -t dirs < <(dirs -p -l | grep "$PWD" | LC_ALL=C sort -u)
       next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query --prompt='[go to subdirectory]')")
@@ -611,7 +609,7 @@ main() {
     ;;
 
     # Use ctrl-alt-g to set/enter new base directory
-    # Use alt-u to go to base directory, or go back
+    # Use alt-z to go to base directory, or go back
     # to previous directory if already in base directory
     # Use alt-y to load session
     set-base-dir|enter-base-dir|load-session)
