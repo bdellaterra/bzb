@@ -38,10 +38,10 @@ else
 fi
 
 # Directory where data for loading/restoring sessions is saved (optional)
-BZB_DIR="$HOME/.bzb"
+data_dir="$HOME/.bzb"
 
 # Default behavior is to launch $EDITOR as the enter-action for files. Enabling option below
-# will instead only log selected targets to a 'selection' file in BZB_DIR. This communicates
+# will instead only log selected targets to a 'selection' file in data_dir. This communicates
 # user-actions to another program that has launched bzb as an integrated file browser.
 # Enabling this option implies 'persist' option below is false
 no_edit=''
@@ -307,7 +307,7 @@ function load_session() {
 }
 
 if [[ "$autoload_session" ]]; then
-  session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
+  session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
   if [[ -r "$session" ]]; then
     . -- "$session"
     load_session;
@@ -366,7 +366,7 @@ main() {
   [[ -z "$command" ]] && command='right'
 
   if [[ $no_edit && "$command" = 'right' ]]; then
-    selection="${BZB_DIR:+$BZB_DIR/selection.bzb}"
+    selection="${data_dir:+$data_dir/selection.bzb}"
     if [[ -n "$selection" ]]; then
       save_selection
     fi
@@ -636,7 +636,7 @@ main() {
         [[ "$PWD" = "$base_dir" ]] && cd "$OLDPWD" || cd "$base_dir"
       fi
       if [[ "$action" = 'load-session' ]]; then
-        session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
+        session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
         clear && read -ep "Load session: " -i "$session" session
         if [[ -r "$session" ]]; then
           . -- "$session"
@@ -647,7 +647,7 @@ main() {
 
     # Use ctrl-alt-y to save session
     save-session)
-      session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
+      session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
       clear && read -ep "Save session: " -i "$session" session
       if [[ -n "$session" ]]; then
         save_session
@@ -671,7 +671,7 @@ main() {
   esac
 
   if [[ "$autosave_session" ]]; then
-    session="${BZB_DIR:+$BZB_DIR/sessions$base_dir/session.bzb}"
+    session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
     if [[ -n "$session" ]]; then
       save_session
     fi
