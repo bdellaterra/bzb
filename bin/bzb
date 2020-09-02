@@ -14,8 +14,14 @@ function HAS() {
 # as second argument. If BZB_ prefixed all-caps variable is defined use its value instead
 INIT() {
   override="BZB_${1^^}"
-  [[ -n "${!override}" ]] && def="${!override}" || def="$2"
-  export "$1=$def"
+  [[ -n ${!override+defined} ]] && value="${!override}" || value="$2"
+  # Avoid polluting global namespace if bash supports namerefs (version 4.3+)
+  if [[ "${BASH_VERSINFO[0]}" -ge 4 && "${BASH_VERSINFO[0]}" -ge 3 ]]; then
+    local -n outvar="$1"
+    outvar="$value"
+  else
+    export "$1=$value"
+  fi
 }
 
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
@@ -30,7 +36,7 @@ if [[ -t 0 || -p /dev/stdin ]]; then
     trap clearFZF EXIT
 
     # Detect color output
-    test $(tput colors) -ge 8 && color=1 || color=''
+    test $(tput colors) -ge 8 && INIT 'color' 1 || INIT 'color' ''
   fi
 else
   echo "Error: $(basename "${BASH_SOURCE[0]}") must be run interactively" 1>&2
@@ -38,40 +44,40 @@ else
 fi
 
 # Directory where data for loading/restoring sessions is saved (optional)
-data_dir="$HOME/.bzb"
+INIT 'data_dir' "$HOME/.bzb"
 
 # Default behavior is to launch $EDITOR as the enter-action for files. Enabling option below
 # will instead only log selected targets to a 'selection' file in data_dir. This communicates
 # user-actions to another program that has launched bzb as an integrated file browser.
 # Enabling this option implies 'persist' option below is false
-no_edit=''
+INIT 'no_edit' ''
 
 # Stay in browser after editing files
-persist=1
+INIT 'persist' 1
 
 # Start with only top-level files/directories displayed
-shallow=1
+INIT 'shallow' 1
 
 # Don't show hidden files
-hidden=''
+INIT 'hidden' ''
 
 # Don't show ignored files
-no_ignore=''
+INIT 'no_ignore' ''
 
 # Don't start in grep mode
-grep_mode=''
+INIT 'grep_mode' ''
 
 # Sort ascending
-sorted=1
-reverse=''
+INIT 'sorted' 1
+INIT 'reverse' ''
 
 # Display preview pane
-preview=1
-preview_window='right:62%:wrap'
+INIT 'preview' 1
+INIT 'preview_window' 'right:62%:wrap'
 
 # Save/Load sessions manually
-autosave_session=''
-autoload_session=''
+INIT 'autosave_session' ''
+INIT 'autoload_session' ''
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
 if HAS fd; then
