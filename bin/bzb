@@ -19,7 +19,7 @@ function HAS() {
 # as second argument. If BZB_ prefixed all-caps variable is defined use its value instead
 INIT() {
   override="BZB_${1^^}"
-  [[ -n ${!override+defined} ]] && value="${!override}" || value="$2"
+  [[ -n "${!override+defined}" ]] && value="${!override}" || value="$2"
   # Avoid polluting global namespace if bash supports namerefs (version 4.3+)
   if [[ "${BASH_VERSINFO[0]}" -ge 4 && "${BASH_VERSINFO[0]}" -ge 3 ]]; then
     local -n outvar="$1"
