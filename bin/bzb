@@ -26,7 +26,7 @@ INIT() {
 
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
 function clearFZF() {
-  [[ $action && $no_clear ]] && tput rmcup
+  [[ $fzf_command && $no_clear ]] && tput rmcup
 }
 
 # Detect terminal and exit if not interactive
@@ -363,7 +363,8 @@ main() {
   fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' --bind=alt-k:up,alt-j:down,ctrl-g:ignore,esc:cancel --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
 
   # CYCLE INTO FZF
-  { read query; read command; readarray -t targets; } < <(bash -c "$fzf_input | fzf $fzf_options")
+  fzf_command="$fzf_input | fzf $fzf_options"
+  { read query; read command; readarray -t targets; } < <(bash -c "$fzf_command")
 
   # Parse empty command and empty target as 'exit' (fzf-native 'escape' or 'ctrl-c' mapping)
   [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && exit 0
