@@ -18,12 +18,60 @@ CMD() {
   export "$1=$def"
 }
 
-# Leave alternate screen manually on exit due to fzf '--no-clear' option
-function finish() {
+# Leave alternate screen manually on exit after using fzf '--no-clear' option
+function clearFZF() {
   [[ $action && $no_clear ]] && tput rmcup
 }
-trap finish EXIT
-HAS tput && no_clear=1
+
+# Detect terminal and exit if not interactive
+if [[ -t 0 || -p /dev/stdin ]]; then
+  if HAS tput; then
+    no_clear=1
+    trap clearFZF EXIT
+
+    # Detect color output
+    test $(tput colors) -ge 8 && color=1 || color=''
+  fi
+else
+  echo "Error: $(basename "${BASH_SOURCE[0]}") must be run interactively" 1>&2
+  exit 1
+fi
+
+# Directory where data for loading/restoring sessions is saved (optional)
+BZB_DIR="$HOME/.bzb"
+
+# Default behavior is to launch $EDITOR as the enter-action for files. Enabling option below
+# will instead only log selected targets to a 'selection' file in BZB_DIR. This communicates
+# user-actions to another program that has launched bzb as an integrated file browser.
+# Enabling this option implies 'persist' option below is false
+no_edit=''
+
+# Stay in browser after editing files
+persist=1
+
+# Start with only top-level files/directories displayed
+shallow=1
+
+# Don't show hidden files
+hidden=''
+
+# Don't show ignored files
+no_ignore=''
+
+# Don't start in grep mode
+grep_mode=''
+
+# Sort ascending
+sorted=1
+reverse=''
+
+# Display preview pane
+preview=1
+preview_window='right:62%:wrap'
+
+# Save/Load sessions manually
+autosave_session=''
+autoload_session=''
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
 if HAS fd; then
@@ -91,45 +139,6 @@ HAS open && CMD 'launch' 'open'
 # Prefer -I option to -i for removing files, if available
 rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
   CMD 'rm_interactive' 'rm -ri' || rm_interactive='rm -rI'
-
-# Directory where data for loading/restoring sessions is saved (optional)
-BZB_DIR="$HOME/.bzb"
-
-# Default behavior is to launch $EDITOR as the enter-action for files. Enabling option below
-# will instead only log selected targets to a 'selection' file in BZB_DIR. This communicates
-# user-actions to another program that has launched bzb as an integrated file browser.
-# Enabling this option implies 'persist' option below is false
-no_edit=''
-
-# Stay in browser after editing files
-persist=1
-
-# Start with only top-level files/directories displayed
-shallow=1
-
-# No color output
-color=''
-
-# Don't show hidden files
-hidden=''
-
-# Don't show ignored files
-no_ignore=''
-
-# Don't start in grep mode
-grep_mode=''
-
-# Sort ascending
-sorted=1
-reverse=''
-
-# Display preview pane
-preview=1
-preview_window='right:62%:wrap'
-
-# Save/Load sessions manually
-autosave_session=''
-autoload_session=''
 
 declare -A key_definitions key_actions action_keys
 MAP() {
