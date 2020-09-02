@@ -270,14 +270,6 @@ for arg in "$@"; do
   esac
 done
 
-initial_target="$1"
-
-# Derive base directory from target, or use current directory if none given
-if [[ -z "$base_dir" ]]; then
-  [[ -d "$initial_target" ]] && base_dir="$initial_target" || base_dir="$(dirname "${initial_target:-$PWD/.}")"
-fi
-pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
-
 function save_selection() {
   if [[ $no_edit && -d $data_dir ]]; then
     selection="$data_dir/selection"
@@ -311,21 +303,30 @@ function save_session() {
 }
 
 function load_session() {
-  dirs -c
-  pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
-  for b in "${bookmarks[@]}"; do
-    [[ -d "$b" ]] && pushd "$b" >/dev/null
-  done
-  cd "$base_dir"
+  session="$1"
+  if [[ -r "$session" ]]; then
+    dirs -c
+    pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
+    for b in "${bookmarks[@]}"; do
+      [[ -d "$b" ]] && pushd "$b" >/dev/null
+    done
+    cd "$base_dir"
+  fi
 }
 
-if [[ "$autoload_session" ]]; then
-  session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
-  if [[ -r "$session" ]]; then
-    . -- "$session"
-    load_session;
-  fi
+
+initial_target="$1"
+
+# Derive base directory from target, or use current directory if none given
+if [[ -z "$base_dir" ]]; then
+  [[ -d "$initial_target" ]] && base_dir="$initial_target" || base_dir="$(dirname "${initial_target:-$PWD/.}")"
 fi
+pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
+
+# Optionally restore browsing session
+INIT 'session' "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
+[[ $autoload_session && -n "$session" ]] && . -- "$session" && load_session "$session"
+
 
 main() {
   # Export variables for use in subshells
