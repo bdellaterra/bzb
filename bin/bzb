@@ -282,7 +282,7 @@ function save_selection() {
   mkdir -p "$(dirname $selection)" && touch "$selection"
   if [[ -w "$selection" ]]; then
     > "$selection"
-    for t in "${targets[@]}"; do
+    for t in "$@"; do
       if [[ -r "$t" ]]; then
         echo "$PWD/$t" >> "$selection"
       fi
@@ -332,6 +332,13 @@ main() {
   export BZB_NO_IGNORE="$no_ignore"
   export BZB_REVERSE="$reverse"
 
+  if [[ $no_edit ]]; then
+    selection="${data_dir:+$data_dir/selection}"
+    if [[ -n "$selection" ]]; then
+      save_selection $@
+    fi
+  fi
+
   # Edit file or enter directory
   if [[ $# -eq 1 && -d "$1" ]]; then
     cd "$1"
@@ -376,13 +383,6 @@ main() {
 
   # Parse empty command as 'enter' action
   [[ -z "$command" ]] && command='right'
-
-  if [[ $no_edit && "$command" = 'right' ]]; then
-    selection="${data_dir:+$data_dir/selection}"
-    if [[ -n "$selection" ]]; then
-      save_selection
-    fi
-  fi
 
   action="${key_actions[$command]}"
 
