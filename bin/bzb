@@ -279,14 +279,17 @@ fi
 pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
 
 function save_selection() {
-  mkdir -p "$(dirname $selection)" && touch "$selection"
-  if [[ -w "$selection" ]]; then
-    > "$selection"
-    for t in "$@"; do
-      if [[ -r "$t" ]]; then
-        echo "$PWD/$t" >> "$selection"
-      fi
-    done
+  if [[ $no_edit && -d $data_dir ]]; then
+    selection="$data_dir/selection"
+    mkdir -p "$(dirname $selection)" && touch "$selection"
+    if [[ -w "$selection" ]]; then
+      > "$selection"
+      for t in "$@"; do
+        if [[ -r "$t" ]]; then
+          echo "$PWD/$t" >> "$selection"
+        fi
+      done
+    fi
   fi
 }
 
@@ -332,13 +335,6 @@ main() {
   export BZB_NO_IGNORE="$no_ignore"
   export BZB_REVERSE="$reverse"
 
-  if [[ $no_edit ]]; then
-    selection="${data_dir:+$data_dir/selection}"
-    if [[ -n "$selection" ]]; then
-      save_selection $@
-    fi
-  fi
-
   # Edit file or enter directory
   if [[ $# -eq 1 && -d "$1" ]]; then
     cd "$1"
@@ -349,7 +345,7 @@ main() {
     for f in "$@"; do
       edit="$edit '$f'"
     done
-    [[ ! $no_edit ]] && bash -c "$edit"
+    [[ $no_edit ]] && save_selection $@ || bash -c "$edit"
     [[ ! $persist ]] && exit 0
   fi
 
