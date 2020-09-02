@@ -378,7 +378,7 @@ main() {
   [[ -z "$command" ]] && command='right'
 
   if [[ $no_edit && "$command" = 'right' ]]; then
-    selection="${data_dir:+$data_dir/selection.bzb}"
+    selection="${data_dir:+$data_dir/selection}"
     if [[ -n "$selection" ]]; then
       save_selection
     fi
