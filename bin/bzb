@@ -32,7 +32,7 @@ function clearFZF() {
 # Detect terminal and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if HAS tput; then
-    no_clear=1
+    declare -r no_clear=1
     trap clearFZF EXIT
 
     # Detect color output
@@ -44,7 +44,7 @@ else
 fi
 
 # Directory where data for loading/restoring sessions is saved (optional)
-INIT 'data_dir' "$HOME/.bzb"
+INIT 'data_dir' "$HOME/.bzb" && readonly data_dir
 
 # Default behavior is to launch $EDITOR as the enter-action for files. Enabling option below
 # will instead only log selected targets to a 'selection' file in data_dir. This communicates
