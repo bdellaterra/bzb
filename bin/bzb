@@ -54,7 +54,7 @@ INIT 'data_dir' "$HOME/.bzb" && readonly data_dir
 # Default behavior is to launch $EDITOR as the enter-action for files. Enabling option below
 # will instead only log selected targets to a 'selection' file in data_dir. This communicates
 # user-actions to another program that has launched bzb as an integrated file browser.
-# Enabling this option implies 'persist' option below is false
+# Enabling this option will set 'persist' option below to false
 INIT 'no_edit' ''
 
 # Stay in browser after editing files
