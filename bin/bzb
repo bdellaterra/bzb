@@ -10,9 +10,9 @@ function HAS() {
   command -v "$1" &>/dev/null
 }
 
-# Store default command in variable name provided, overriding with command
-# in uppercased, BZB_ prefixed variable if it is defined
-CMD() {
+# In the variable name provided as first argument, store the default value provided
+# as second argument. If BZB_ prefixed all-caps variable is defined use its value instead
+INIT() {
   override="BZB_${1^^}"
   [[ -n "${!override}" ]] && def="${!override}" || def="$2"
   export "$1=$def"
@@ -75,70 +75,70 @@ autoload_session=''
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
 if HAS fd; then
-  CMD 'find_recursive' \
+  INIT 'find_recursive' \
     "fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
-  CMD 'find_shallow' \
+  INIT 'find_shallow' \
     "fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
 else
-  CMD 'find_recursive' \
+  INIT 'find_recursive' \
     "find . -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
-  CMD 'find_shallow' \
+  INIT 'find_shallow' \
     "find . -maxdepth 1 -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
 fi
 
 # Sort Command:
-CMD 'sort' \
+INIT 'sort' \
   "LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
 
 # Preview Commands:
-CMD 'preview_directory' \
+INIT 'preview_directory' \
   "ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh {}"
-CMD 'preview_text' \
+INIT 'preview_text' \
   "cat {}"
-CMD 'is_binary' \
+INIT 'is_binary' \
   'test `head -qc 8192 {} 2>/dev/null | grep -o "[^[:print:]]" 2>/dev/null | wc -c` -gt 16'
 
 if HAS file; then
-  CMD 'preview_binary' \
+  INIT 'preview_binary' \
     "file -L {}"
-  CMD 'is_binary' \
+  INIT 'is_binary' \
     '[[ ! "$(file -L {})" =~ 'text' ]] && '"$is_binary"
 else
-  CMD 'preview_binary' \
+  INIT 'preview_binary' \
     "stat -L {}"
 fi
 
-CMD 'preview_file' \
+INIT 'preview_file' \
   "( $is_binary && $preview_binary || $preview_text )"
-CMD 'find_mode_preview' \
+INIT 'find_mode_preview' \
   "[[ -d {} ]] && $preview_directory || $preview_file"
 
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed
 if HAS rg; then
-  CMD 'grep_recursive' \
+  INIT 'grep_recursive' \
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
-  CMD 'grep_shallow' \
+  INIT 'grep_shallow' \
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --max-depth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
-  CMD 'grep_mode_preview' \
+  INIT 'grep_mode_preview' \
     "rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
   # TODO: Support ignoring hidden files recursively
-  CMD 'grep_recursive' \
+  INIT 'grep_recursive' \
     "grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' ."
-  CMD 'grep_shallow' \
+  INIT 'grep_shallow' \
     "grep -l -i -s -C 1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
-  CMD 'grep_mode_preview' \
+  INIT 'grep_mode_preview' \
     "grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}' {}"
 fi
 
 # Quick-launch Command: Used to open targets in their native client
 launch=''
-HAS xdg-open && CMD 'launch' 'xdg-open'
-HAS open && CMD 'launch' 'open'
+HAS xdg-open && INIT 'launch' 'xdg-open'
+HAS open && INIT 'launch' 'open'
 
 # Prefer -I option to -i for removing files, if available
 rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
-  CMD 'rm_interactive' 'rm -ri' || rm_interactive='rm -rI'
+  INIT 'rm_interactive' 'rm -ri' || rm_interactive='rm -rI'
 
 declare -A key_definitions key_actions action_keys
 MAP() {
