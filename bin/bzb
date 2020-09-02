@@ -34,14 +34,13 @@ function clearFZF() {
   [[ $fzf_command && $no_clear ]] && tput rmcup
 }
 
-# Detect terminal and exit if not interactive
+# Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
+  INIT 'color' ''
   if HAS tput; then
     declare -r no_clear=1
     trap clearFZF EXIT
-
-    # Detect color output
-    test $(tput colors) -ge 8 && INIT 'color' 1 || INIT 'color' ''
+    test $(tput colors) -ge 8 && INIT 'color' 1
   fi
 else
   echo "Error: $(basename "${BASH_SOURCE[0]}") must be run interactively" 1>&2
@@ -366,6 +365,7 @@ main() {
   fzf_input+=" | sed 's:^\./::'"
 
   fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' --bind=alt-k:up,alt-j:down,ctrl-g:ignore,esc:cancel --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
+  [[ ! $color ]] && fzf_options="${color:---no-color} $fzf_options"
 
   # CYCLE INTO FZF
   fzf_command="$fzf_input | fzf $fzf_options"
