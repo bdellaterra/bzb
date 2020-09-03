@@ -546,11 +546,6 @@ main() {
       cd "$dir"
     ;;
 
-    # Use ctrl-alt-b to bookmark current directory
-    bookmark-current-dir)
-      [[ ! "$(dirs -l)" =~ " $PWD" ]] && pushd "$PWD" >/dev/null
-    ;;
-
     # Use alt-u to select bookmarks to delete
     unbookmark-dirs)
       current_dir="$PWD"
@@ -564,6 +559,11 @@ main() {
         done
       done
       cd "$current_dir"
+    ;;
+
+    # Use ctrl-alt-b to bookmark current directory
+    bookmark-current-dir)
+      [[ ! "$(dirs -l)" =~ " $PWD" ]] && pushd "$PWD" >/dev/null
     ;;
 
     # Use ctrl-alt-u to unbookmark current directory
@@ -611,12 +611,6 @@ main() {
       cd "$OLDPWD"
     ;;
 
-    # Use alt-g to go to directory named at prompt
-    prompt-dir)
-      clear && read -ep "Go to directory: " -i "$PWD" dir
-      [[ -d "$dir" ]] && cd "$dir" || echo "Not a directory"
-    ;;
-
     # Use alt-a to go to alternate directory, or go back
     # to previous directory if already in alternate directory
     # Use alt-s to set alternate directory
@@ -628,6 +622,12 @@ main() {
       if [[ "$action" = "enter-alt-dir" && -d "$alt_dir" ]]; then
         [[ "$PWD" = "$alt_dir" ]] && cd "$OLDPWD" || cd "$alt_dir"
       fi
+    ;;
+
+    # Use alt-g to go to directory named at prompt
+    prompt-dir)
+      clear && read -ep "Go to directory: " -i "$PWD" dir
+      [[ -d "$dir" ]] && cd "$dir" || echo "Not a directory"
     ;;
 
     # Use ctrl-alt-g to set/enter new base directory
