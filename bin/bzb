@@ -396,7 +396,7 @@ main() {
       [[ $grep_query ]] && grep_mode=1 || grep_mode=''
     ;;
 
-    # Use left arrow to move up a directory, but not above base directory
+    # Use left arrow or alt-k to move up a directory, but not above base directory
     # If in grep mode, exit and resume browsing current directory
     back|back2)
       if [[ ! $grep_mode && "$PWD" != "$base_dir" ]]; then
@@ -682,7 +682,7 @@ main() {
       preview=1
     ;;
 
-    # Use enter or right arrow to edit file or enter directory
+    # Use enter or right arrow or alt-j to edit file or enter directory
     enter|enter2)
       next_targets=("${targets[@]}")
     ;;
