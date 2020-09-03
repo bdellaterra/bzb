@@ -391,7 +391,7 @@ main() {
   status=()
   [[ $shallow ]] && status+=('-n') || status+=('+N')
   [[ $hidden ]] && status+=('+H') || status+=('-h')
-  [[ $no_ignore ]] && status+=('-i') || status+=('+I')
+  [[ $no_ignore ]] && status+=('+I') || status+=('-i')
   [[ $sorted ]] && status+=('+S') || status+=('-s')
   [[ $reverse ]] && status+=('+R') || status+=('-r')
   export BZB_FZF_HEADER="[${status[@]}]"
