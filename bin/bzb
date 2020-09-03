@@ -379,7 +379,8 @@ main() {
   else
     [[ $shallow ]] && find="$find_shallow" || find="$find_recursive"
     preview_opts="--preview='$find_mode_preview' --preview-window='$preview_window'"
-    fzf_input=$(bash -c "echo \"$find\${sorted:+ | $sort}\"")
+    sort_pipe="${sorted:+ | $sort}"
+    fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
     fzf_prompt="${PWD#$base_dir}>"
   fi
   [[ ! $preview ]] && preview_opts=''
