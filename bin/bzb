@@ -138,7 +138,7 @@ else
 fi
 
 # Quick-launch Command: Used to open targets in their native client
-launch=''
+init 'launch' ''
 has xdg-open && init 'launch' 'xdg-open'
 has open && init 'launch' 'open'
 
