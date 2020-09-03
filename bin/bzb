@@ -286,19 +286,26 @@ function save_selection() {
 }
 
 function save_session() {
-  mkdir -p "$(dirname $session)" && touch "$session"
-  readarray -t bookmarks < <(dirs -p -l)
-  if [[ -w "$session" ]]; then
-    declare -p PWD > "$session"
-    [[ "$base_dir" ]] && declare -p base_dir >> "$session"
-    [[ "$alt_dir" ]] && declare -p alt_dir >> "$session"
-    declare -p bookmarks >> "$session"
-    declare -p shallow >> "$session"
-    declare -p hidden >> "$session"
-    declare -p no_ignore >> "$session"
-    declare -p sorted >> "$session"
-    declare -p reverse >> "$session"
-    declare -p preview >> "$session"
+  if [[ -n "$1" ]]; then
+    mkdir -p "$(dirname $1)" && touch "$1"
+    if [[ -w "$1" ]]; then
+      session="$1"
+      readarray -t bookmarks < <(dirs -p -l)
+      # Write session data to file
+      declare -p PWD > "$session"
+      [[ "$base_dir" ]] && declare -p base_dir >> "$session"
+      [[ "$alt_dir" ]] && declare -p alt_dir >> "$session"
+      declare -p bookmarks >> "$session"
+      declare -p shallow >> "$session"
+      declare -p hidden >> "$session"
+      declare -p no_ignore >> "$session"
+      declare -p sorted >> "$session"
+      declare -p reverse >> "$session"
+      declare -p preview >> "$session"
+    else
+      echo "Error: Could not save session to '$1'" 2>&1
+      read -s -r -n 1 -p "(Press any key to continue)"
+    fi
   fi
 }
 
@@ -320,7 +327,7 @@ if [[ -z "$base_dir" ]]; then
 fi
 pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
 
-# Optionally restore browsing session
+# Optionally autoload browsing session
 INIT 'session' "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
 [[ $autoload_session && -r "$session" ]] && . -- "$session" && restore_session "$session"
 
@@ -661,11 +668,8 @@ main() {
 
     # Use ctrl-alt-y to save session
     save-session)
-      session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
-      clear && read -ep "Save session: " -i "$session" session
-      if [[ -n "$session" ]]; then
-        save_session
-      fi
+      clear && read -ep "Save session: " -i "$session" save
+      save_session "$save"
     ;;
 
     # Use ctrl-alt-n to restore normal view/sort settings
@@ -684,12 +688,8 @@ main() {
     ;;
   esac
 
-  if [[ "$autosave_session" ]]; then
-    session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
-    if [[ -n "$session" ]]; then
-      save_session
-    fi
-  fi
+  # Optionally autosave browsing session
+  [[ "$autosave_session" ]] && save_session "$session"
 
   main "${next_targets[@]}"
 }
