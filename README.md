@@ -70,18 +70,19 @@ ctrl-alt-y  | save session to file named at prompt                              
 OPTIONS                            | EFFECT
 -----------------------------------|-------------------------------------------
 --help,-h                          | Show this help text
---grep,-g                          | Start in grep mode
 --once,-o                          | Exit browser after editing a file
 --color,-c                         | Show colorized output
---recursive,-r                     | Show nested files/direcories at start
+--recursive,-r                     | List nested files/direcories at start
 --hidden,-H                        | Show hidden files/direcories at start
 --no-ignore,-I                     | Show ignored files/direcories at start
---no-preview,-P                    | Disable preview pane that shows file/directory contents
 --no-sort,-S                       | Disable sorting of files/directories
---no-edit,-E                       | Disable launch of editor and just log selection to file
 --reverse-sort,-R                  | Reverse the normal sort order
---auto-save-session,-s             | Save bookmarks and view/sort settings continuously
---auto-load-session,-l             | Load bookmarks and view/sort settings at start
+--no-edit,-E                       | Disable launch of editor and just log selection to file
+--no-preview,-P                    | Disable preview pane that shows file/directory contents
+--no-toggle-status,-T              | Disable status header that shows current toggle settings
+--autosave-session,-s              | Save bookmarks and view/sort settings continuously
+--autoload-session,-l              | Load bookmarks and view/sort settings at start
+--grep=PATTERN,-g=PATTERN          | Start in grep mode, searching files for specified pattern
 --base-directory=DIR,-bd=DIR       | Specify a base directory instead of deriving it from target
 --alternate-directory=DIR,-ad=DIR  | Initialize alternate directory at start
 

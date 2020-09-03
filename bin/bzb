@@ -246,12 +246,13 @@ Options:
 --recursive,-r                     List nested files/direcories at start
 --hidden,-H                        Show hidden files/direcories at start
 --no-ignore,-I                     Show ignored files/direcories at start
---no-preview,-P                    Disable preview pane that shows file/directory contents
 --no-sort,-S                       Disable sorting of files/directories
---no-edit,-E                       Disable launch of editor and just log selection to file
 --reverse-sort,-R                  Reverse the normal sort order
---autosave-session,-s             Save bookmarks and view/sort settings continuously
---autoload-session,-l             Load bookmarks and view/sort settings at start
+--no-edit,-E                       Disable launch of editor and just log selection to file
+--no-preview,-P                    Disable preview pane that shows file/directory contents
+--no-toggle-status,-T              Disable status header that shows current toggle settings
+--autosave-session,-s              Save bookmarks and view/sort settings continuously
+--autoload-session,-l              Load bookmarks and view/sort settings at start
 --grep=PATTERN,-g=PATTERN          Start in grep mode, searching files for specified pattern
 --base-directory=DIR,-bd=DIR       Specify a base directory instead of deriving it from target
 --alternate-directory=DIR,-ad=DIR  Initialize alternate directory at start
@@ -268,10 +269,10 @@ for arg in "$@"; do
     -r|--recursive) shallow=''; shift ;;
     -H|--hidden) hidden=1; shift ;;
     -I|--no-ignore) no_ignore=1; shift ;;
-    -P|--no-preview) preview=''; shift ;;
     -S|--no-sort) sorted=''; shift ;;
-    -E|--no-edit) no_edit=1; persist=''; shift ;;
     -R|--reverse-sort) reverse=1; shift ;;
+    -E|--no-edit) no_edit=1; persist=''; shift ;;
+    -P|--no-preview) preview=''; shift ;;
     -T|--no-toggle-status) toggle_status=''; shift ;;
     -s|--autosave-session) autosave_session=1; shift ;;
     -l|--autoload-session) autoload_session=1; shift ;;
