@@ -7,13 +7,13 @@ if [[ "${BASH_VERSINFO[0]}" -lt 2 ]]; then
 fi
 
 # Test if command exists
-HAS() {
+has() {
   command -v "$1" &>/dev/null
 }
 
 # In the variable name provided as first argument, store the default value provided
 # as second argument. If BZB_ prefixed all-caps variable is defined use its value instead
-INIT() {
+init() {
   override="BZB_${1^^}"
   [[ -n "${!override+defined}" ]] && value="${!override}" || value="$2"
   # Avoid polluting global namespace if bash supports namerefs (version 4.3+)
@@ -26,17 +26,17 @@ INIT() {
 }
 
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
-clearFZF() {
+clear_fzf() {
   [[ $fzf_command && $no_clear ]] && tput rmcup
 }
 
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
-  INIT 'color' ''
-  if HAS tput; then
+  init 'color' ''
+  if has tput; then
     declare -r no_clear=1
-    trap clearFZF EXIT
-    test $(tput colors) -ge 8 && INIT 'color' 1
+    trap clear_fzf EXIT
+    test $(tput colors) -ge 8 && init 'color' 1
   fi
 else
   echo "Error: $(basename "${BASH_SOURCE[0]}") must be run interactively" 1>&2
@@ -44,107 +44,107 @@ else
 fi
 
 # Directory where data for loading/restoring sessions is saved (optional)
-INIT 'data_dir' "$HOME/.bzb" && readonly data_dir
+init 'data_dir' "$HOME/.bzb" && readonly data_dir
 
 # Default behavior is to launch $EDITOR as the enter-action for files. Enabling option below
 # will instead only log selected targets to a 'selection' file in data_dir. This communicates
 # user-actions to another program that has launched bzb as an integrated file browser.
 # Enabling this option will set 'persist' option below to false
-INIT 'no_edit' ''
+init 'no_edit' ''
 
 # Stay in browser after editing files
-INIT 'persist' 1
+init 'persist' 1
 
 # Start with only top-level files/directories displayed
-INIT 'shallow' 1
+init 'shallow' 1
 
 # Don't show hidden files
-INIT 'hidden' ''
+init 'hidden' ''
 
 # Don't show ignored files
-INIT 'no_ignore' ''
+init 'no_ignore' ''
 
 # Don't start in grep mode
-INIT 'grep_mode' ''
+init 'grep_mode' ''
 
 # Sort ascending
-INIT 'sorted' 1
-INIT 'reverse' ''
+init 'sorted' 1
+init 'reverse' ''
 
 # Display preview pane
-INIT 'preview' 1
-INIT 'preview_window' 'right:62%:wrap'
+init 'preview' 1
+init 'preview_window' 'right:62%:wrap'
 
 # Save/Load sessions manually
-INIT 'autosave_session' ''
-INIT 'autoload_session' ''
+init 'autosave_session' ''
+init 'autoload_session' ''
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
-if HAS fd; then
-  INIT 'find_recursive' \
+if has fd; then
+  init 'find_recursive' \
     "fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
-  INIT 'find_shallow' \
+  init 'find_shallow' \
     "fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
 else
-  INIT 'find_recursive' \
+  init 'find_recursive' \
     "find . -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
-  INIT 'find_shallow' \
+  init 'find_shallow' \
     "find . -maxdepth 1 -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
 fi
 
 # Sort Command:
-INIT 'sort' \
+init 'sort' \
   "LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
 
 # Preview Commands:
-INIT 'preview_directory' \
+init 'preview_directory' \
   "ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh {}"
-INIT 'preview_text' \
+init 'preview_text' \
   "cat {}"
-INIT 'is_binary' \
+init 'is_binary' \
   'test `head -qc 8192 {} 2>/dev/null | grep -o "[^[:print:]]" 2>/dev/null | wc -c` -gt 16'
 
-if HAS file; then
-  INIT 'preview_binary' \
+if has file; then
+  init 'preview_binary' \
     "file -L {}"
-  INIT 'is_binary' \
+  init 'is_binary' \
     '[[ ! "$(file -L {})" =~ 'text' ]] && '"$is_binary"
 else
-  INIT 'preview_binary' \
+  init 'preview_binary' \
     "stat -L {}"
 fi
 
-INIT 'preview_file' \
+init 'preview_file' \
   "( $is_binary && $preview_binary || $preview_text )"
-INIT 'find_mode_preview' \
+init 'find_mode_preview' \
   "[[ -d {} ]] && $preview_directory || $preview_file"
 
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed
-if HAS rg; then
-  INIT 'grep_recursive' \
+if has rg; then
+  init 'grep_recursive' \
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
-  INIT 'grep_shallow' \
+  init 'grep_shallow' \
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --max-depth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
-  INIT 'grep_mode_preview' \
+  init 'grep_mode_preview' \
     "rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
   # TODO: Support ignoring hidden files recursively
-  INIT 'grep_recursive' \
+  init 'grep_recursive' \
     "grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' ."
-  INIT 'grep_shallow' \
+  init 'grep_shallow' \
     "grep -l -i -s -C 1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
-  INIT 'grep_mode_preview' \
+  init 'grep_mode_preview' \
     "grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}' {}"
 fi
 
 # Quick-launch Command: Used to open targets in their native client
 launch=''
-HAS xdg-open && INIT 'launch' 'xdg-open'
-HAS open && INIT 'launch' 'open'
+has xdg-open && init 'launch' 'xdg-open'
+has open && init 'launch' 'open'
 
 # Prefer -I option to -i for removing files, if available
 rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
-  INIT 'rm_interactive' 'rm -ri' || rm_interactive='rm -rI'
+  init 'rm_interactive' 'rm -ri' || rm_interactive='rm -rI'
 
 
 # Set readline keybinds for cancelling prompts with ctr-g or double-escape
@@ -153,62 +153,62 @@ bind '"\C-g":"\C-k\C-u
 "' '"\e\e":"\C-g"' &>/dev/null
 
 # Set fzf keybinds for movement and exit actions
-INIT 'fzf_bind' '--bind=alt-k:up,alt-j:down,ctrl-g:ignore,esc:cancel'
-INIT 'fzf_submenu_bind' '--bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
+init 'fzf_bind' '--bind=alt-k:up,alt-j:down,ctrl-g:ignore,esc:cancel'
+init 'fzf_submenu_bind' '--bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
 
 declare -A key_definitions key_actions action_keys
-MAP() {
+map() {
   keys[${#keys[@]}]="$2"
   key_definitions["$2"]="$3"
   key_actions["$2"]="$1"
   action_keys["$1"]="$2"
 }
 
-MAP 'enter'                   'right'       "enter directory or edit file"
-MAP 'enter2'                  'alt-l'       "enter directory or edit file"
-MAP 'back'                    'left'        "go to parent directory (not moving past base directory)"
-MAP 'back2'                   'alt-h'       "go to parent directory (not moving past base directory)"
-MAP 'launch'                  'alt-q'       "quick-launch targets using native client"
-MAP 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
-MAP 'grep2'                   'ctrl-g'      "toggle grep mode / cancel submenu or prompt"
-MAP 'move'                    'alt-m'       "move targets to directory named at prompt"
-MAP 'rename'                  'alt-r'       "rename targets in current directory"
-MAP 'move-rename'             'ctrl-alt-m'  "move/rename targets into directory named at prompt"
-MAP 'move-rename2'            'ctrl-alt-r'  "move/rename targets into directory named at prompt"
-MAP 'delete'                  'alt-x'       "delete targets"
-MAP 'copy'                    'alt-c'       "copy targets to directory named at prompt"
-MAP 'copy-rename'             'ctrl-alt-c'  "copy/rename targets into directory named at prompt"
-MAP 'create-edit-file'        'alt-e'       "create/edit file named at prompt"
-MAP 'create-file'             'alt-f'       "create file without editing"
-MAP 'create-dir'              'alt-d'       "create directory named at prompt"
-MAP 'create-enter-dir'        'ctrl-alt-d'  "create/enter directory named at prompt"
-MAP 'bookmark-targets'        'alt-b'       "bookmark target directories"
-MAP 'bookmark-current-dir'    'ctrl-alt-b'  "bookmark current directory"
-MAP 'unbookmark-dirs'         'alt-u'       "unbookmark selected directories"
-MAP 'unbookmark-current-dir'  'ctrl-alt-u'  "unbookmark current directory"
-MAP 'next-bookmark'           'alt-right'   "go to next bookmarked directory"
-MAP 'next-bookmark2'          'ctrl-alt-l'  "go to next bookmarked directory"
-MAP 'prev-bookmark'           'alt-left'    "go to previous bookmarked directory"
-MAP 'prev-bookmark2'          'ctrl-alt-h'  "go to previous bookmarked directory"
-MAP 'select-bookmark'         'alt-up'      "select and enter bookmarked directory"
-MAP 'select-bookmark2'        'ctrl-alt-k'  "select and enter bookmarked directory"
-MAP 'select-nested-bookmark'  'alt-down'    "select and enter bookmarked directory under current directory"
-MAP 'select-nested-bookmark2' 'ctrl-alt-j'  "select and enter bookmarked directory under current directory"
-MAP 'set-alt-dir'             'alt-s'       "set alternate directory (default for copy/move prompts)"
-MAP 'enter-alt-dir'           'alt-a'       "switch between current and alternate directory"
-MAP 'enter-base-dir'          'alt-z'       "switch between current and base directory"
-MAP 'enter-prev-dir'          'alt-p'       "switch between current and previous directory"
-MAP 'prompt-dir'              'alt-g'       "go to directory named at prompt"
-MAP 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt and go to it"
-MAP 'toggle-preview'          'ctrl-alt-p'  "toggle visibility of preview pane"
-MAP 'toggle-ignored'          'alt-i'       "toggle visibility of ignored files (if supported)"
-MAP 'toggle-hidden'           'alt-v'       "toggle visibility of hidden files"
-MAP 'toggle-nested'           'alt-n'       "toggle listing nested vs. only top-level files"
-MAP 'toggle-sort-order'       'alt-o'       "toggle sort order ascending/descending"
-MAP 'toggle-sort'             'ctrl-alt-s'  "toggle sorted/unsorted results (affects performance)"
-MAP 'reset-view'              'ctrl-alt-n'  "restore normal view settings (don't show nested/hidden/ignored)"
-MAP 'load-session'            'alt-y'       "load session from file named at prompt"
-MAP 'save-session'            'ctrl-alt-y'  "save session to file named at prompt"
+map 'enter'                   'right'       "enter directory or edit file"
+map 'enter2'                  'alt-l'       "enter directory or edit file"
+map 'back'                    'left'        "go to parent directory (not moving past base directory)"
+map 'back2'                   'alt-h'       "go to parent directory (not moving past base directory)"
+map 'launch'                  'alt-q'       "quick-launch targets using native client"
+map 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
+map 'grep2'                   'ctrl-g'      "toggle grep mode / cancel submenu or prompt"
+map 'move'                    'alt-m'       "move targets to directory named at prompt"
+map 'rename'                  'alt-r'       "rename targets in current directory"
+map 'move-rename'             'ctrl-alt-m'  "move/rename targets into directory named at prompt"
+map 'move-rename2'            'ctrl-alt-r'  "move/rename targets into directory named at prompt"
+map 'delete'                  'alt-x'       "delete targets"
+map 'copy'                    'alt-c'       "copy targets to directory named at prompt"
+map 'copy-rename'             'ctrl-alt-c'  "copy/rename targets into directory named at prompt"
+map 'create-edit-file'        'alt-e'       "create/edit file named at prompt"
+map 'create-file'             'alt-f'       "create file without editing"
+map 'create-dir'              'alt-d'       "create directory named at prompt"
+map 'create-enter-dir'        'ctrl-alt-d'  "create/enter directory named at prompt"
+map 'bookmark-targets'        'alt-b'       "bookmark target directories"
+map 'bookmark-current-dir'    'ctrl-alt-b'  "bookmark current directory"
+map 'unbookmark-dirs'         'alt-u'       "unbookmark selected directories"
+map 'unbookmark-current-dir'  'ctrl-alt-u'  "unbookmark current directory"
+map 'next-bookmark'           'alt-right'   "go to next bookmarked directory"
+map 'next-bookmark2'          'ctrl-alt-l'  "go to next bookmarked directory"
+map 'prev-bookmark'           'alt-left'    "go to previous bookmarked directory"
+map 'prev-bookmark2'          'ctrl-alt-h'  "go to previous bookmarked directory"
+map 'select-bookmark'         'alt-up'      "select and enter bookmarked directory"
+map 'select-bookmark2'        'ctrl-alt-k'  "select and enter bookmarked directory"
+map 'select-nested-bookmark'  'alt-down'    "select and enter bookmarked directory under current directory"
+map 'select-nested-bookmark2' 'ctrl-alt-j'  "select and enter bookmarked directory under current directory"
+map 'set-alt-dir'             'alt-s'       "set alternate directory (default for copy/move prompts)"
+map 'enter-alt-dir'           'alt-a'       "switch between current and alternate directory"
+map 'enter-base-dir'          'alt-z'       "switch between current and base directory"
+map 'enter-prev-dir'          'alt-p'       "switch between current and previous directory"
+map 'prompt-dir'              'alt-g'       "go to directory named at prompt"
+map 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt and go to it"
+map 'toggle-preview'          'ctrl-alt-p'  "toggle visibility of preview pane"
+map 'toggle-ignored'          'alt-i'       "toggle visibility of ignored files (if supported)"
+map 'toggle-hidden'           'alt-v'       "toggle visibility of hidden files"
+map 'toggle-nested'           'alt-n'       "toggle listing nested vs. only top-level files"
+map 'toggle-sort-order'       'alt-o'       "toggle sort order ascending/descending"
+map 'toggle-sort'             'ctrl-alt-s'  "toggle sorted/unsorted results (affects performance)"
+map 'reset-view'              'ctrl-alt-n'  "restore normal view settings (don't show nested/hidden/ignored)"
+map 'load-session'            'alt-y'       "load session from file named at prompt"
+map 'save-session'            'ctrl-alt-y'  "save session to file named at prompt"
 
 # comma-separated list of custom mappings for fzf
 fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
@@ -334,7 +334,7 @@ fi
 pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
 
 # Optionally autoload browsing session
-INIT 'session' "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
+init 'session' "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
 [[ $autoload_session && -r "$session" ]] && . -- "$session" && restore_session "$session"
 
 
