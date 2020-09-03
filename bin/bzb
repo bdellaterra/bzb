@@ -79,6 +79,9 @@ init 'reverse' ''
 init 'preview' 1
 init 'preview_window' 'right:62%:wrap'
 
+# Display status of toggle settings above results listing
+init 'toggle_status' 1
+
 # Save/Load sessions manually
 init 'autosave_session' ''
 init 'autoload_session' ''
@@ -269,6 +272,7 @@ for arg in "$@"; do
     -S|--no-sort) sorted=''; shift ;;
     -E|--no-edit) no_edit=1; persist=''; shift ;;
     -R|--reverse-sort) reverse=1; shift ;;
+    -T|--no-toggle-status) toggle_status=''; shift ;;
     -s|--autosave-session) autosave_session=1; shift ;;
     -l|--autoload-session) autoload_session=1; shift ;;
     -g=*|--grep=*) grep_mode=1; grep_query="${arg#*=}"; shift ;;
@@ -382,8 +386,17 @@ main() {
   # Clear leading dots from paths
   fzf_input+=" | sed 's:^\./::'"
 
+  status=()
+  [[ $shallow ]] && status+=('-n') || status+=('+N')
+  [[ $hidden ]] && status+=('+H') || status+=('-h')
+  [[ $no_ignore ]] && status+=('-i') || status+=('+I')
+  [[ $sorted ]] && status+=('+S') || status+=('-s')
+  [[ $reverse ]] && status+=('+R') || status+=('-r')
+  export BZB_FZF_HEADER="[${status[@]}]"
+
   fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' $fzf_bind --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_extra_options[@]}"
   [[ ! $color ]] && fzf_options="${color:---no-color} $fzf_options"
+  [[ $toggle_status ]] && fzf_options="--header=\"\$BZB_FZF_HEADER\" $fzf_options"
 
   # CYCLE INTO FZF
   fzf_command="$fzf_input | fzf $fzf_options"
