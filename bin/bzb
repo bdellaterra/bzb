@@ -237,8 +237,8 @@ Options:
 --no-sort,-S                       Disable sorting of files/directories
 --no-edit,-E                       Disable launch of editor and just log selection to file
 --reverse-sort,-R                  Reverse the normal sort order
---auto-save-session,-s             Save bookmarks and view/sort settings continuously
---auto-load-session,-l             Load bookmarks and view/sort settings at start
+--autosave-session,-s             Save bookmarks and view/sort settings continuously
+--autoload-session,-l             Load bookmarks and view/sort settings at start
 --grep=PATTERN,-g=PATTERN          Start in grep mode, searching files for specified pattern
 --base-directory=DIR,-bd=DIR       Specify a base directory instead of deriving it from target
 --alternate-directory=DIR,-ad=DIR  Initialize alternate directory at start
@@ -259,8 +259,8 @@ for arg in "$@"; do
     -S|--no-sort) sorted=''; shift ;;
     -E|--no-edit) no_edit=1; persist=''; shift ;;
     -R|--reverse-sort) reverse=1; shift ;;
-    -s|--auto-save-session) autosave_session=1; shift ;;
-    -l|--auto-load-session) autoload_session=1; shift ;;
+    -s|--autosave-session) autosave_session=1; shift ;;
+    -l|--autoload-session) autoload_session=1; shift ;;
     -g=*|--grep=*) grep_mode=1; grep_query="${arg#*=}"; shift ;;
     -bd=*|--base-dir=*|--base_directory=*) base_dir="${arg#*=}"; shift ;;
     -ad=*|--alt-dir=*|--alternate-directory=*) alt_dir="${arg#*=}"; shift ;;
@@ -642,7 +642,7 @@ main() {
           base_dir="${dir%/}"
           pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
           session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
-          action="auto-load-session"
+          action="autoload-session"
         fi
       fi
       if [[ ! -d "$base_dir" || ! -d "$dir" ]]; then
@@ -653,7 +653,7 @@ main() {
       else
         cd "$base_dir"
       fi
-      if [[ "$action" = "load-session" || "$action" = "auto-load-session" ]]; then
+      if [[ "$action" = "load-session" || "$action" = "autoload-session" ]]; then
         restore="$session"
         if [[ "$action" = 'load-session' || ! $autoload_session ]]; then
           clear && read -ep "Load session: " -i "$restore" restore
