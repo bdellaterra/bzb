@@ -6,10 +6,6 @@ if [[ "${BASH_VERSINFO[0]}" -lt 2 ]]; then
   exit 1
 fi
 
-# bind readline macros for cancelling prompts with ctr-g or double-escape
-bind '"\C-g":"\C-k\C-u
-"' '"\e\e":"\C-g"' &>/dev/null
-
 # Test if command exists
 function HAS() {
   command -v "$1" &>/dev/null
@@ -149,6 +145,16 @@ HAS open && INIT 'launch' 'open'
 # Prefer -I option to -i for removing files, if available
 rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
   INIT 'rm_interactive' 'rm -ri' || rm_interactive='rm -rI'
+
+
+# Set readline keybinds for cancelling prompts with ctr-g or double-escape
+# Binding single-escape could cause side effects due to its use as a common meta character
+bind '"\C-g":"\C-k\C-u
+"' '"\e\e":"\C-g"' &>/dev/null
+
+# Set fzf keybinds for movement and exit actions
+INIT 'fzf_bind' '--bind=alt-k:up,alt-j:down,ctrl-g:ignore,esc:cancel'
+INIT 'fzf_submenu_bind' '--bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
 
 declare -A key_definitions key_actions action_keys
 MAP() {
@@ -372,7 +378,7 @@ main() {
   # Clear leading dots from paths
   fzf_input+=" | sed 's:^\./::'"
 
-  fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' --bind=alt-k:up,alt-j:down,ctrl-g:ignore,esc:cancel --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
+  fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' $fzf_bind --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_opts[@]}"
   [[ ! $color ]] && fzf_options="${color:---no-color} $fzf_options"
 
   # CYCLE INTO FZF
@@ -550,7 +556,7 @@ main() {
     unbookmark-dirs)
       current_dir="$PWD"
       readarray -t dirs < <(dirs -p -l)
-      bookmarks=("$(printf '%s\n' "${dirs[@]}" | LC_ALL=C sort -u | fzf --multi --bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query --prompt='[unbookmark]')")
+      bookmarks=("$(printf '%s\n' "${dirs[@]}" | LC_ALL=C sort -u | fzf $fzf_submenu_bind --multi --prompt='[unbookmark]')")
       for b in ${bookmarks[@]}; do
         for i in "${!dirs[@]}"; do
           if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$b" ]]; then
@@ -595,14 +601,14 @@ main() {
     # Use alt-up or ctrl-alt-k to select bookmarked directory using fzf
     select-bookmark|select-bookmark2)
       readarray -t dirs < <(dirs -p -l | LC_ALL=C sort -u)
-      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query --prompt='[go to directory]')")
+      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf $fzf_submenu_bind --prompt='[go to directory]')")
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
 
     # Use alt-down or ctrl-alt-j to select bookmarked directory under current directory
     select-nested-bookmark|select-nested-bookmark2)
       readarray -t dirs < <(dirs -p -l | grep "$PWD" | LC_ALL=C sort -u)
-      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf --bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query --prompt='[go to subdirectory]')")
+      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf $fzf_submenu_bind --prompt='[go to subdirectory]')")
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
 
