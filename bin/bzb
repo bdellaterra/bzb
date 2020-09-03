@@ -7,7 +7,7 @@ if [[ "${BASH_VERSINFO[0]}" -lt 2 ]]; then
 fi
 
 # Test if command exists
-function HAS() {
+HAS() {
   command -v "$1" &>/dev/null
 }
 
@@ -26,7 +26,7 @@ INIT() {
 }
 
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
-function clearFZF() {
+clearFZF() {
   [[ $fzf_command && $no_clear ]] && tput rmcup
 }
 
@@ -276,7 +276,7 @@ for arg in "$@"; do
   esac
 done
 
-function save_selection() {
+save_selection() {
   if [[ $no_edit && -d $data_dir ]]; then
     selection="$data_dir/selection"
     mkdir -p "$(dirname $selection)" && touch "$selection"
@@ -291,7 +291,7 @@ function save_selection() {
   fi
 }
 
-function save_session() {
+save_session() {
   if [[ -n "$1" ]]; then
     mkdir -p "$(dirname $1)" && touch "$1"
     if [[ -w "$1" ]]; then
@@ -315,7 +315,7 @@ function save_session() {
   fi
 }
 
-function restore_session() {
+restore_session() {
   dirs -c
   pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
   for b in "${bookmarks[@]}"; do
