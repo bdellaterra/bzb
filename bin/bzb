@@ -302,16 +302,13 @@ function save_session() {
   fi
 }
 
-function load_session() {
-  session="$1"
-  if [[ -r "$session" ]]; then
-    dirs -c
-    pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
-    for b in "${bookmarks[@]}"; do
-      [[ -d "$b" ]] && pushd "$b" >/dev/null
-    done
-    cd "$base_dir"
-  fi
+function restore_session() {
+  dirs -c
+  pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
+  for b in "${bookmarks[@]}"; do
+    [[ -d "$b" ]] && pushd "$b" >/dev/null
+  done
+  cd "$base_dir"
 }
 
 
@@ -325,7 +322,7 @@ pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
 
 # Optionally restore browsing session
 INIT 'session' "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
-[[ $autoload_session && -n "$session" ]] && . -- "$session" && load_session "$session"
+[[ $autoload_session && -r "$session" ]] && . -- "$session" && restore_session "$session"
 
 
 main() {
@@ -631,25 +628,33 @@ main() {
     # to previous directory if already in base directory
     # Use alt-y to load session
     set-base-dir|enter-base-dir|load-session)
+      dir="$PWD"
       if [[ "$action" = "set-base-dir" || ! -d "$base_dir" ]]; then
-        clear && read -ep "Set base directory: " -i "$PWD" dir
+        clear && read -ep "Set base directory: " -i "$dir" dir
         if [[ -d "$dir" ]]; then
           base_dir="${dir%/}"
           pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
-          [[ ! "$autoload_session" ]] && action="load-session"
-        elif [[ -n "$dir" ]]; then
-          echo "Not a directory"
+          session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
+          action="auto-load-session"
         fi
       fi
-      if [[ -d "$base_dir" ]]; then
-        [[ "$PWD" = "$base_dir" ]] && cd "$OLDPWD" || cd "$base_dir"
+      if [[ ! -d "$base_dir" || ! -d "$dir" ]]; then
+        echo "Error: Cannot set base directory to invalid path" 2>&1
+        read -s -r -n 1 -p "(Press any key to continue)"
+      elif [[ "$action" = "enter-base-dir" && "$PWD" = "$base_dir" ]]; then
+        cd "$OLDPWD"
+      else
+        cd "$base_dir"
       fi
-      if [[ "$action" = 'load-session' ]]; then
-        session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
-        clear && read -ep "Load session: " -i "$session" session
-        if [[ -r "$session" ]]; then
+      if [[ "$action" = "load-session" || "$action" = "auto-load-session" ]]; then
+        restore="$session"
+        if [[ "$action" = 'load-session' || ! $autoload_session ]]; then
+          clear && read -ep "Load session: " -i "$restore" restore
+        fi
+        if [[ -r "$restore" ]]; then
+          session="$restore"
           . -- "$session"
-          load_session
+          restore_session
         fi
       fi
     ;;
