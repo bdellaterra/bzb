@@ -208,6 +208,7 @@ map 'enter-prev-dir'          'alt-p'       "switch between current and previous
 map 'prompt-dir'              'alt-g'       "go to directory named at prompt"
 map 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt and go to it"
 map 'toggle-preview'          'ctrl-alt-p'  "toggle visibility of preview pane"
+map 'toggle-status'           'ctrl-alt-t'  "toggle visibility of toggle status bar"
 map 'toggle-ignored'          'alt-i'       "toggle visibility of ignored files (if supported)"
 map 'toggle-hidden'           'alt-v'       "toggle visibility of hidden files"
 map 'toggle-nested'           'alt-n'       "toggle listing nested vs. only top-level files"
@@ -458,11 +459,6 @@ main() {
       [[ $hidden ]] && hidden='' || hidden=1
     ;;
 
-    # Use ctrl-alt-p to toggle visibility of preview pane
-    toggle-preview)
-      [[ $preview ]] && preview='' || preview=1
-    ;;
-
     # Use alt-o to toggle between normal and reverse sort order
     toggle-sort-order)
       [[ $reverse ]] && reverse='' || reverse=1
@@ -471,6 +467,16 @@ main() {
     # Use ctrl-alt-s to enable/disable sorting
     toggle-sort)
       [[ $sorted ]] && sorted='' || sorted=1
+    ;;
+
+    # Use ctrl-alt-p to toggle visibility of preview pane
+    toggle-preview)
+      [[ $preview ]] && preview='' || preview=1
+    ;;
+
+    # Use ctrl-alt-t to toggle visibility of toggle status bar
+    toggle-status)
+      [[ $toggle_status ]] && toggle_status='' || toggle_status=1
     ;;
 
     # Use alt-q to quick-launch targets in their native client
