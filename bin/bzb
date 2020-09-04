@@ -135,9 +135,8 @@ if has rg; then
   init 'grep_mode_preview' \
     "rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
-  # TODO: Support ignoring hidden files recursively
   init 'grep_recursive' \
-    "grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' ."
+    "grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'}"
   init 'grep_shallow' \
     "grep -l -i -s -C 1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
   init 'grep_mode_preview' \
