@@ -243,9 +243,9 @@ Options:
 --help,-h                          Show this help text
 --once,-o                          Exit browser after editing a file
 --color,-c                         Show colorized output
---recursive,-r                     List nested files/direcories at start
---hidden,-H                        Show hidden files/direcories at start
---no-ignore,-I                     Show ignored files/direcories at start
+--recursive,-r                     List nested files/directories at start
+--hidden,-H                        Show hidden files/directories at start
+--no-ignore,-I                     Show ignored files/directories at start
 --no-sort,-S                       Disable sorting of files/directories
 --reverse-sort,-R                  Reverse the normal sort order
 --no-edit,-E                       Disable launch of editor and just log selection to file
