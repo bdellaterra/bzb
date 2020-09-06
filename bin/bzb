@@ -176,7 +176,7 @@ map 'back'                    'left'        "go to parent directory (not moving 
 map 'back2'                   'alt-h'       "go to parent directory (not moving past base directory)"
 map 'launch'                  'alt-q'       "quick-launch targets using native client"
 map 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
-map 'grep2'                   'ctrl-g'      "toggle grep mode / cancel submenu or prompt"
+map 'toggle-grep'             'ctrl-g'      "toggle grep mode / cancel submenu or prompt"
 map 'move'                    'alt-m'       "move targets to directory named at prompt"
 map 'rename'                  'alt-r'       "rename targets in current directory"
 map 'move-rename'             'ctrl-alt-m'  "move/rename targets into directory named at prompt"
@@ -439,7 +439,7 @@ main() {
     ;;&
 
     # Use ctrl-g to toggle in/out of grep mode (not changing search pattern)
-    grep2)
+    toggle-grep)
       [[ $grep_mode ]] && grep_mode='' || grep_mode=1
     ;;
 
