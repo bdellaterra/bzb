@@ -547,7 +547,8 @@ main() {
     # Use alt-d to create directory named at prompt
     # Use ctrl-alt-d to create directory and enter it
     create-dir|create-enter-dir)
-      clear && read -p "Create directory: " target
+      [[ "$action" = "create-enter-dir" ]] && create_enter="Create/Enter" || create_enter="Create"
+      clear && read -p "$create_enter directory: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$target"
         [[ "$command" = "${action_keys[create-enter-dir]}" ]] && next_targets=("$target")
@@ -557,7 +558,8 @@ main() {
     # Use alt-f to create file named at prompt
     # Use alt-e to create file and edit it immediately
     create-file|create-edit-file)
-      clear && read -p "Create file: " target
+      [[ "$action" = "create-edit-file" ]] && create_edit="Create/Edit" || create_edir="Create"
+      clear && read -p "$create_edit file: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$(dirname "$target")" && touch "$target"
         [[ "$command" = "${action_keys[create-edit-file]}" ]] && next_targets=("$target")
