@@ -32,13 +32,21 @@ init() {
   set "$override" && set "$1" "${!override}" || set "$1" "$2"
 }
 
-# Initialize variable name provided as first argument to true/on value,
+# Initialize variable names provided to true/on value,
 # allowing override by BZB_ prefixed all-caps variable only if previously unset
-enable() { set "$1" && set "$1" 1 || init "$1" 1; }
+enable() {
+  for var in "$@"; do
+    set "$var" && set "$var" 1 || init "$var" 1
+  done
+}
 
 # Initialize variable name provided as first argument to false/off value,
 # allowing override by BZB_ prefixed all-caps variable only if previously unset
-disable() { set "$1" && set "$1" '' || init "$1" ''; }
+disable() {
+  for var in "$@"; do
+    set "$var" && set "$var" '' || init "$var" ''
+  done
+}
 
 # Enable setting if false/off. Disable it if true/on
 toggle() { [[ ${!1} ]] && disable "$1" || enable "$1"; }
@@ -51,7 +59,7 @@ clear_fzf() {
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    declare -r no_clear=1
+    enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
@@ -73,35 +81,9 @@ init 'data_dir' "$HOME/.bzb" && readonly data_dir
 # integrated file browser. Enabling this option will set 'persist' option below to false
 disable no_edit
 
-# Stay in browser after editing files
-enable persist
-
-# Start with only top-level files/directories displayed
-enable shallow
-
-# Don't show hidden files
-disable hidden
-
-# Don't show ignored files
-disable no_ignore
-
-# Don't start in grep mode
-disable grep_mode
-
-# Sort ascending
-enable sorted
-disable reverse
-
-# Display preview pane
-enable preview
-init 'preview_window' 'right:62%:wrap'
-
-# Display status of toggle settings above results listing
-enable toggle_status
-
-# Save/Load sessions manually
-disable autosave_session
-disable autoload_session
+# Default enabled/disabled settings
+enable persist shallow sorted preview toggle_status
+disable reverse hidden no_ignore grep_mode autosave_session autoload_session
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
 if has fd; then
@@ -390,12 +372,12 @@ main() {
   if [[ $grep_mode ]]; then
     export BZB_GREP_QUERY="$grep_query"
     [[ $shallow ]] && grep="$grep_shallow" || grep="$grep_recursive"
-    preview_opts="--preview='$grep_mode_preview' --preview-window='$preview_window'"
+    preview_opts="--preview='$grep_mode_preview' --preview-window='right:62%:wrap'"
     fzf_input=$(bash -c "echo \"$grep\"")
     fzf_prompt="/$grep_query/"
   else
     [[ $shallow ]] && find="$find_shallow" || find="$find_recursive"
-    preview_opts="--preview='$find_mode_preview' --preview-window='$preview_window'"
+    preview_opts="--preview='$find_mode_preview' --preview-window='right:62%:wrap'"
     sort_pipe="${sorted:+ | $sort}"
     fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
     fzf_prompt="${PWD#$base_dir}>"
@@ -723,12 +705,8 @@ main() {
 
     # Use ctrl-alt-n to restore normal view/sort settings
     reset-view)
-      shallow=1
-      hidden=''
-      no_ignore=''
-      sorted=1
-      reverse=''
-      preview=1
+      enable shallow sorted preview toggle_status
+      disable reverse hidden no_ignore
     ;;
 
     # Use enter or right arrow or alt-j to edit file or enter directory
