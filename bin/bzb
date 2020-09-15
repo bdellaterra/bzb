@@ -1,8 +1,10 @@
 #!/bin/bash
 set -e
 
+script_name=$(basename "${BASH_SOURCE[0]}")
+
 if [[ "${BASH_VERSINFO[0]}" -lt 2 ]]; then
-  echo "Error: $(basename "${BASH_SOURCE[0]}") requires a newer version of bash" 1>&2
+  echo "Error: $script_name requires a newer version of bash" 1>&2
   exit 1
 fi
 
@@ -39,7 +41,7 @@ if [[ -t 0 || -p /dev/stdin ]]; then
     test $(tput colors) -ge 8 && init 'color' 1
   fi
 else
-  echo "Error: $(basename "${BASH_SOURCE[0]}") must be run interactively" 1>&2
+  echo "Error: $script_name must be run interactively" 1>&2
   exit 1
 fi
 
@@ -222,7 +224,7 @@ fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
 
 usage() {
 cat <<USAGE
-usage: $(basename "${BASH_SOURCE[0]}") [options] [target file or directory]
+usage: $script_name [options] [target file or directory]
 
 Browse files using fzf. If no target specified start in the current directory.
 
