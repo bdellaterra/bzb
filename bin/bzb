@@ -87,11 +87,13 @@ disable reverse hidden no_ignore grep_mode autosave_session autoload_session
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
 if has fd; then
+  disable no_find_ignore_status
   init 'find_recursive' \
     "fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
   init 'find_shallow' \
     "fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
 else
+  enable no_find_ignore_status
   init 'find_recursive' \
     "find . -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
   init 'find_shallow' \
@@ -127,6 +129,7 @@ init 'find_mode_preview' \
 
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed
 if has rg; then
+  disable no_grep_ignore_status
   init 'grep_recursive' \
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
   init 'grep_shallow' \
@@ -134,6 +137,7 @@ if has rg; then
   init 'grep_mode_preview' \
     "rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
+  enable no_grep_ignore_status
   init 'grep_recursive' \
     "grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'}"
   init 'grep_shallow' \
@@ -375,25 +379,30 @@ main() {
     preview_opts="--preview='$grep_mode_preview' --preview-window='right:62%:wrap'"
     fzf_input=$(bash -c "echo \"$grep\"")
     fzf_prompt="/$grep_query/"
+    [[ $no_grep_ignore_status ]] && ignore_disabled='!' || ignore_disabled=''
   else
     [[ $shallow ]] && find="$find_shallow" || find="$find_recursive"
     preview_opts="--preview='$find_mode_preview' --preview-window='right:62%:wrap'"
     sort_pipe="${sorted:+ | $sort}"
     fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
     fzf_prompt="${PWD#$base_dir}>"
+    [[ $no_find_ignore_status ]] && ignore_disabled='!' || ignore_disabled=''
   fi
   [[ ! $preview ]] && preview_opts=''
 
-  # Clear leading dots from paths
-  fzf_input+=" | sed 's:^\./::'"
-
+  # Prepare display to show status of toggle-settings
   status=()
   [[ $shallow ]] && status+=('-n') || status+=('+N')
   [[ $hidden ]] && status+=('+H') || status+=('-h')
-  [[ $no_ignore ]] && status+=('+I') || status+=('-i')
+  [[ $no_ignore ]] && status+=("${ignore_disabled:-+}I") || status+=("${ignore_disabled:--}i")
   [[ $sorted ]] && status+=('+S') || status+=('-s')
-  [[ $reverse ]] && status+=('+R') || status+=('-r')
+  [[ ! $sorted ]] && reverse_disabled='!' || reverse_disabled=''
+  [[ $reverse ]] && status+=("${reverse_disabled:-+}R") || status+=("${reverse_disabled:--}r")
+
   export BZB_FZF_HEADER="[${status[@]}]"
+
+  # Clear leading dots from paths
+  fzf_input+=" | sed 's:^\./::'"
 
   fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' $fzf_bind --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts ${fzf_extra_options[@]}"
   [[ ! $color ]] && fzf_options="${color:---no-color} $fzf_options"
