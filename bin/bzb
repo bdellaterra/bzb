@@ -9,23 +9,39 @@ if [[ "${BASH_VERSINFO[0]}" -lt 2 ]]; then
 fi
 
 # Test if command exists
-has() {
-  command -v "$1" &>/dev/null
+has() { command -v "$1" &>/dev/null; }
+
+# Test if variable is set. Set it to second argument if provided
+set() {
+  if [[ -n "${2+defined}" ]]; then
+    # Avoid polluting global namespace when setting variable if bash supports namerefs (version 4.3+)
+    if [[ "${BASH_VERSINFO[0]}" -ge 4 && "${BASH_VERSINFO[1]}" -ge 3 ]]; then
+      local -n outvar="$1"
+      outvar="$2"
+    else
+      export "$1=$2"
+    fi
+  fi
+  [[ -n "$1" && -n "${!1+defined}" ]] || return 1
 }
 
 # In the variable name provided as first argument, store the default value provided
 # as second argument. If BZB_ prefixed all-caps variable is defined use its value instead
 init() {
   override="BZB_${1^^}"
-  [[ -n "${!override+defined}" ]] && value="${!override}" || value="$2"
-  # Avoid polluting global namespace if bash supports namerefs (version 4.3+)
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 && "${BASH_VERSINFO[1]}" -ge 3 ]]; then
-    local -n outvar="$1"
-    outvar="$value"
-  else
-    export "$1=$value"
-  fi
+  set "$override" && set "$1" "${!override}" || set "$1" "$2"
 }
+
+# Initialize variable name provided as first argument to true/on value,
+# allowing override by BZB_ prefixed all-caps variable only if previously unset
+enable() { set "$1" && set "$1" 1 || init "$1" 1; }
+
+# Initialize variable name provided as first argument to false/off value,
+# allowing override by BZB_ prefixed all-caps variable only if previously unset
+disable() { set "$1" && set "$1" '' || init "$1" ''; }
+
+# Enable setting if false/off. Disable it if true/on
+toggle() { [[ ${!1} ]] && disable "$1" || enable "$1"; }
 
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
 clear_fzf() {
@@ -34,11 +50,10 @@ clear_fzf() {
 
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
-  init 'color' ''
   if has tput; then
     declare -r no_clear=1
     trap clear_fzf EXIT
-    test $(tput colors) -ge 8 && init 'color' 1
+    test $(tput colors) -ge 8 && enable color || disable color
   fi
 else
   echo "Error: $script_name must be run interactively" 1>&2
@@ -47,46 +62,46 @@ fi
 
 # Additional options to be passed to fzf
 # TODO: support array initialization
-init 'fzf_extra_options' ''
+disable fzf_extra_options
 
 # Directory where data for loading/restoring sessions is saved (optional)
 init 'data_dir' "$HOME/.bzb" && readonly data_dir
 
-# Default behavior is to launch $EDITOR as the enter-action for files. Enabling option below
-# will instead only log selected targets to a 'selection' file in data_dir. This communicates
-# user-actions to another program that has launched bzb as an integrated file browser.
-# Enabling this option will set 'persist' option below to false
-init 'no_edit' ''
+# Default behavior is to launch $EDITOR as the enter-action for files. Enabling the option
+# below will instead only log selected targets to a 'selection' file inside 'data_dir'.
+# This helps communicate user actions to a external program that has launched bzb as an
+# integrated file browser. Enabling this option will set 'persist' option below to false
+disable no_edit
 
 # Stay in browser after editing files
-init 'persist' 1
+enable persist
 
 # Start with only top-level files/directories displayed
-init 'shallow' 1
+enable shallow
 
 # Don't show hidden files
-init 'hidden' ''
+disable hidden
 
 # Don't show ignored files
-init 'no_ignore' ''
+disable no_ignore
 
 # Don't start in grep mode
-init 'grep_mode' ''
+disable grep_mode
 
 # Sort ascending
-init 'sorted' 1
-init 'reverse' ''
+enable sorted
+disable reverse
 
 # Display preview pane
-init 'preview' 1
+enable preview
 init 'preview_window' 'right:62%:wrap'
 
 # Display status of toggle settings above results listing
-init 'toggle_status' 1
+enable toggle_status
 
 # Save/Load sessions manually
-init 'autosave_session' ''
-init 'autoload_session' ''
+disable autosave_session
+disable autoload_session
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
 if has fd; then
@@ -266,19 +281,19 @@ USAGE
 for arg in "$@"; do
   case $arg in
     -h|--help) usage; exit 0 ;;
-    -o|--once) persist=''; shift ;;
-    -c|--color) color=1; shift ;;
-    -r|--recursive) shallow=''; shift ;;
-    -H|--hidden) hidden=1; shift ;;
-    -I|--no-ignore) no_ignore=1; shift ;;
-    -S|--no-sort) sorted=''; shift ;;
-    -R|--reverse-sort) reverse=1; shift ;;
-    -E|--no-edit) no_edit=1; persist=''; shift ;;
-    -P|--no-preview) preview=''; shift ;;
-    -T|--no-toggle-status) toggle_status=''; shift ;;
-    -s|--autosave-session) autosave_session=1; shift ;;
-    -l|--autoload-session) autoload_session=1; shift ;;
-    -g=*|--grep=*) grep_mode=1; grep_query="${arg#*=}"; shift ;;
+    -o|--once) disable persist; shift ;;
+    -c|--color) enable color; shift ;;
+    -r|--recursive) disable shallow; shift ;;
+    -H|--hidden) enable hidden; shift ;;
+    -I|--no-ignore) enable no_ignore; shift ;;
+    -S|--no-sort) disable sorted; shift ;;
+    -R|--reverse-sort) enable reverse; shift ;;
+    -E|--no-edit) enable no_edit; disable persist; shift ;;
+    -P|--no-preview) disable preview; shift ;;
+    -T|--no-toggle-status) disable toggle_status; shift ;;
+    -s|--autosave-session) enable autosave_session; shift ;;
+    -l|--autoload-session) enable autoload_session; shift ;;
+    -g=*|--grep=*) enable grep_mode; grep_query="${arg#*=}"; shift ;;
     -bd=*|--base-dir=*|--base_directory=*) base_dir="${arg#*=}"; shift ;;
     -ad=*|--alt-dir=*|--alternate-directory=*) alt_dir="${arg#*=}"; shift ;;
     # Save remaining options for fzf with quoting preserved
@@ -420,7 +435,7 @@ main() {
     # Use again to update search pattern. Enter empty pattern to cancel
     grep)
       clear && read -ep "Grep for Pattern: " -i "$grep_query" grep_query
-      [[ $grep_query ]] && grep_mode=1 || grep_mode=''
+      toggle grep_mode
     ;;
 
     # Use left arrow or alt-k to move up a directory, but not above base directory
@@ -430,54 +445,54 @@ main() {
         next_targets=("..")
       else
         next_targets=('.')
-        grep_mode=''
+        disable grep_mode
       fi
     ;;
 
     # Exit grep-mode if any other directory navigation is used
     next-bookmark|next-bookmark2|prev-bookmark|prev-bookmark2|select-bookmark|select-bookmark2|select-nested-bookmark|select-nested-bookmark2|enter-base-dir|prompt-dir|set-base-dir|enter-alt-dir|enter-prev-dir)
-      grep_mode=''
+      disable grep_mode
     # Fall through to remaining cases
     ;;&
 
     # Use ctrl-g to toggle in/out of grep mode (not changing search pattern)
     toggle-grep)
-      [[ $grep_mode ]] && grep_mode='' || grep_mode=1
+      toggle grep_mode
     ;;
 
     # Use alt-n to toggle listing nested vs only top-level files/directories
     toggle-nested)
-      [[ $shallow ]] && shallow='' || shallow=1
+      toggle shallow
     ;;
 
     # Use alt-i to toggle visibility of ignored files/directories
     toggle-ignored)
-      [[ $no_ignore ]] && no_ignore='' || no_ignore=1
+      toggle no_ignore
     ;;
 
     # Use alt-v to toggle visibility of hidden files/directories
     toggle-hidden)
-      [[ $hidden ]] && hidden='' || hidden=1
+      toggle hidden
     ;;
 
     # Use alt-o to toggle between normal and reverse sort order
     toggle-sort-order)
-      [[ $reverse ]] && reverse='' || reverse=1
+      toggle reverse
     ;;
 
     # Use ctrl-alt-s to enable/disable sorting
     toggle-sort)
-      [[ $sorted ]] && sorted='' || sorted=1
+      toggle sorted
     ;;
 
     # Use ctrl-alt-p to toggle visibility of preview pane
     toggle-preview)
-      [[ $preview ]] && preview='' || preview=1
+      toggle preview
     ;;
 
     # Use ctrl-alt-t to toggle visibility of toggle status bar
     toggle-status)
-      [[ $toggle_status ]] && toggle_status='' || toggle_status=1
+      toggle toggle_status
     ;;
 
     # Use alt-q to quick-launch targets in their native client
