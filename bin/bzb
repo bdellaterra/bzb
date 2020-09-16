@@ -421,14 +421,8 @@ main() {
   action="${key_actions[$command]}"
 
   next_targets=()
-  case $action in
-    # Use alt-/ to enter grep mode using search pattern specified at prompt
-    # Use again to update search pattern. Enter empty pattern to cancel
-    grep)
-      clear && read -ep "Grep for Pattern: " -i "$grep_query" grep_query
-      toggle grep_mode
-    ;;
 
+  case $action in
     # Use left arrow or alt-k to move up a directory, but not above base directory
     # If in grep mode, exit and resume browsing current directory
     back|back2)
@@ -443,8 +437,16 @@ main() {
     # Exit grep-mode if any other directory navigation is used
     next-bookmark|next-bookmark2|prev-bookmark|prev-bookmark2|select-bookmark|select-bookmark2|select-nested-bookmark|select-nested-bookmark2|enter-base-dir|prompt-dir|set-base-dir|enter-alt-dir|enter-prev-dir)
       disable grep_mode
-    # Fall through to remaining cases
-    ;;&
+    ;;
+  esac
+
+  case $action in
+    # Use alt-/ to enter grep mode using search pattern specified at prompt
+    # Use again to update search pattern. Enter empty pattern to cancel
+    grep)
+      clear && read -ep "Grep for Pattern: " -i "$grep_query" grep_query
+      toggle grep_mode
+    ;;
 
     # Use ctrl-g to toggle in/out of grep mode (not changing search pattern)
     toggle-grep)
