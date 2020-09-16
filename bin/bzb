@@ -357,6 +357,7 @@ main() {
   export BZB_HIDDEN="$hidden"
   export BZB_NO_IGNORE="$no_ignore"
   export BZB_REVERSE="$reverse"
+  export BZB_GREP_QUERY="$grep_query"
 
   # Edit file or enter directory
   if [[ $# -eq 1 && -d "$1" ]]; then
@@ -374,7 +375,6 @@ main() {
 
   # Setup list/sort/preview commands
   if [[ $grep_mode ]]; then
-    export BZB_GREP_QUERY="$grep_query"
     [[ $shallow ]] && grep="$grep_shallow" || grep="$grep_recursive"
     preview_opts="--preview='$grep_mode_preview' --preview-window='right:62%:wrap'"
     fzf_input=$(bash -c "echo \"$grep\"")
