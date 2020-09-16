@@ -418,11 +418,19 @@ main() {
   # Parse empty command as 'enter' action
   [[ -z "$command" ]] && command='right'
 
-  action="${key_actions[$command]}"
+  set action "${key_actions[$command]}"
 
   next_targets=()
 
   case $action in
+    # Exit grep-mode if any other directory navigation is used
+    next-bookmark|next-bookmark2|prev-bookmark|prev-bookmark2|select-bookmark|select-bookmark2|select-nested-bookmark|select-nested-bookmark2|enter-base-dir|prompt-dir|set-base-dir|enter-alt-dir|enter-prev-dir)
+      disable grep_mode
+    ;;
+
+  # Fall through to remaining cases
+  esac; case $action in
+
     # Use left arrow or alt-k to move up a directory, but not above base directory
     # If in grep mode, exit and resume browsing current directory
     back|back2)
@@ -434,13 +442,11 @@ main() {
       fi
     ;;
 
-    # Exit grep-mode if any other directory navigation is used
-    next-bookmark|next-bookmark2|prev-bookmark|prev-bookmark2|select-bookmark|select-bookmark2|select-nested-bookmark|select-nested-bookmark2|enter-base-dir|prompt-dir|set-base-dir|enter-alt-dir|enter-prev-dir)
-      disable grep_mode
+    # Use enter or right arrow or alt-j to edit file or enter directory
+    enter|enter2)
+      next_targets=("${targets[@]}")
     ;;
-  esac
 
-  case $action in
     # Use alt-/ to enter grep mode using search pattern specified at prompt
     # Use again to update search pattern. Enter empty pattern to cancel
     grep)
@@ -486,6 +492,12 @@ main() {
     # Use ctrl-alt-t to toggle visibility of toggle status bar
     toggle-status)
       toggle toggle_status
+    ;;
+
+    # Use ctrl-alt-n to restore normal view/sort settings
+    reset-view)
+      enable shallow sorted preview toggle_status
+      disable reverse hidden no_ignore
     ;;
 
     # Use alt-q to quick-launch targets in their native client
@@ -675,8 +687,7 @@ main() {
     # Use ctrl-alt-g to set/enter new base directory
     # Use alt-z to go to base directory, or go back
     # to previous directory if already in base directory
-    # Use alt-y to load session
-    set-base-dir|enter-base-dir|load-session)
+    set-base-dir|enter-base-dir)
       dir="$PWD"
       if [[ "$action" = "set-base-dir" || ! -d "$base_dir" ]]; then
         clear && read -ep "Set base directory: " -i "$dir" dir
@@ -684,7 +695,7 @@ main() {
           base_dir="${dir%/}"
           pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
           session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
-          action="autoload-session"
+          set action "autoload-session"
         fi
       fi
       if [[ ! -d "$base_dir" || ! -d "$dir" ]]; then
@@ -695,16 +706,22 @@ main() {
       else
         cd "$base_dir"
       fi
-      if [[ "$action" = "load-session" || "$action" = "autoload-session" ]]; then
-        restore="$session"
-        if [[ "$action" = 'load-session' || ! $autoload_session ]]; then
-          clear && read -ep "Load session: " -i "$restore" restore
-        fi
-        if [[ -r "$restore" ]]; then
-          session="$restore"
-          . -- "$session"
-          restore_session
-        fi
+    ;;
+
+  # Fall through to remaining cases
+  esac; case $action in
+
+    # Use alt-y to load session. May be triggered automatically by other actions,
+    # in which case prompt will still appear if autoload_session setting is disabled
+    load-session|autoload-session)
+      restore="$session"
+      if [[ "$action" = 'load-session' || ! $autoload_session ]]; then
+        clear && read -ep "Load session: " -i "$restore" restore
+      fi
+      if [[ -r "$restore" ]]; then
+        session="$restore"
+        . -- "$session"
+        restore_session
       fi
     ;;
 
@@ -712,17 +729,6 @@ main() {
     save-session)
       clear && read -ep "Save session: " -i "$session" save
       save_session "$save"
-    ;;
-
-    # Use ctrl-alt-n to restore normal view/sort settings
-    reset-view)
-      enable shallow sorted preview toggle_status
-      disable reverse hidden no_ignore
-    ;;
-
-    # Use enter or right arrow or alt-j to edit file or enter directory
-    enter|enter2)
-      next_targets=("${targets[@]}")
     ;;
   esac
 
