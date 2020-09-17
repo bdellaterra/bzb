@@ -101,15 +101,16 @@ fi
 
 # Sort Command:
 enable parallel_sort
+init 'sort_shallow' \
+  "LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
 if has parallel && test $parallel_sort; then
   enable nested_sort
-  init 'sort' \
+  init 'sort_recursive' \
     "LC_ALL=C parallel --pipe --block 8k sort \${BZB_REVERSE:+-r} -fiu 2>/dev/null"
 else
   disable parallel_sort
   disable nested_sort
-  init 'sort' \
-    "LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
+  init 'sort_recursive' "$sort_shallow"
 fi
 readonly parallel_sort
 
@@ -401,6 +402,7 @@ main() {
   fi
 
   # Setup list/sort/preview commands
+  [[ $shallow ]] && sort="$sort_shallow" || sort="$sort_recursive"
   [[ $shallow || $nested_sort ]] && sort_pipe="${sorted:+ | $sort}" || sort_pipe=''
   if [[ $grep_mode ]]; then
     [[ $shallow ]] && grep="$grep_shallow" || grep="$grep_recursive"
@@ -426,7 +428,7 @@ main() {
   [[ $nested_sort ]] && nested_sort_enabled="/" || nested_sort_enabled='' 
   [[ ! $sorted ]] && sort_disabled='-' || sort_disabled=''
   [[ $sorted ]] && sort_enabled='+' || sort_enabled=''
-  [[ $sort_enabled && $parallel_sort ]] && sort_enabled="="
+  [[ ! $shallow && $sort_enabled && $parallel_sort ]] && sort_enabled="="
   [[ $sorted ]] && status+=("${sort_enabled}S${nested_sort_enabled}") || status+=("${sort_disabled}s${nested_sort_enabled}")
   [[ ! $sorted || $sort_disabled ]] && reverse_disabled='!' || reverse_disabled=''
   [[ $reverse ]] && status+=("${reverse_disabled:-+}R") || status+=("${reverse_disabled:--}r")
