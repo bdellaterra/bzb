@@ -188,7 +188,7 @@ map 'back'                    'left'        "go to parent directory (not moving 
 map 'back2'                   'alt-h'       "go to parent directory (not moving past base directory)"
 map 'launch'                  'alt-q'       "quick-launch targets using native client"
 map 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
-map 'toggle-grep'             'ctrl-g'      "toggle grep mode / cancel submenu or prompt"
+map 'toggle-grep'             'ctrl-g'      "toggle grep mode preserving pattern / cancel submenu or prompt"
 map 'move'                    'alt-m'       "move targets to directory named at prompt"
 map 'rename'                  'alt-r'       "rename targets in current directory"
 map 'move-rename'             'ctrl-alt-m'  "move/rename targets into directory named at prompt"
@@ -237,7 +237,7 @@ usage() {
 cat <<USAGE
 usage: $script_name [options] [target file or directory]
 
-Browse files using fzf. If no target specified start in the current directory.
+Browse files using fzf. If no target is specified start in the current directory.
 
 Key mappings:
 
@@ -271,7 +271,9 @@ Options:
 --base-directory=DIR,-bd=DIR       Specify base directory instead of deriving it from target argument
 --alternate-directory=DIR,-ad=DIR  Initialize alternate directory at start
 
-Any additional options will be passed to fzf.
+Most options can be inverted by reversing uppercase/lowercase for the short form or adding/removing
+the 'no-' prefix for the long form. Additional options will be passed on to fzf, with the form using
+an equals sign '=' required for options that take values. (e.g. '--query=STR' not '-q STR')
 USAGE
 }
 
