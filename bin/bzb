@@ -106,7 +106,7 @@ init sort_shallow \
 if has parallel && test $parallel_sort; then
   enable nested_sort
   init sort_recursive \
-    "LC_ALL=C parallel --pipe --block 8k sort \${BZB_REVERSE:+-r} -fiu 2>/dev/null"
+    "LC_ALL=C parallel --pipe --block 64k sort \${BZB_REVERSE:+-r} -fiu 2>/dev/null"
 else
   disable parallel_sort
   disable nested_sort
