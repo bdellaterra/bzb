@@ -260,6 +260,7 @@ Options:
 --hidden,-H                        Show hidden files/directories at start
 --no-ignore,-I                     Show ignored files/directories at start
 --no-sort,-S                       Disable sorting of files/directories
+--no-nested-sort,-N                Disable sorting of nested files/directories
 --reverse-sort,-R                  Reverse the normal sort order
 --no-edit,-E                       Disable launch of editor and just log selection to file
 --no-preview,-P                    Disable preview pane that shows file/directory contents
@@ -283,6 +284,7 @@ for arg in "$@"; do
     -H|--hidden) enable hidden; shift ;;
     -I|--no-ignore) enable no_ignore; shift ;;
     -S|--no-sort) disable sorted; shift ;;
+    -N|--no-nested-sort) disable nested_sort; shift ;;
     -R|--reverse-sort) enable reverse; shift ;;
     -E|--no-edit) enable no_edit; disable persist; shift ;;
     -P|--no-preview) disable preview; shift ;;
