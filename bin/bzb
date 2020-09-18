@@ -96,13 +96,13 @@ disable nested reverse grep_mode autosave_session autoload_session
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
 if has fd; then
   disable no_find_ignore_status
-  init find_recursive \
+  init find_nested \
     "fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
   init find_shallow \
     "fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
 else
   enable no_find_ignore_status
-  init find_recursive \
+  init find_nested \
     "find . -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
   init find_shallow \
     "find . -maxdepth 1 -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
@@ -115,12 +115,12 @@ init sort_shallow \
   "LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
 if has parallel && test $parallel_sort; then
   enable nested_sort
-  init sort_recursive \
+  init sort_nested \
     "LC_ALL=C parallel --pipe --block 64k sort \${BZB_REVERSE:+-r} -fiu 2>/dev/null"
 else
   disable parallel_sort
   disable nested_sort
-  init sort_recursive "$sort_shallow"
+  init sort_nested "$sort_shallow"
 fi
 readonly parallel_sort
 
@@ -150,7 +150,7 @@ init find_mode_preview \
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed
 if has rg; then
   disable no_grep_ignore_status
-  init grep_recursive \
+  init grep_nested \
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
   init grep_shallow \
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --max-depth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
@@ -158,7 +158,7 @@ if has rg; then
     "rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
   enable no_grep_ignore_status
-  init grep_recursive \
+  init grep_nested \
     "grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'}"
   init grep_shallow \
     "grep -l -i -s -C 1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
@@ -273,7 +273,7 @@ Options:
 --help                             Show this help text
 --once,-o                          Exit browser after editing a file
 --color,-c                         Show colorized output
---recursive,-r                     List nested files/directories at start
+--nested,-n                        List nested files/directories at start
 --no-hide,-H                       Show hidden files/directories at start
 --no-ignore,-I                     Show ignored files/directories at start
 --reverse-sort,-rs                 Reverse the normal sort order
@@ -301,8 +301,8 @@ for arg in "$@"; do
     -O|--no-once) enable persist; shift ;;
     -c|--color) enable color; shift ;;
     -C|--no-color) disable color; shift ;;
-    -r|--recursive) enable nested; shift ;;
-    -R|--no-recursive) disable nested; shift ;;
+    -n|--nested) enable nested; shift ;;
+    -N|--no-nested) disable nested; shift ;;
     -h|--hide) enable hide; shift ;;
     -H|--no-hide) disable hide; shift ;;
     -i|--ignore) enable ignore; shift ;;
@@ -423,16 +423,16 @@ main() {
   fi
 
   # Setup list/sort/preview commands
-  [[ $nested ]] && sort="$sort_recursive" || sort="$sort_shallow"
+  [[ $nested ]] && sort="$sort_nested" || sort="$sort_shallow"
   [[ ! $nested || $nested_sort ]] && sort_pipe="${sorted:+ | $sort}" || sort_pipe=''
   if [[ $grep_mode ]]; then
-    [[ $nested ]] && grep="$grep_recursive" || grep="$grep_shallow"
+    [[ $nested ]] && grep="$grep_nested" || grep="$grep_shallow"
     preview_opts="--preview='$grep_mode_preview' --preview-window='right:62%:wrap'"
     fzf_input=$(bash -c "echo \"$grep$sort_pipe\"")
     fzf_prompt="/$grep_query/"
     [[ $no_grep_ignore_status ]] && ignore_disabled='!' || ignore_disabled=''
   else
-    [[ $nested ]] && find="$find_recursive" || find="$find_shallow"
+    [[ $nested ]] && find="$find_nested" || find="$find_shallow"
     preview_opts="--preview='$find_mode_preview' --preview-window='right:62%:wrap'"
     fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
     fzf_prompt="${PWD#$base_dir}>"
