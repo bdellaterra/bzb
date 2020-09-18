@@ -209,9 +209,9 @@ map 'move-rename'             'ctrl-alt-m'  "(m)ove/rename targets into director
 map 'delete'                  'alt-x'       "delete targets"
 map 'copy'                    'alt-c'       "(c)opy targets to directory named at prompt"
 map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into directory named at prompt"
-map 'create-file'             'alt-t'       "create file a.k.a. (t)ouch file named at prompt"
+map 'create-file'             'alt-t'       "create (a.k.a. \"(t)ouch\") file named at prompt"
 map 'create-edit-file'        'ctrl-alt-t'  "create/edit file named at prompt"
-map 'create-edit-file'        'alt-e'       "create/edit file named at prompt"
+map 'create-edit-file2'       'alt-e'       "create/edit file named at prompt"
 map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
 map 'create-enter-dir'        'ctrl-alt-d'  "create/enter (d)irectory named at prompt"
 map 'toggle-bookmark'         'alt-b'       "toggle (b)ookmark for current directory"
@@ -514,22 +514,22 @@ main() {
       toggle grep_mode
     ;;
 
-    # Use alt-n to toggle listing nested vs only top-level files/directories
+    # Use ctrl-alt-n to toggle listing nested vs only top-level files/directories
     toggle-nested)
       toggle nested
     ;;
 
-    # Use alt-i to toggle visibility of ignored files/directories
+    # Use ctrl-alt-i to toggle visibility of ignored files/directories
     toggle-ignore)
       toggle ignore
     ;;
 
-    # Use alt-v to toggle visibility of hidden files/directories
+    # Use ctrl-alt-h to toggle visibility of hidden files/directories
     toggle-hide)
       toggle hide
     ;;
 
-    # Use alt-o to toggle between normal and reverse sort order
+    # Use ctrl-alt-o to toggle between normal and reverse sort order
     toggle-sort-order)
       toggle reverse
     ;;
@@ -539,17 +539,17 @@ main() {
       toggle sorted
     ;;
 
-    # Use ctrl-alt-n to enable/disable nested sorting
+    # Use ctrl-/ to enable/disable nested sorting
     toggle-nested-sort)
       toggle nested_sort
     ;;
 
-    # Use ctrl-alt-p to toggle visibility of preview pane
+    # Use ctrl-alt-v to toggle visibility of preview pane
     toggle-preview)
       toggle preview
     ;;
 
-    # Use ctrl-alt-t to toggle visibility of toggle status bar
+    # Use ctrl-alt-l to toggle visibility of statusline
     toggle-statusline)
       toggle statusline
     ;;
@@ -587,8 +587,8 @@ main() {
       [[ -n "$dir" ]] && mv -i "${targets[@]}" "$dir"
     ;;
 
-    # Use ctrl-alt-r or ctrl-alt-m to move and rename targets
-    move-rename|move-rename2)
+    # Use ctrl-alt-m to move and rename targets
+    move-rename)
       clear && read -ep 'Move/Rename to Directory: ' -i "${alt_dir:-$base_dir}" dir
       if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
@@ -639,9 +639,9 @@ main() {
       fi
     ;;
 
-    # Use alt-f to create file named at prompt
-    # Use alt-e to create file and edit it immediately
-    create-file|create-edit-file)
+    # Use alt-t to "touch" or create file named at prompt
+    # Use ctrl-alt-t or alt-e to create file and edit it immediately
+    create-file|create-edit-file|create-edit-file2)
       [[ "$action" = "create-edit-file" ]] && create_edit="Create/Edit" || create_edit="Create"
       clear && read -p "$create_edit file: " target
       if [[ -n "$target" ]]; then
@@ -691,7 +691,7 @@ main() {
       cd "$current_dir"
     ;;
 
-    # Use alt-right or ctrl-alt-l to go to next bookmarked directory
+    # Use alt-right or alt-n to go to next bookmarked directory
     next-bookmark|next-bookmark2)
       cd "$(dirs -l +1)" && pushd -n +1 >/dev/null
       if [[ "$PWD" = "$OLDPWD" ]]; then
@@ -699,7 +699,7 @@ main() {
       fi
     ;;
 
-    # Use alt-left or ctrl-alt-h to go to previous bookmarked directory
+    # Use alt-left or alt-p to go to previous bookmarked directory
     prev-bookmark|prev-bookmark2)
       cd "$(dirs -l -0)" && pushd -n -0 >/dev/null
       if [[ "$PWD" = "$OLDPWD" ]]; then
@@ -723,14 +723,14 @@ main() {
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
 
-    # Use alt-p to go to previous directory
+    # Use alt-z to go to previous directory
     enter-prev-dir)
       cd "$OLDPWD"
     ;;
 
     # Use alt-a to go to alternate directory, or go back
     # to previous directory if already in alternate directory
-    # Use alt-s to set alternate directory
+    # Use ctrl-alt-a to set alternate directory
     set-alt-dir|enter-alt-dir)
       if [[ "$action" = "set-alt-dir" || ! -d "$alt_dir" ]]; then
         clear && read -ep "Set alternate directory: " -i "$PWD" dir
