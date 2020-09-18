@@ -275,7 +275,7 @@ Options:
 --nested,-n                        List nested files/directories at start
 --no-hide,-H                       Show hidden files/directories at start
 --no-ignore,-I                     Show ignored files/directories at start
---reverse-sort,-rs                 Reverse the normal sort order
+--reverse,-rs                      Reverse the normal sort order
 --no-sort,-S                       Disable sorting of files/directories
 --no-nested-sort,-NS               Disable sorting of nested files/directories
 --no-edit,-E                       Log selections to file instead of launching editor
@@ -310,8 +310,8 @@ for arg in "$@"; do
     -S|--no-sort) disable sorted; shift ;;
     -ns|--nested-sort) enable nested_sort; shift ;;
     -NS|--no-nested-sort) disable nested_sort; shift ;;
-    -rs|--reverse-sort) enable reverse; shift ;;
-    -RS|--no-reverse-sort) disable reverse; shift ;;
+    -rs|--reverse) enable reverse; shift ;;
+    -RS|--no-reverse) disable reverse; shift ;;
     -e|--edit) disable no_edit; disable once; shift ;;
     -E|--no-edit) enable no_edit; enable once; shift ;;
     -v|--preview) enable preview; shift ;;
