@@ -87,8 +87,8 @@ init data_dir "$HOME/.bzb" && readonly data_dir
 disable no_edit
 
 # Default enabled/disabled settings
-enable persist shallow sorted preview toggle_status hide ignore
-disable reverse grep_mode autosave_session autoload_session
+enable persist sorted preview toggle_status hide ignore
+disable nested reverse grep_mode autosave_session autoload_session
 
 
 # COMMANDS
@@ -301,8 +301,8 @@ for arg in "$@"; do
     -O|--no-once) enable persist; shift ;;
     -c|--color) enable color; shift ;;
     -C|--no-color) disable color; shift ;;
-    -r|--recursive) disable shallow; shift ;;
-    -R|--no-recursive) enable shallow; shift ;;
+    -r|--recursive) enable nested; shift ;;
+    -R|--no-recursive) disable nested; shift ;;
     -h|--hide) enable hide; shift ;;
     -H|--no-hide) disable hide; shift ;;
     -i|--ignore) enable ignore; shift ;;
@@ -361,7 +361,7 @@ save_session() {
       [[ "$base_dir" ]] && declare -p base_dir >> "$session"
       [[ "$alt_dir" ]] && declare -p alt_dir >> "$session"
       declare -p bookmarks >> "$session"
-      declare -p shallow >> "$session"
+      declare -p nested >> "$session"
       declare -p hide >> "$session"
       declare -p ignore >> "$session"
       declare -p sorted >> "$session"
@@ -423,16 +423,16 @@ main() {
   fi
 
   # Setup list/sort/preview commands
-  [[ $shallow ]] && sort="$sort_shallow" || sort="$sort_recursive"
-  [[ $shallow || $nested_sort ]] && sort_pipe="${sorted:+ | $sort}" || sort_pipe=''
+  [[ $nested ]] && sort="$sort_recursive" || sort="$sort_shallow"
+  [[ ! $nested || $nested_sort ]] && sort_pipe="${sorted:+ | $sort}" || sort_pipe=''
   if [[ $grep_mode ]]; then
-    [[ $shallow ]] && grep="$grep_shallow" || grep="$grep_recursive"
+    [[ $nested ]] && grep="$grep_recursive" || grep="$grep_shallow"
     preview_opts="--preview='$grep_mode_preview' --preview-window='right:62%:wrap'"
     fzf_input=$(bash -c "echo \"$grep$sort_pipe\"")
     fzf_prompt="/$grep_query/"
     [[ $no_grep_ignore_status ]] && ignore_disabled='!' || ignore_disabled=''
   else
-    [[ $shallow ]] && find="$find_shallow" || find="$find_recursive"
+    [[ $nested ]] && find="$find_recursive" || find="$find_shallow"
     preview_opts="--preview='$find_mode_preview' --preview-window='right:62%:wrap'"
     fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
     fzf_prompt="${PWD#$base_dir}>"
@@ -444,12 +444,12 @@ main() {
   status=()
   [[ $hide ]] && status+=('+hide') || status+=('-hide')
   [[ $ignore ]] && status+=("${ignore_disabled:--}ignore") || status+=("${ignore_disabled:-+}ignore")
-  [[ $shallow ]] && status+=('-nested') || status+=('+nested')
+  [[ $nested ]] && status+=('+nested') || status+=('-nested')
   [[ $nested_sort ]] && nested_sort_enabled="/" || nested_sort_enabled='' 
   [[ ! $sorted ]] && sort_disabled='-' || sort_disabled=''
   [[ $sorted ]] && sort_enabled='+' || sort_enabled=''
-  [[ ! $shallow && $sort_enabled && $parallel_sort ]] && sort_enabled="="
-  [[ ! $shallow && ! $nested_sort_enabled ]] && sort_disabled='!' && sort_enabled='!'
+  [[ $nested && $sort_enabled && $parallel_sort ]] && sort_enabled="="
+  [[ $nested && ! $nested_sort_enabled ]] && sort_disabled='!' && sort_enabled='!'
   [[ $sorted && $sort_enabled ]] && status+=("${sort_enabled}sort${nested_sort_enabled}") || status+=("${sort_disabled}sort${nested_sort_enabled}")
   [[ ! $sorted || $sort_disabled ]] && reverse_disabled='!' || reverse_disabled=''
   [[ $reverse ]] && status+=("${reverse_disabled:-+}reverse") || status+=("${reverse_disabled:--}reverse")
@@ -516,7 +516,7 @@ main() {
 
     # Use alt-n to toggle listing nested vs only top-level files/directories
     toggle-nested)
-      toggle shallow
+      toggle nested
     ;;
 
     # Use alt-i to toggle visibility of ignored files/directories
@@ -556,8 +556,8 @@ main() {
 
     # Use ctrl-alt-i to restore initial view/sort settings
     restore-initial-view)
-      enable shallow sorted preview toggle_status hide ignore
-      disable reverse
+      enable sorted preview toggle_status hide ignore
+      disable nested reverse
       [[ $parallel_sort ]] && enable nested_sort || disable nested_sort
     ;;
 
