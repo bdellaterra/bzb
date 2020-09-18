@@ -107,6 +107,7 @@ else
   init find_shallow \
     "find . -maxdepth 1 -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
 fi
+readonly no_find_ignore_status
 
 # Sort Command:
 enable parallel_sort
@@ -164,6 +165,7 @@ else
   init grep_mode_preview \
     "grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}' {}"
 fi
+readonly no_grep_ignore_status
 
 # Quick-launch Command: Used to open targets in their native client
 init launch ''
