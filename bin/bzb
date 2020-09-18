@@ -236,10 +236,10 @@ map 'toggle-hide'             'ctrl-alt-h'  "toggle (v)isibility of hidden files
 map 'toggle-ignore'           'ctrl-alt-i'  "toggle visibility of (i)gnored files (if supported)"
 map 'toggle-nested'           'ctrl-alt-n'  "toggle listing (n)ested vs. only top-level files"
 map 'toggle-sort'             'ctrl-alt-s'  "toggle (s)orting of results (affects performance)"
+map 'toggle-nested-sort'      'ctrl-/'      "toggle sorting of nested results (affects performance)"
 map 'toggle-sort-order'       'ctrl-alt-o'  "toggle sort (o)rder ascending/descending"
-# map 'toggle-nested-sort'      'ctrl-alt-?'  "toggle (s)orting of nested results"
-map 'toggle-preview'          'ctrl-alt-v'  "toggle visibility of (p)review pane"
-# map 'restore-initial-view'    'ctrl-alt-?'  "restore (i)nitial view settings (don't show nested/hidden/ignored)"
+map 'restore-settings'        'ctrl-alt-r'  "(r)estore initial view/sort settings"
+map 'toggle-preview'          'ctrl-alt-v'  "toggle visibility of pre(v)iew pane"
 map 'load-session'            'alt-y'       "load session from file named at prompt"
 map 'save-session'            'ctrl-alt-y'  "save session to file named at prompt"
 
@@ -554,8 +554,9 @@ main() {
       toggle statusline
     ;;
 
-    # Use ctrl-alt-i to restore initial view/sort settings
-    restore-initial-view)
+    # Use ctrl-alt-r to restore default settings
+    # TODO: Account for initial user preferences from config vars and command line options
+    restore-settings)
       enable sorted preview statusline hide ignore
       disable nested reverse
       [[ $parallel_sort ]] && enable nested_sort || disable nested_sort
