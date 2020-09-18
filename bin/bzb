@@ -87,8 +87,8 @@ init data_dir "$HOME/.bzb" && readonly data_dir
 disable no_edit
 
 # Default enabled/disabled settings
-enable persist shallow sorted preview toggle_status hide
-disable reverse no_ignore grep_mode autosave_session autoload_session
+enable persist shallow sorted preview toggle_status hide ignore
+disable reverse grep_mode autosave_session autoload_session
 
 
 # COMMANDS
@@ -234,7 +234,7 @@ map 'prompt-dir'              'alt-g'       "go to directory named at prompt"
 map 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt and go to it"
 map 'toggle-preview'          'ctrl-alt-p'  "toggle visibility of preview pane"
 map 'toggle-status'           'ctrl-alt-t'  "toggle visibility of toggle status bar"
-map 'toggle-ignored'          'alt-i'       "toggle visibility of ignored files (if supported)"
+map 'toggle-ignore'           'alt-i'       "toggle visibility of ignored files (if supported)"
 map 'toggle-hide'             'alt-v'       "toggle visibility of hidden files"
 map 'toggle-nested'           'alt-n'       "toggle listing nested vs. only top-level files"
 map 'toggle-sort-order'       'alt-o'       "toggle sort order ascending/descending"
@@ -274,7 +274,7 @@ Options:
 --once,-o                          Exit browser after editing a file
 --color,-c                         Show colorized output
 --recursive,-r                     List nested files/directories at start
---no-hide,-H                          Show hidden files/directories at start
+--no-hide,-H                       Show hidden files/directories at start
 --no-ignore,-I                     Show ignored files/directories at start
 --reverse-sort,-rs                 Reverse the normal sort order
 --no-sort,-S                       Disable sorting of files/directories
@@ -305,8 +305,8 @@ for arg in "$@"; do
     -R|--no-recursive) enable shallow; shift ;;
     -h|--hide) enable hide; shift ;;
     -H|--no-hide) disable hide; shift ;;
-    -i|--ignore) disable no_ignore; shift ;;
-    -I|--no-ignore) enable no_ignore; shift ;;
+    -i|--ignore) enable ignore; shift ;;
+    -I|--no-ignore) disable ignore; shift ;;
     -s|--sort) enable sorted; shift ;;
     -S|--no-sort) disable sorted; shift ;;
     -ns|--nested-sort) enable nested_sort; shift ;;
@@ -363,7 +363,7 @@ save_session() {
       declare -p bookmarks >> "$session"
       declare -p shallow >> "$session"
       declare -p hide >> "$session"
-      declare -p no_ignore >> "$session"
+      declare -p ignore >> "$session"
       declare -p sorted >> "$session"
       declare -p reverse >> "$session"
       declare -p preview >> "$session"
@@ -404,7 +404,7 @@ main() {
   export BZB_QUERY="$query"
   export BZB_COLOR="$color"
   [[ $hide ]] && export BZB_HIDDEN=1 || export BZB_HIDDEN=''
-  export BZB_NO_IGNORE="$no_ignore"
+  [[ $ignore ]] && export BZB_NO_IGNORE='' || export BZB_NO_IGNORE=1
   export BZB_REVERSE="$reverse"
   export BZB_GREP_QUERY="$grep_query"
 
@@ -443,7 +443,7 @@ main() {
   # Prepare display to show status of toggle-settings
   status=()
   [[ $hide ]] && status+=('+hide') || status+=('-hide')
-  [[ $no_ignore ]] && status+=("${ignore_disabled:--}ignore") || status+=("${ignore_disabled:-+}ignore")
+  [[ $ignore ]] && status+=("${ignore_disabled:--}ignore") || status+=("${ignore_disabled:-+}ignore")
   [[ $shallow ]] && status+=('-nested') || status+=('+nested')
   [[ $nested_sort ]] && nested_sort_enabled="/" || nested_sort_enabled='' 
   [[ ! $sorted ]] && sort_disabled='-' || sort_disabled=''
@@ -520,8 +520,8 @@ main() {
     ;;
 
     # Use alt-i to toggle visibility of ignored files/directories
-    toggle-ignored)
-      toggle no_ignore
+    toggle-ignore)
+      toggle ignore
     ;;
 
     # Use alt-v to toggle visibility of hidden files/directories
@@ -556,8 +556,8 @@ main() {
 
     # Use ctrl-alt-i to restore initial view/sort settings
     restore-initial-view)
-      enable shallow sorted preview toggle_status hide
-      disable reverse no_ignore
+      enable shallow sorted preview toggle_status hide ignore
+      disable reverse
       [[ $parallel_sort ]] && enable nested_sort || disable nested_sort
     ;;
 
