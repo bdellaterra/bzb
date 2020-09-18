@@ -87,7 +87,7 @@ init data_dir "$HOME/.bzb" && readonly data_dir
 disable no_edit
 
 # Default enabled/disabled settings
-enable persist sorted preview toggle_status hide ignore
+enable persist sorted preview statusline hide ignore
 disable nested reverse grep_mode autosave_session autoload_session
 
 
@@ -231,7 +231,7 @@ map 'enter-base-dir'          'alt-u'       "switch between current and base dir
 map 'enter-prev-dir'          'alt-z'       "switch between current and (p)revious directory"
 map 'prompt-dir'              'alt-g'       "(g)o to directory named at prompt"
 map 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt and (g)o to it"
-# map 'toggle-status'           'ctrl-alt-?'  "toggle visibility of (t)oggle status bar"
+map 'toggle-statusline'       'ctrl-alt-l'  "toggle visibility of the statusline"
 map 'toggle-hide'             'ctrl-alt-h'  "toggle (v)isibility of hidden files"
 map 'toggle-ignore'           'ctrl-alt-i'  "toggle visibility of (i)gnored files (if supported)"
 map 'toggle-nested'           'ctrl-alt-n'  "toggle listing (n)ested vs. only top-level files"
@@ -280,7 +280,7 @@ Options:
 --no-nested-sort,-NS               Disable sorting of nested files/directories
 --no-edit,-E                       Log selections to file instead of launching editor
 --no-preview,-P                    Disable preview pane that shows file/directory contents
---no-toggle-status,-T              Disable status header that shows current toggle settings
+--no-statusline,-L                 Disable statusline that shows current state of various settings
 --autosave-session,-as             Save bookmarks and view/sort settings continuously
 --autoload-session,-al             Load bookmarks and view/sort settings on entering base directory
 --grep=PATTERN,-g=PATTERN          Start in grep mode, searching files for specified pattern
@@ -316,8 +316,8 @@ for arg in "$@"; do
     -E|--no-edit) enable no_edit; disable persist; shift ;;
     -p|--preview) enable preview; shift ;;
     -P|--no-preview) disable preview; shift ;;
-    -t|--toggle-status) enable toggle_status; shift ;;
-    -T|--no-toggle-status) disable toggle_status; shift ;;
+    -l|--statusline) enable statusline; shift ;;
+    -L|--no-statusline) disable statusline; shift ;;
     -as|--autosave-session) enable autosave_session; shift ;;
     -AS|--no-autosave-session) disable autosave_session; shift ;;
     -al|--autoload-session) enable autoload_session; shift ;;
@@ -461,7 +461,7 @@ main() {
 
   fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' $fzf_bind --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts $fzf_extra_options"
   [[ ! $color ]] && fzf_options="${color:---no-color} $fzf_options"
-  [[ $toggle_status ]] && fzf_options="--header=\"\$BZB_FZF_HEADER\" $fzf_options"
+  [[ $statusline ]] && fzf_options="--header=\"\$BZB_FZF_HEADER\" $fzf_options"
 
   # CYCLE INTO FZF
   fzf_command="$fzf_input | fzf $fzf_options"
@@ -550,13 +550,13 @@ main() {
     ;;
 
     # Use ctrl-alt-t to toggle visibility of toggle status bar
-    toggle-status)
-      toggle toggle_status
+    toggle-statusline)
+      toggle statusline
     ;;
 
     # Use ctrl-alt-i to restore initial view/sort settings
     restore-initial-view)
-      enable sorted preview toggle_status hide ignore
+      enable sorted preview statusline hide ignore
       disable nested reverse
       [[ $parallel_sort ]] && enable nested_sort || disable nested_sort
     ;;
