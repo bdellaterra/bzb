@@ -214,10 +214,9 @@ map 'create-edit-file'        'alt-e'       "create/(e)dit file named at prompt"
 map 'create-file'             'alt-f'       "create (f)ile without editing"
 map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
 map 'create-enter-dir'        'ctrl-alt-d'  "create/enter (d)irectory named at prompt"
-map 'bookmark-targets'        'alt-b'       "(b)ookmark target directories"
-map 'bookmark-current-dir'    'ctrl-alt-b'  "(b)ookmark current directory"
-map 'unbookmark-dirs'         'alt-u'       "(u)nbookmark selected directories"
-map 'unbookmark-current-dir'  'ctrl-alt-u'  "(u)nbookmark current directory"
+map 'toggle-bookmark'         'alt-b'       "toggle (b)ookmark for current directory"
+map 'bookmark-targets'        'ctrl-alt-b'  "(b)ookmark targets"
+map 'unbookmark'              'ctrl-alt-u'  "(u)nbookmark selected directories"
 map 'next-bookmark'           'alt-right'   "go to next bookmarked directory"
 map 'next-bookmark2'          'ctrl-alt-l'  "go to next bookmarked directory"
 map 'prev-bookmark'           'alt-left'    "go to previous bookmarked directory"
@@ -401,6 +400,7 @@ init session "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
 
 main() {
   # Export variables for use in subshells
+  export BZB_BASE_DIR="$base_dir"
   export BZB_QUERY="$query"
   export BZB_COLOR="$color"
   [[ $hide ]] && export BZB_HIDDEN=1 || export BZB_HIDDEN=''
@@ -649,7 +649,20 @@ main() {
       fi
     ;;
 
-    # Use alt-b to bookmark selected targets
+    # Use alt-b to toggle bookmark for current directory
+    toggle-bookmark)
+      if [[ "$(dirs -l)" =~ " $PWD" ]]; then
+        for b in ${bookmarks[@]}; do
+          if [[ "$dir" = "$b" ]]; then
+            popd -n +$i >/dev/null
+          fi
+        done
+      else
+        pushd "$dir" >/dev/null
+      fi
+    ;;
+
+    # Use ctrl-alt-b to bookmark targets
     bookmark-targets)
       dir="$PWD"
       for b in "${targets[@]}"; do
@@ -661,11 +674,12 @@ main() {
       cd "$dir"
     ;;
 
-    # Use alt-u to select bookmarks to delete
-    unbookmark-dirs)
+    # Use ctrl-alt-u to select bookmarks to delete
+    unbookmark)
       current_dir="$PWD"
-      readarray -t dirs < <(dirs -p -l)
-      bookmarks=("$(printf '%s\n' "${dirs[@]}" | LC_ALL=C sort -u | fzf $fzf_submenu_bind --multi --prompt='[unbookmark]')")
+      # base_dir must stay bookmarked and is omitted from selection menu
+      readarray -t dirs < <(dirs -p -l | sed -n '/^'"${base_dir//\//\\/}"'$/!p')
+      bookmarks=("$(printf '%s\n' "${dirs[@]# $base_dir}" | LC_ALL=C sort -u | fzf $fzf_submenu_bind --multi --prompt='[unbookmark]')")
       for b in ${bookmarks[@]}; do
         for i in "${!dirs[@]}"; do
           if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$b" ]]; then
@@ -674,21 +688,6 @@ main() {
         done
       done
       cd "$current_dir"
-    ;;
-
-    # Use ctrl-alt-b to bookmark current directory
-    bookmark-current-dir)
-      [[ ! "$(dirs -l)" =~ " $PWD" ]] && pushd "$PWD" >/dev/null
-    ;;
-
-    # Use ctrl-alt-u to unbookmark current directory
-    unbookmark-current-dir)
-      for i in "${!dirs[@]}"; do
-        if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$PWD" ]]; then
-          popd +$i >/dev/null
-        fi
-      done
-      pushd +1 >/dev/null 
     ;;
 
     # Use alt-right or ctrl-alt-l to go to next bookmarked directory
