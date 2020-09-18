@@ -83,12 +83,12 @@ init data_dir "$HOME/.bzb"
 # Default behavior is to launch $EDITOR as the enter-action for files. Enabling the option
 # below will instead only log selected targets to a 'selection' file inside 'data_dir'.
 # This helps communicate user actions to an external program that has launched bzb as an
-# integrated file browser. Enabling this option will disable the 'persist' option
+# integrated file browser. Enabling this option will also enable the 'once' option
 disable no_edit
 
 # Default enabled/disabled settings
-enable persist sorted preview statusline hide ignore
-disable nested reverse grep_mode autosave_session autoload_session
+enable sorted preview statusline hide ignore
+disable once nested reverse grep_mode autosave_session autoload_session
 
 
 # COMMANDS
@@ -296,8 +296,8 @@ USAGE
 for arg in "$@"; do
   case $arg in
     --help) usage; exit 0 ;;
-    -o|--once) disable persist; shift ;;
-    -O|--no-once) enable persist; shift ;;
+    -o|--once) enable once; shift ;;
+    -O|--no-once) disable once; shift ;;
     -c|--color) enable color; shift ;;
     -C|--no-color) disable color; shift ;;
     -n|--nested) enable nested; shift ;;
@@ -312,8 +312,8 @@ for arg in "$@"; do
     -NS|--no-nested-sort) disable nested_sort; shift ;;
     -rs|--reverse-sort) enable reverse; shift ;;
     -RS|--no-reverse-sort) disable reverse; shift ;;
-    -e|--edit) disable no_edit; enable persist; shift ;;
-    -E|--no-edit) enable no_edit; disable persist; shift ;;
+    -e|--edit) disable no_edit; disable once; shift ;;
+    -E|--no-edit) enable no_edit; enable once; shift ;;
     -v|--preview) enable preview; shift ;;
     -V|--no-preview) disable preview; shift ;;
     -l|--statusline) enable statusline; shift ;;
@@ -420,7 +420,7 @@ main() {
       edit="$edit '$f'"
     done
     [[ $no_edit ]] && save_selection $@ || bash -c "$edit"
-    [[ ! $persist ]] && exit 0
+    [[ $once ]] && exit 0
   fi
 
   # Setup list/sort/preview commands
