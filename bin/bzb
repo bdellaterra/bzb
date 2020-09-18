@@ -87,8 +87,8 @@ init data_dir "$HOME/.bzb" && readonly data_dir
 disable no_edit
 
 # Default enabled/disabled settings
-enable persist shallow sorted preview toggle_status
-disable reverse hidden no_ignore grep_mode autosave_session autoload_session
+enable persist shallow sorted preview toggle_status hide
+disable reverse no_ignore grep_mode autosave_session autoload_session
 
 
 # COMMANDS
@@ -235,7 +235,7 @@ map 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt an
 map 'toggle-preview'          'ctrl-alt-p'  "toggle visibility of preview pane"
 map 'toggle-status'           'ctrl-alt-t'  "toggle visibility of toggle status bar"
 map 'toggle-ignored'          'alt-i'       "toggle visibility of ignored files (if supported)"
-map 'toggle-hidden'           'alt-v'       "toggle visibility of hidden files"
+map 'toggle-hide'             'alt-v'       "toggle visibility of hidden files"
 map 'toggle-nested'           'alt-n'       "toggle listing nested vs. only top-level files"
 map 'toggle-sort-order'       'alt-o'       "toggle sort order ascending/descending"
 map 'toggle-sort'             'ctrl-alt-s'  "toggle sorted/unsorted results (affects performance)"
@@ -274,7 +274,7 @@ Options:
 --once,-o                          Exit browser after editing a file
 --color,-c                         Show colorized output
 --recursive,-r                     List nested files/directories at start
---hidden,-h                        Show hidden files/directories at start
+--no-hide,-H                          Show hidden files/directories at start
 --no-ignore,-I                     Show ignored files/directories at start
 --reverse-sort,-rs                 Reverse the normal sort order
 --no-sort,-S                       Disable sorting of files/directories
@@ -303,8 +303,8 @@ for arg in "$@"; do
     -C|--no-color) disable color; shift ;;
     -r|--recursive) disable shallow; shift ;;
     -R|--no-recursive) enable shallow; shift ;;
-    -h|--hidden) enable hidden; shift ;;
-    -H|--no-hidden) disable hidden; shift ;;
+    -h|--hide) enable hide; shift ;;
+    -H|--no-hide) disable hide; shift ;;
     -i|--ignore) disable no_ignore; shift ;;
     -I|--no-ignore) enable no_ignore; shift ;;
     -s|--sort) enable sorted; shift ;;
@@ -362,7 +362,7 @@ save_session() {
       [[ "$alt_dir" ]] && declare -p alt_dir >> "$session"
       declare -p bookmarks >> "$session"
       declare -p shallow >> "$session"
-      declare -p hidden >> "$session"
+      declare -p hide >> "$session"
       declare -p no_ignore >> "$session"
       declare -p sorted >> "$session"
       declare -p reverse >> "$session"
@@ -403,7 +403,7 @@ main() {
   # Export variables for use in subshells
   export BZB_QUERY="$query"
   export BZB_COLOR="$color"
-  export BZB_HIDDEN="$hidden"
+  [[ $hide ]] && export BZB_HIDDEN=1 || export BZB_HIDDEN=''
   export BZB_NO_IGNORE="$no_ignore"
   export BZB_REVERSE="$reverse"
   export BZB_GREP_QUERY="$grep_query"
@@ -442,7 +442,7 @@ main() {
 
   # Prepare display to show status of toggle-settings
   status=()
-  [[ $hidden ]] && status+=('+H') || status+=('-h')
+  [[ $hide ]] && status+=('+H') || status+=('-h')
   [[ $no_ignore ]] && status+=("${ignore_disabled:-+}I") || status+=("${ignore_disabled:--}i")
   [[ $shallow ]] && status+=('-n') || status+=('+N')
   [[ $nested_sort ]] && nested_sort_enabled="/" || nested_sort_enabled='' 
@@ -525,8 +525,8 @@ main() {
     ;;
 
     # Use alt-v to toggle visibility of hidden files/directories
-    toggle-hidden)
-      toggle hidden
+    toggle-hide)
+      toggle hide
     ;;
 
     # Use alt-o to toggle between normal and reverse sort order
@@ -556,8 +556,8 @@ main() {
 
     # Use ctrl-alt-i to restore initial view/sort settings
     restore-initial-view)
-      enable shallow sorted preview toggle_status
-      disable reverse hidden no_ignore
+      enable shallow sorted preview toggle_status hide
+      disable reverse no_ignore
       [[ $parallel_sort ]] && enable nested_sort || disable nested_sort
     ;;
 
