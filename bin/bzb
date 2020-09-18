@@ -8,6 +8,9 @@ if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
   exit 1
 fi
 
+
+# FUNCTIONS
+
 # Test if command exists
 has() { command -v "$1" &>/dev/null; }
 
@@ -56,6 +59,9 @@ clear_fzf() {
   [[ $fzf_command && $no_clear ]] && tput rmcup
 }
 
+
+# SETTINGS
+
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
@@ -83,6 +89,9 @@ disable no_edit
 # Default enabled/disabled settings
 enable persist shallow sorted preview toggle_status
 disable reverse hidden no_ignore grep_mode autosave_session autoload_session
+
+
+# COMMANDS
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
 if has fd; then
@@ -166,6 +175,8 @@ rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
   init rm_interactive 'rm -ri' || rm_interactive='rm -rI'
 
 
+# BINDINGS
+
 # Set readline keybinds for cancelling prompts with ctr-g or double-escape
 # Binding single-escape could cause side effects due to its use as a common meta character
 bind '"\C-g":"\C-k\C-u
@@ -233,6 +244,9 @@ map 'save-session'            'ctrl-alt-y'  "save session to file named at promp
 
 # comma-separated list of custom mappings for fzf
 fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
+
+
+# USAGE
 
 usage() {
 cat <<USAGE
@@ -316,6 +330,9 @@ for arg in "$@"; do
   esac
 done
 
+
+# FILE STATE
+
 save_selection() {
   if [[ $no_edit && -d $data_dir ]]; then
     selection="$data_dir/selection"
@@ -364,6 +381,8 @@ restore_session() {
   cd "$base_dir"
 }
 
+
+# MAIN
 
 initial_target="$1"
 
