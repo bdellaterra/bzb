@@ -708,7 +708,9 @@ main() {
 
     # Use alt-up or ctrl-alt-k to select bookmarked directory using fzf
     select-bookmark|select-bookmark2)
-      readarray -t dirs < <(dirs -p -l | LC_ALL=C sort -u)
+      # Omit current directory from bookmarks and position it as initial selection at bottom of list
+      readarray -t dirs < <(dirs -p -l | sed -n '/^'"${PWD//\//\\/}"'$/!p' | LC_ALL=C sort -u)
+      dirs=("$PWD" ${dirs[@]})
       next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf $fzf_submenu_bind --prompt='[go to directory]')")
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
