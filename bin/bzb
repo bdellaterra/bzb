@@ -314,8 +314,8 @@ for arg in "$@"; do
     -RS|--no-reverse-sort) disable reverse; shift ;;
     -e|--edit) disable no_edit; enable persist; shift ;;
     -E|--no-edit) enable no_edit; disable persist; shift ;;
-    -p|--preview) enable preview; shift ;;
-    -P|--no-preview) disable preview; shift ;;
+    -v|--preview) enable preview; shift ;;
+    -V|--no-preview) disable preview; shift ;;
     -l|--statusline) enable statusline; shift ;;
     -L|--no-statusline) disable statusline; shift ;;
     -as|--autosave-session) enable autosave_session; shift ;;
