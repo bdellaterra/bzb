@@ -227,7 +227,7 @@ map 'select-nested-bookmark'  'alt-down'    "select and enter bookmarked directo
 map 'select-nested-bookmark2' 'ctrl-alt-j'  "select and enter bookmarked directory under current directory"
 map 'set-alt-dir'             'alt-s'       "(s)et alternate directory (default for copy/move prompts)"
 map 'enter-alt-dir'           'alt-a'       "switch between current and (a)lternate directory"
-map 'enter-base-dir'          'alt-z'       "switch between current and base directory"
+map 'enter-base-dir'          'alt-u'       "switch between current and base directory"
 map 'enter-prev-dir'          'alt-p'       "switch between current and (p)revious directory"
 map 'prompt-dir'              'alt-g'       "(g)o to directory named at prompt"
 map 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt and (g)o to it"
@@ -747,7 +747,7 @@ main() {
     ;;
 
     # Use ctrl-alt-g to set/enter new base directory
-    # Use alt-z to go to base directory, or go back
+    # Use alt-u to go "up" to base directory, or go back
     # to previous directory if already in base directory
     set-base-dir|enter-base-dir)
       dir="$PWD"
