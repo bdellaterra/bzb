@@ -34,7 +34,7 @@ init() {
   defined "$override" && assign "$1" "${!override}" || assign "$1" "$2"
 }
 
-# Initialize variable names provided to true/on value,
+# Initialize all variable names provided to true/on,
 # allowing override by BZB_ prefixed all-caps variable only if previously unset
 enable() {
   for var in "$@"; do
@@ -42,7 +42,7 @@ enable() {
   done
 }
 
-# Initialize variable name provided as first argument to false/off value,
+# Initialize all variable names provided to false/off,
 # allowing override by BZB_ prefixed all-caps variable only if previously unset
 disable() {
   for var in "$@"; do
@@ -50,7 +50,7 @@ disable() {
   done
 }
 
-# Enable setting if false/off. Disable it if true/on
+# Enable setting if disabled. Disable it if enabled
 toggle() { [[ ${!1} ]] && disable "$1" || enable "$1"; }
 
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
@@ -59,7 +59,7 @@ clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
 
 # BINDINGS
 
-# Set readline keybinds for cancelling prompts with ctr-g or double-escape
+# Set readline keybinds for cancelling prompts with ctrl-g or double-escape
 # Binding single-escape could cause side effects due to its use as a common meta character
 bind '"\C-g":"\C-k\C-u
 "' '"\e\e":"\C-g"' &>/dev/null
