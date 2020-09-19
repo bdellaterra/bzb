@@ -109,44 +109,52 @@ an equals sign '=' required for options that take values. (e.g. '--query=STR' no
 USAGE
 }
 
+
+# OPTIONS
+
 for arg in "$@"; do
   case $arg in
     --help) usage; exit 0 ;;
-    -o|--once) enable once; shift ;;
-    -O|--no-once) disable once; shift ;;
-    -c|--color) enable color; shift ;;
-    -C|--no-color) disable color; shift ;;
-    -n|--nested) enable nested; shift ;;
-    -N|--no-nested) disable nested; shift ;;
-    -h|--hide) enable hide; shift ;;
-    -H|--no-hide) disable hide; shift ;;
-    -i|--ignore) enable ignore; shift ;;
-    -I|--no-ignore) disable ignore; shift ;;
-    -s|--sort) enable sorted; shift ;;
-    -S|--no-sort) disable sorted; shift ;;
-    -ns|--nested-sort) enable nested_sort; shift ;;
-    -NS|--no-nested-sort) disable nested_sort; shift ;;
-    -r|--reverse) enable reverse; shift ;;
-    -R|--no-reverse) disable reverse; shift ;;
-    -e|--edit) disable no_edit; disable once; shift ;;
-    -E|--no-edit) enable no_edit; enable once; shift ;;
-    -v|--preview) enable preview; shift ;;
-    -V|--no-preview) disable preview; shift ;;
-    -l|--statusline) enable statusline; shift ;;
-    -L|--no-statusline) disable statusline; shift ;;
-    -as|--autosave-session) enable autosave_session; shift ;;
-    -AS|--no-autosave-session) disable autosave_session; shift ;;
-    -al|--autoload-session) enable autoload_session; shift ;;
-    -AL|--no-autoload-session) disable autoload_session; shift ;;
-    -g=*|--grep=*) enable grep_mode; grep_query="${arg#*=}"; shift ;;
-    -bd=*|--base-dir=*|--base_directory=*) base_dir="${arg#*=}"; shift ;;
-    -ad=*|--alt-dir=*|--alternate-directory=*) alt_dir="${arg#*=}"; shift ;;
-    -dd=*|--data-dir=*|--data-directory=*) data_dir="${arg#*=}"; shift ;;
+    -o|--once) enable BZB_ONCE; shift ;;
+    -O|--no-once) disable BZB_ONCE; shift ;;
+    -c|--color) enable BZB_COLOR; shift ;;
+    -C|--no-color) disable BZB_COLOR; shift ;;
+    -n|--nested) enable BZB_NESTED; shift ;;
+    -N|--no-nested) disable BZB_NESTED; shift ;;
+    -h|--hide) enable BZB_HIDE; shift ;;
+    -H|--no-hide) disable BZB_HIDE; shift ;;
+    -i|--ignore) enable BZB_IGNORE; shift ;;
+    -I|--no-ignore) disable BZB_IGNORE; shift ;;
+    -s|--sort) enable BZB_SORTED; shift ;;
+    -S|--no-sort) disable BZB_SORTED; shift ;;
+    -ns|--nested-sort) enable BZB_NESTED_SORT; shift ;;
+    -NS|--no-nested-sort) disable BZB_NESTED_SORT; shift ;;
+    -r|--reverse) enable BZB_REVERSE; shift ;;
+    -R|--no-reverse) disable BZB_REVERSE; shift ;;
+    -e|--edit) disable BZB_NO_EDIT; disable BZB_ONCE; shift ;;
+    -E|--no-edit) enable BZB_NO_EDIT; enable BZB_ONCE; shift ;;
+    -v|--preview) enable BZB_PREVIEW; shift ;;
+    -V|--no-preview) disable BZB_PREVIEW; shift ;;
+    -l|--statusline) enable BZB_STATUSLINE; shift ;;
+    -L|--no-statusline) disable BZB_STATUSLINE; shift ;;
+    -as|--autosave-session) enable BZB_AUTOSAVE_SESSION; shift ;;
+    -AS|--no-autosave-session) disable BZB_AUTOSAVE_SESSION; shift ;;
+    -al|--autoload-session) enable BZB_AUTOLOAD_SESSION; shift ;;
+    -AL|--no-autoload-session) disable BZB_AUTOLOAD_SESSION; shift ;;
+    -g=*|--grep=*) enable BZB_GREP_MODE; BZB_GREP_QUERY="${arg#*=}"; shift ;;
+    -bd=*|--base-dir=*|--base_directory=*) BZB_BASE_DIR="${arg#*=}"; shift ;;
+    -ad=*|--alt-dir=*|--alternate-directory=*) BZB_ALT_DIR="${arg#*=}"; shift ;;
+    -dd=*|--data-dir=*|--data-directory=*) BZB_DATA_DIR="${arg#*=}"; shift ;;
     # Save remaining options for fzf with quoting preserved
     # TODO: Capture options set with values after whitespace, not just '=' style assignments
-    -*) [[ "$arg" == *=* ]] && fzf_extra_options+=" ${arg%%=*}=\"${arg#*=}\"" || fzf_extra_options+=" \"$arg\""; shift ;;
+    -*) [[ "$arg" == *=* ]] && BZB_FZF_EXTRA_OPTIONS+=" ${arg%%=*}=\"${arg#*=}\"" || BZB_FZF_EXTRA_OPTIONS+=" \"$arg\""; shift ;;
   esac
 done
+
+
+# ARGUMENTS
+
+initial_target="$1"
 
 
 # SETTINGS
@@ -163,8 +171,12 @@ else
   exit 1
 fi
 
-# Additional options to be passed to fzf
-disable fzf_extra_options
+# Derive base directory from target, or use current directory if none given
+[[ -d "$initial_target" ]] && init base_dir "$initial_target" || init base_dir "$(dirname "${initial_target:-$PWD/.}")"
+pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
+
+# Alternate directory for quick naviagtion and file-operations not set by default 
+disable alt_dir
 
 # Directory where data for loading/restoring sessions is saved (optional)
 init data_dir "$HOME/.bzb" && readonly data_dir
@@ -178,6 +190,9 @@ disable no_edit
 # Default enabled/disabled settings
 enable sorted preview statusline hide ignore
 disable once nested reverse grep_mode autosave_session autoload_session
+
+# Additional options to be passed to fzf
+disable fzf_extra_options
 
 
 # COMMANDS
@@ -389,14 +404,6 @@ restore_session() {
 
 
 # MAIN
-
-initial_target="$1"
-
-# Derive base directory from target, or use current directory if none given
-if [[ -z "$base_dir" ]]; then
-  [[ -d "$initial_target" ]] && base_dir="$initial_target" || base_dir="$(dirname "${initial_target:-$PWD/.}")"
-fi
-pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
 
 # Optionally autoload browsing session
 init session "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
