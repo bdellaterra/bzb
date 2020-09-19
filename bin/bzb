@@ -17,30 +17,28 @@ has() { command -v "$1" &>/dev/null; }
 # Test if variable is defined
 defined() { [[ -n "$1" && -n "${!1+defined}" ]] || return 1; }
 
-# Test if variable is set. Set it to second argument if provided
-# TODO: Find function name that doesn't override bash-native 'set' command
-set() {
+# Set global variable with name matching first argument to value provided as second argument
+assign() {
   # Avoid polluting global namespace when setting variable if declare supports -g option (bash version 4.2+)
   if [[ "${BASH_VERSINFO[0]}" -ge 4 && "${BASH_VERSINFO[1]}" -ge 2 ]]; then
     declare -g "$1=$2"
   else
     export "$1=$2"
   fi
-  defined "$1"
 }
 
 # In the variable name provided as first argument, store the default value provided
 # as second argument. If BZB_ prefixed all-caps variable is defined use its value instead
 init() {
   override="BZB_${1^^}"
-  defined "$override" && set "$1" "${!override}" || set "$1" "$2"
+  defined "$override" && assign "$1" "${!override}" || assign "$1" "$2"
 }
 
 # Initialize variable names provided to true/on value,
 # allowing override by BZB_ prefixed all-caps variable only if previously unset
 enable() {
   for var in "$@"; do
-    defined "$var" && set "$var" 1 || init "$var" 1
+    defined "$var" && assign "$var" 1 || init "$var" 1
   done
 }
 
@@ -48,7 +46,7 @@ enable() {
 # allowing override by BZB_ prefixed all-caps variable only if previously unset
 disable() {
   for var in "$@"; do
-    defined "$var" && set "$var" '' || init "$var" ''
+    defined "$var" && assign "$var" '' || init "$var" ''
   done
 }
 
@@ -482,7 +480,7 @@ main() {
   # Parse empty command as 'enter' action
   [[ -z "$command" ]] && command='right'
 
-  set action "${key_actions[$command]}"
+  assign action "${key_actions[$command]}"
 
   next_targets=()
 
@@ -767,7 +765,7 @@ main() {
           base_dir="${dir%/}"
           pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
           session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
-          set action "autoload-session"
+          assign action "autoload-session"
         fi
       fi
       if [[ ! -d "$base_dir" || ! -d "$dir" ]]; then
