@@ -124,7 +124,7 @@ map 'load-session'            'alt-y'       "load session from file named at pro
 map 'save-session'            'ctrl-alt-y'  "save session to file named at prompt"
 
 # comma-separated list of custom mappings for fzf
-fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)" && readonly fzf_keys
+readonly fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
 
 
 # USAGE
