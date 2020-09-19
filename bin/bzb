@@ -58,6 +58,77 @@ toggle() { [[ ${!1} ]] && disable "$1" || enable "$1"; }
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
 clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
 
+
+# BINDINGS
+
+# Set readline keybinds for cancelling prompts with ctr-g or double-escape
+# Binding single-escape could cause side effects due to its use as a common meta character
+bind '"\C-g":"\C-k\C-u
+"' '"\e\e":"\C-g"' &>/dev/null
+
+# Set fzf keybinds for movement and exit actions
+init fzf_bind '--bind=alt-k:up,alt-j:down,ctrl-g:ignore,esc:cancel'
+init fzf_submenu_bind '--bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
+
+declare -A key_definitions key_actions action_keys
+map() {
+  keys[${#keys[@]}]="$2"
+  key_definitions["$2"]="$3"
+  key_actions["$2"]="$1"
+  action_keys["$1"]="$2"
+}
+
+map 'enter'                   'right'       "enter directory or edit file"
+map 'enter2'                  'alt-l'       "enter directory or edit file"
+map 'back'                    'left'        "go to parent directory (not moving past base directory)"
+map 'back2'                   'alt-h'       "go to parent directory (not moving past base directory)"
+map 'launch'                  'alt-q'       "(q)uick-launch targets using native client"
+map 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
+map 'toggle-grep'             'ctrl-g'      "toggle (g)rep mode preserving pattern / cancel submenu or prompt"
+map 'move'                    'alt-m'       "(m)ove targets to directory named at prompt"
+map 'rename'                  'alt-r'       "(r)ename targets in current directory"
+map 'move-rename'             'ctrl-alt-m'  "(m)ove/rename targets into directory named at prompt"
+map 'delete'                  'alt-x'       "delete targets"
+map 'copy'                    'alt-c'       "(c)opy targets to directory named at prompt"
+map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into directory named at prompt"
+map 'create-file'             'alt-t'       "create (a.k.a. \"(t)ouch\") file named at prompt"
+map 'create-edit-file'        'ctrl-alt-t'  "create/edit file named at prompt"
+map 'create-edit-file2'       'alt-e'       "create/edit file named at prompt"
+map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
+map 'create-enter-dir'        'ctrl-alt-d'  "create/enter (d)irectory named at prompt"
+map 'toggle-bookmark'         'alt-b'       "toggle (b)ookmark for current directory"
+map 'bookmark-targets'        'ctrl-alt-b'  "(b)ookmark targets"
+map 'unbookmark'              'ctrl-alt-u'  "(u)nbookmark selected directories"
+map 'next-bookmark'           'alt-right'   "go to next bookmarked directory"
+map 'next-bookmark2'          'alt-n'       "go to next bookmarked directory"
+map 'prev-bookmark'           'alt-left'    "go to previous bookmarked directory"
+map 'prev-bookmark2'          'alt-p'       "go to previous bookmarked directory"
+map 'select-bookmark'         'alt-up'      "select and enter bookmarked directory"
+map 'select-bookmark2'        'ctrl-alt-k'  "select and enter bookmarked directory"
+map 'select-nested-bookmark'  'alt-down'    "select and enter bookmarked directory under current directory"
+map 'select-nested-bookmark2' 'ctrl-alt-j'  "select and enter bookmarked directory under current directory"
+map 'enter-alt-dir'           'alt-a'       "switch between current and (a)lternate directory"
+map 'set-alt-dir'             'ctrl-alt-a'  "set (a)lternate directory (default for copy/move prompts)"
+map 'enter-base-dir'          'alt-u'       "switch between current and base directory"
+map 'enter-prev-dir'          'alt-z'       "switch between current and (p)revious directory"
+map 'prompt-dir'              'alt-g'       "(g)o to directory named at prompt"
+map 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt and (g)o to it"
+map 'toggle-statusline'       'ctrl-alt-l'  "toggle visibility of the statusline"
+map 'toggle-hide'             'ctrl-alt-h'  "toggle (v)isibility of hidden files"
+map 'toggle-ignore'           'ctrl-alt-i'  "toggle visibility of (i)gnored files (if supported)"
+map 'toggle-nested'           'ctrl-alt-n'  "toggle listing (n)ested vs. only top-level files"
+map 'toggle-sort'             'ctrl-alt-s'  "toggle (s)orting of results (affects performance)"
+map 'toggle-nested-sort'      'ctrl-/'      "toggle sorting of nested results (affects performance)"
+map 'toggle-sort-order'       'ctrl-alt-o'  "toggle sort (o)rder ascending/descending"
+map 'restore-settings'        'ctrl-alt-r'  "(r)estore initial view/sort settings"
+map 'toggle-preview'          'ctrl-alt-v'  "toggle visibility of pre(v)iew pane"
+map 'load-session'            'alt-y'       "load session from file named at prompt"
+map 'save-session'            'ctrl-alt-y'  "save session to file named at prompt"
+
+# comma-separated list of custom mappings for fzf
+fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)" && readonly fzf_keys
+
+
 # USAGE
 
 usage() {
@@ -276,76 +347,6 @@ has open && init launch 'open'
 # Prefer -I option to -i for removing files, if available
 rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
   init rm_interactive 'rm -ri' || rm_interactive='rm -rI'
-
-
-# BINDINGS
-
-# Set readline keybinds for cancelling prompts with ctr-g or double-escape
-# Binding single-escape could cause side effects due to its use as a common meta character
-bind '"\C-g":"\C-k\C-u
-"' '"\e\e":"\C-g"' &>/dev/null
-
-# Set fzf keybinds for movement and exit actions
-init fzf_bind '--bind=alt-k:up,alt-j:down,ctrl-g:ignore,esc:cancel'
-init fzf_submenu_bind '--bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
-
-declare -A key_definitions key_actions action_keys
-map() {
-  keys[${#keys[@]}]="$2"
-  key_definitions["$2"]="$3"
-  key_actions["$2"]="$1"
-  action_keys["$1"]="$2"
-}
-
-map 'enter'                   'right'       "enter directory or edit file"
-map 'enter2'                  'alt-l'       "enter directory or edit file"
-map 'back'                    'left'        "go to parent directory (not moving past base directory)"
-map 'back2'                   'alt-h'       "go to parent directory (not moving past base directory)"
-map 'launch'                  'alt-q'       "(q)uick-launch targets using native client"
-map 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
-map 'toggle-grep'             'ctrl-g'      "toggle (g)rep mode preserving pattern / cancel submenu or prompt"
-map 'move'                    'alt-m'       "(m)ove targets to directory named at prompt"
-map 'rename'                  'alt-r'       "(r)ename targets in current directory"
-map 'move-rename'             'ctrl-alt-m'  "(m)ove/rename targets into directory named at prompt"
-map 'delete'                  'alt-x'       "delete targets"
-map 'copy'                    'alt-c'       "(c)opy targets to directory named at prompt"
-map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into directory named at prompt"
-map 'create-file'             'alt-t'       "create (a.k.a. \"(t)ouch\") file named at prompt"
-map 'create-edit-file'        'ctrl-alt-t'  "create/edit file named at prompt"
-map 'create-edit-file2'       'alt-e'       "create/edit file named at prompt"
-map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
-map 'create-enter-dir'        'ctrl-alt-d'  "create/enter (d)irectory named at prompt"
-map 'toggle-bookmark'         'alt-b'       "toggle (b)ookmark for current directory"
-map 'bookmark-targets'        'ctrl-alt-b'  "(b)ookmark targets"
-map 'unbookmark'              'ctrl-alt-u'  "(u)nbookmark selected directories"
-map 'next-bookmark'           'alt-right'   "go to next bookmarked directory"
-map 'next-bookmark2'          'alt-n'       "go to next bookmarked directory"
-map 'prev-bookmark'           'alt-left'    "go to previous bookmarked directory"
-map 'prev-bookmark2'          'alt-p'       "go to previous bookmarked directory"
-map 'select-bookmark'         'alt-up'      "select and enter bookmarked directory"
-map 'select-bookmark2'        'ctrl-alt-k'  "select and enter bookmarked directory"
-map 'select-nested-bookmark'  'alt-down'    "select and enter bookmarked directory under current directory"
-map 'select-nested-bookmark2' 'ctrl-alt-j'  "select and enter bookmarked directory under current directory"
-map 'enter-alt-dir'           'alt-a'       "switch between current and (a)lternate directory"
-map 'set-alt-dir'             'ctrl-alt-a'  "set (a)lternate directory (default for copy/move prompts)"
-map 'enter-base-dir'          'alt-u'       "switch between current and base directory"
-map 'enter-prev-dir'          'alt-z'       "switch between current and (p)revious directory"
-map 'prompt-dir'              'alt-g'       "(g)o to directory named at prompt"
-map 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt and (g)o to it"
-map 'toggle-statusline'       'ctrl-alt-l'  "toggle visibility of the statusline"
-map 'toggle-hide'             'ctrl-alt-h'  "toggle (v)isibility of hidden files"
-map 'toggle-ignore'           'ctrl-alt-i'  "toggle visibility of (i)gnored files (if supported)"
-map 'toggle-nested'           'ctrl-alt-n'  "toggle listing (n)ested vs. only top-level files"
-map 'toggle-sort'             'ctrl-alt-s'  "toggle (s)orting of results (affects performance)"
-map 'toggle-nested-sort'      'ctrl-/'      "toggle sorting of nested results (affects performance)"
-map 'toggle-sort-order'       'ctrl-alt-o'  "toggle sort (o)rder ascending/descending"
-map 'restore-settings'        'ctrl-alt-r'  "(r)estore initial view/sort settings"
-map 'toggle-preview'          'ctrl-alt-v'  "toggle visibility of pre(v)iew pane"
-map 'load-session'            'alt-y'       "load session from file named at prompt"
-map 'save-session'            'ctrl-alt-y'  "save session to file named at prompt"
-
-# comma-separated list of custom mappings for fzf
-fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
 
 
 # FILE STATE
