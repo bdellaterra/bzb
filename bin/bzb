@@ -77,12 +77,12 @@ map() {
 }
 
 map 'enter'                   'right'       "enter directory or edit file"
-map 'enter2'                  'alt-l'       "enter directory or edit file"
+map 'enter2'                  'ctrl-j'      "enter directory or edit file"
 map 'back'                    'left'        "go to parent directory (not moving past base directory)"
-map 'back2'                   'alt-h'       "go to parent directory (not moving past base directory)"
+map 'back2'                   'ctrl-k'      "go to parent directory (not moving past base directory)"
 map 'launch'                  'alt-q'       "(q)uick-launch targets using native client"
-map 'grep'                    'alt-/'       "grep for pattern specified at prompt ('left' will exit grep mode)"
-map 'toggle-grep'             'ctrl-g'      "toggle (g)rep mode preserving pattern / cancel submenu or prompt"
+map 'grep'                    'alt-f'       "grep/(f)ind pattern specified at prompt ('left' will exit grep mode)"
+map 'toggle-grep'             'ctrl-g'      "cancel submenu or prompt / toggle (g)rep mode preserving pattern"
 map 'move'                    'alt-m'       "(m)ove targets to directory named at prompt"
 map 'rename'                  'alt-r'       "(r)ename targets in current directory"
 map 'move-rename'             'ctrl-alt-m'  "(m)ove/rename targets into directory named at prompt"
@@ -90,17 +90,17 @@ map 'delete'                  'alt-x'       "delete targets"
 map 'copy'                    'alt-c'       "(c)opy targets to directory named at prompt"
 map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into directory named at prompt"
 map 'create-file'             'alt-t'       "create (a.k.a. \"(t)ouch\") file named at prompt"
-map 'create-edit-file'        'ctrl-alt-t'  "create/edit file named at prompt"
-map 'create-edit-file2'       'alt-e'       "create/edit file named at prompt"
+map 'create-edit-file'        'ctrl-alt-t'  "create/(e)dit file named at prompt"
+map 'create-edit-file2'       'alt-e'       "create/(e)dit file named at prompt"
 map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
 map 'create-enter-dir'        'ctrl-alt-d'  "create/enter (d)irectory named at prompt"
 map 'toggle-bookmark'         'alt-b'       "toggle (b)ookmark for current directory"
 map 'bookmark-targets'        'ctrl-alt-b'  "(b)ookmark targets"
 map 'unbookmark'              'ctrl-alt-u'  "(u)nbookmark selected directories"
-map 'next-bookmark'           'alt-right'   "go to next bookmarked directory"
-map 'next-bookmark2'          'alt-n'       "go to next bookmarked directory"
-map 'prev-bookmark'           'alt-left'    "go to previous bookmarked directory"
-map 'prev-bookmark2'          'alt-p'       "go to previous bookmarked directory"
+map 'prev-bookmark'           'alt-left'    "jump bac(k)ward through list of bookmarks"
+map 'prev-bookmark2'          'alt-k'       "jump bac(k)ward through list of bookmarks"
+map 'next-bookmark'           'alt-right'   "(j)ump forward through list of bookmarks"
+map 'next-bookmark2'          'alt-j'       "(j)ump forward through list of bookmarks"
 map 'select-bookmark'         'alt-up'      "select and enter bookmarked directory"
 map 'select-bookmark2'        'ctrl-alt-k'  "select and enter bookmarked directory"
 map 'select-nested-bookmark'  'alt-down'    "select and enter bookmarked directory under current directory"
@@ -108,20 +108,20 @@ map 'select-nested-bookmark2' 'ctrl-alt-j'  "select and enter bookmarked directo
 map 'enter-alt-dir'           'alt-a'       "switch between current and (a)lternate directory"
 map 'set-alt-dir'             'ctrl-alt-a'  "set (a)lternate directory (default for copy/move prompts)"
 map 'enter-base-dir'          'alt-u'       "switch between current and base directory"
-map 'enter-prev-dir'          'alt-z'       "switch between current and (p)revious directory"
+map 'enter-prev-dir'          'alt-p'       "switch between current and (p)revious directory"
 map 'prompt-dir'              'alt-g'       "(g)o to directory named at prompt"
 map 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt and (g)o to it"
-map 'toggle-statusline'       'ctrl-alt-l'  "toggle visibility of the statusline"
-map 'toggle-hide'             'ctrl-alt-h'  "toggle (v)isibility of hidden files"
-map 'toggle-ignore'           'ctrl-alt-i'  "toggle visibility of (i)gnored files (if supported)"
-map 'toggle-nested'           'ctrl-alt-n'  "toggle listing (n)ested vs. only top-level files"
-map 'toggle-sort'             'ctrl-alt-s'  "toggle (s)orting of results (affects performance)"
-map 'toggle-nested-sort'      'ctrl-/'      "toggle sorting of nested results (affects performance)"
-map 'toggle-sort-order'       'ctrl-alt-o'  "toggle sort (o)rder ascending/descending"
+map 'toggle-statusline'       'alt-l'       "toggle visibility of the statusline"
+map 'toggle-hide'             'alt-h'       "toggle (v)isibility of hidden files"
+map 'toggle-ignore'           'alt-i'       "toggle visibility of (i)gnored files (if supported)"
+map 'toggle-nested'           'alt-n'       "toggle listing (n)ested vs. only top-level files"
+map 'toggle-sort'             'alt-s'       "toggle (s)orting of results (affects performance)"
+map 'toggle-nested-sort'      'ctrl-alt-n'  "toggle sorting of nested results (affects performance)"
+map 'toggle-sort-order'       'alt-o'       "toggle sort (o)rder ascending/descending"
 map 'restore-settings'        'ctrl-alt-r'  "(r)estore initial view/sort settings"
-map 'toggle-preview'          'ctrl-alt-v'  "toggle visibility of pre(v)iew pane"
-map 'load-session'            'alt-y'       "load session from file named at prompt"
-map 'save-session'            'ctrl-alt-y'  "save session to file named at prompt"
+map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane"
+map 'load-session'            'ctrl-alt-l'  "load session from file named at prompt"
+map 'save-session'            'ctrl-alt-s'  "save session to file named at prompt"
 
 # comma-separated list of custom mappings for fzf
 readonly fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
@@ -494,7 +494,7 @@ main() {
   # Fall through to remaining cases
   esac; case $action in
 
-    # Use left arrow or alt-k to move up a directory, but not above base directory
+    # Use left arrow or ctrl-k to move up a directory, but not above base directory
     # If in grep mode, exit and resume browsing current directory
     back|back2)
       if [[ ! $grep_mode && "$PWD" != "$base_dir" ]]; then
@@ -505,12 +505,12 @@ main() {
       fi
     ;;
 
-    # Use enter or right arrow or alt-j to edit file or enter directory
+    # Use enter or right arrow or ctrl-j to edit file or enter directory
     enter|enter2)
       next_targets=("${targets[@]}")
     ;;
 
-    # Use alt-/ to enter grep mode using search pattern specified at prompt
+    # Use alt-f to enter grep mode using search pattern specified at prompt
     # Use again to update search pattern. Enter empty pattern to cancel
     grep)
       clear && read -ep "Grep for Pattern: " -i "$grep_query" grep_query
@@ -522,42 +522,42 @@ main() {
       toggle grep_mode
     ;;
 
-    # Use ctrl-alt-n to toggle listing nested vs only top-level files/directories
+    # Use alt-n to toggle listing nested vs only top-level files/directories
     toggle-nested)
       toggle nested
     ;;
 
-    # Use ctrl-alt-i to toggle visibility of ignored files/directories
+    # Use alt-i to toggle visibility of ignored files/directories
     toggle-ignore)
       toggle ignore
     ;;
 
-    # Use ctrl-alt-h to toggle visibility of hidden files/directories
+    # Use alt-h to toggle visibility of hidden files/directories
     toggle-hide)
       toggle hide
     ;;
 
-    # Use ctrl-alt-o to toggle between normal and reverse sort order
+    # Use alt-o to toggle between normal and reverse sort order
     toggle-sort-order)
       toggle reverse
     ;;
 
-    # Use ctrl-alt-s to enable/disable sorting
+    # Use alt-s to enable/disable sorting
     toggle-sort)
       toggle sorted
     ;;
 
-    # Use ctrl-/ to enable/disable nested sorting
+    # Use ctrl-alt-n to enable/disable nested sorting
     toggle-nested-sort)
       toggle nested_sort
     ;;
 
-    # Use ctrl-alt-v to toggle visibility of preview pane
+    # Use alt-v to toggle visibility of preview pane
     toggle-preview)
       toggle preview
     ;;
 
-    # Use ctrl-alt-l to toggle visibility of statusline
+    # Use alt-l to toggle visibility of statusline
     toggle-statusline)
       toggle statusline
     ;;
@@ -699,7 +699,7 @@ main() {
       cd "$current_dir"
     ;;
 
-    # Use alt-right or alt-n to go to next bookmarked directory
+    # Use alt-right or alt-j to go to next bookmarked directory
     next-bookmark|next-bookmark2)
       cd "$(dirs -l +1)" && pushd -n +1 >/dev/null
       if [[ "$PWD" = "$OLDPWD" ]]; then
@@ -707,7 +707,7 @@ main() {
       fi
     ;;
 
-    # Use alt-left or alt-p to go to previous bookmarked directory
+    # Use alt-left or alt-k to go to previous bookmarked directory
     prev-bookmark|prev-bookmark2)
       cd "$(dirs -l -0)" && pushd -n -0 >/dev/null
       if [[ "$PWD" = "$OLDPWD" ]]; then
@@ -782,7 +782,7 @@ main() {
   # Fall through to remaining cases
   esac; case $action in
 
-    # Use alt-y to load session. May be triggered automatically by other actions,
+    # Use ctrl-alt-l to load session. May be triggered automatically by other actions,
     # in which case prompt will still appear if autoload_session setting is disabled
     load-session|autoload-session)
       restore="$session"
@@ -796,7 +796,7 @@ main() {
       fi
     ;;
 
-    # Use ctrl-alt-y to save session
+    # Use ctrl-alt-s to save session
     save-session)
       clear && read -ep "Save session: " -i "$session" save
       save_session "$save"
