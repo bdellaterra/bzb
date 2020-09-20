@@ -137,7 +137,7 @@ Browse files using fzf. If no target is specified start in the current directory
 
 Key mappings:
 
-$(awk -F ':' '{ printf("%-12s %-66s %s\n", $1, $2, $3) }' <(
+$(awk -F ':' '{ printf("%-12s %-69s %s\n", $1, $2, $3) }' <(
 cat <<KEY_USAGE
 KEYMAP:DESCRIPTION:ACTION_NAME
 escape:exit file browser
