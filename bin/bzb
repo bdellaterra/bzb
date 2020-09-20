@@ -109,6 +109,8 @@ map 'enter-base-dir'          'alt-u'       "switch between current and base dir
 map 'enter-prev-dir'          'alt-p'       "switch between current and (p)revious directory"
 map 'prompt-dir'              'alt-g'       "(g)o to directory named at prompt"
 map 'set-base-dir'            'ctrl-alt-g'  "set new base directory at prompt and (g)o to it"
+map 'yank-targets'            'alt-y'       "copy (a.k.a. (y)ank) targets to clipboard"
+map 'yank-dir'                'ctrl-alt-y'  "copy (a.k.a. (y)ank) current directory to clipboard"
 map 'toggle-statusline'       'alt-l'       "toggle visibility of the statusline"
 map 'toggle-hide'             'alt-h'       "toggle (v)isibility of hidden files"
 map 'toggle-ignore'           'alt-i'       "toggle visibility of (i)gnored files (if supported)"
@@ -341,6 +343,11 @@ init launch ''
 has xdg-open && init launch 'xdg-open'
 has open && init launch 'open'
 
+# Clip Command: Used to copy text to clipboard
+init clip ''
+has xclip && init clip 'xclip'
+has clip && init clip 'clip'
+
 # Prefer -I option to -i for removing files, if available
 rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
   init rm_interactive 'rm -ri' || rm_interactive='rm -rI'
@@ -566,6 +573,23 @@ main() {
       enable sorted preview statusline hide ignore
       disable nested reverse
       [[ $parallel_sort ]] && enable nested_sort || disable nested_sort
+    ;;
+
+    # Use alt-y to yank targets to clipboard
+    yank-targets)
+      yanked_targets=''
+      for t in "${targets[@]}"; do
+        # Enclose target in single-quotes, escaping any existing single-quotes
+        yanked_targets+=" '"$(echo "$t" | sed -e "s/'/'\\\\''/g")"'"
+      done
+      [[ "$clip" ]] && bash -c "echo \"$yanked_targets\" | $clip"
+    ;;
+
+    # Use ctrl-alt-y to yank current directory to clipboard
+    yank-dir)
+      # Enclose directory in single-quotes, escaping any existing single-quotes
+      yanked_dir=" '"$(echo "$PWD" | sed -e "s/'/'\\\\''/g")"'"
+      [[ "$clip" ]] && bash -c "echo \"$yanked_dir\" | $clip"
     ;;
 
     # Use alt-q to quick-launch targets in their native client
