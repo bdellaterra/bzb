@@ -77,9 +77,7 @@ map() {
 }
 
 map 'enter'                   'right'       "enter directory or edit file"
-map 'enter2'                  'ctrl-j'      "enter directory or edit file"
 map 'back'                    'left'        "go to parent directory (not moving past base directory)"
-map 'back2'                   'ctrl-k'      "go to parent directory (not moving past base directory)"
 map 'launch'                  'alt-q'       "(q)uick-launch targets using native client"
 map 'grep'                    'alt-f'       "grep/(f)ind pattern specified at prompt ('left' will exit grep mode)"
 map 'toggle-grep'             'ctrl-g'      "cancel submenu or prompt / toggle (g)rep mode preserving pattern"
@@ -496,7 +494,7 @@ main() {
 
     # Use left arrow or ctrl-k to move up a directory, but not above base directory
     # If in grep mode, exit and resume browsing current directory
-    back|back2)
+    back)
       if [[ ! $grep_mode && "$PWD" != "$base_dir" ]]; then
         next_targets=("..")
       else
@@ -506,7 +504,7 @@ main() {
     ;;
 
     # Use enter or right arrow or ctrl-j to edit file or enter directory
-    enter|enter2)
+    enter)
       next_targets=("${targets[@]}")
     ;;
 

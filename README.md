@@ -19,9 +19,7 @@ escape      | exit file browser                                                 
 ctrl-c      | exit file browser                                                    |  
 enter       | enter directory or edit file                                         |  
 right       | enter directory or edit file                                         |  enter
-ctrl-j      | enter directory or edit file                                         |  enter2
 left        | go to parent directory (not moving past base directory)              |  back
-ctrl-k      | go to parent directory (not moving past base directory)              |  back2
 alt-q       | (q)uick-launch targets using native client                           |  launch
 alt-f       | grep/(f)ind pattern specified at prompt ('left' will exit grep mode) |  grep
 ctrl-g      | cancel submenu or prompt / toggle (g)rep mode preserving pattern     |  toggle-grep
