@@ -412,15 +412,6 @@ init session "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
 
 
 main() {
-  # Export variables for use in subshells
-  export BZB_BASE_DIR="$base_dir"
-  export BZB_QUERY="$query"
-  export BZB_COLOR="$color"
-  [[ $hide ]] && export BZB_HIDDEN=1 || export BZB_HIDDEN=''
-  [[ $ignore ]] && export BZB_NO_IGNORE='' || export BZB_NO_IGNORE=1
-  export BZB_REVERSE="$reverse"
-  export BZB_GREP_QUERY="$grep_query"
-
   # Edit file or enter directory
   if [[ $# -eq 1 && -d "$1" ]]; then
     cd "$1"
@@ -429,11 +420,22 @@ main() {
   elif [[ $# -ge 1 ]]; then
     edit="${EDITOR:vi}"
     for f in "$@"; do
-      edit="$edit '$f'"
+      edit="$edit '"$(echo "${f}" | sed -e "s/'/'\\\\''/g")"'"
     done
     [[ $no_edit ]] && save_selection $@ || bash -c "$edit"
     [[ $once ]] && exit 0
   fi
+
+  # Export variables for use in subshells
+  export BZB_BASE_DIR="$(echo "${base_dir}" | sed -e "s/'/'\\\\''/g")"
+  export BZB_DIR="$(echo "${PWD}" | sed -e "s/'/'\\\\''/g")"
+  export BZB_QUERY="$query"
+  export BZB_COLOR="$color"
+  [[ $hide ]] && export BZB_HIDDEN=1 || export BZB_HIDDEN=''
+  [[ $ignore ]] && export BZB_NO_IGNORE='' || export BZB_NO_IGNORE=1
+  export BZB_REVERSE="$reverse"
+  export BZB_GREP_QUERY="$(echo "/${grep_query}/" | sed -e "s/'/'\\\\''/g")"
+
 
   # Setup list/sort/preview commands
   [[ $nested ]] && sort="$sort_nested" || sort="$sort_shallow"
@@ -442,13 +444,13 @@ main() {
     [[ $nested ]] && grep="$grep_nested" || grep="$grep_shallow"
     preview_opts="--preview='$grep_mode_preview' --preview-window='right:62%:wrap'"
     fzf_input=$(bash -c "echo \"$grep$sort_pipe\"")
-    fzf_prompt="/$grep_query/"
+    fzf_prompt=" --prompt='$BZB_GREP_QUERY'"
     [[ $no_grep_ignore_status ]] && ignore_disabled='!' || ignore_disabled=''
   else
     [[ $nested ]] && find="$find_nested" || find="$find_shallow"
     preview_opts="--preview='$find_mode_preview' --preview-window='right:62%:wrap'"
     fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
-    fzf_prompt="${PWD#$base_dir}>"
+    fzf_prompt=" --prompt='${BZB_DIR#$BZB_BASE_DIR}'"   
     [[ $no_find_ignore_status ]] && ignore_disabled='!' || ignore_disabled=''
   fi
   [[ ! $preview ]] && preview_opts=''
@@ -472,7 +474,7 @@ main() {
   # Clear leading dots from paths
   fzf_input+=" | sed 's:^\./::'"
 
-  fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' $fzf_bind --expect='$fzf_keys' --query='$BZB_QUERY' --prompt='$fzf_prompt' $preview_opts $fzf_extra_options"
+  fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' $fzf_bind --expect='$fzf_keys' --query='$BZB_QUERY' $fzf_prompt $preview_opts $fzf_extra_options"
   [[ ! $color ]] && fzf_options="${color:---no-color} $fzf_options"
   [[ $statusline ]] && fzf_options="--header=\"\$BZB_FZF_HEADER\" $fzf_options"
 
