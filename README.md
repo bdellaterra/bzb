@@ -30,16 +30,16 @@ alt-x       | delete targets                                                    
 alt-c       | (c)opy targets to directory named at prompt                          | copy
 ctrl-alt-c  | (c)opy/rename targets into directory named at prompt                 | copy-rename
 alt-t       | create (a.k.a. "(t)ouch") file named at prompt                       | create-file
-ctrl-alt-t  | create/(e)dit file named at prompt                                   | create-edit-file
-alt-e       | create/(e)dit file named at prompt                                   | create-edit-file2
+ctrl-alt-t  | create (a.k.a. "(t)ouch") and edit file named at prompt              | create-edit-file
+alt-e       | create (a.k.a. "touch") and (e)dit file named at prompt              | create-edit-file2
 alt-d       | create (d)irectory named at prompt                                   | create-dir
 ctrl-alt-d  | create/enter (d)irectory named at prompt                             | create-enter-dir
 alt-b       | toggle (b)ookmark for current directory                              | toggle-bookmark
 ctrl-alt-b  | (b)ookmark targets                                                   | bookmark-targets
 ctrl-alt-u  | (u)nbookmark selected directories                                    | unbookmark
-alt-left    | jump bac(k)ward through list of bookmarks                            | prev-bookmark
+alt-left    | jump backward through list of bookmarks                              | prev-bookmark
 alt-k       | jump bac(k)ward through list of bookmarks                            | prev-bookmark2
-alt-right   | (j)ump forward through list of bookmarks                             | next-bookmark
+alt-right   | jump forward through list of bookmarks                               | next-bookmark
 alt-j       | (j)ump forward through list of bookmarks                             | next-bookmark2
 alt-up      | select and enter bookmarked directory                                | select-bookmark
 ctrl-alt-k  | select and enter bookmarked directory                                | select-bookmark2
@@ -47,14 +47,14 @@ alt-down    | select and enter bookmarked directory under current directory     
 ctrl-alt-j  | select and enter bookmarked directory under current directory        | select-nested-bookmark2
 alt-a       | switch between current and (a)lternate directory                     | enter-alt-dir
 ctrl-alt-a  | set (a)lternate directory (default for copy/move prompts)            | set-alt-dir
-alt-u       | switch between current and base directory                            | enter-base-dir
+alt-u       | go (u)p to base directory, or back to previous if in base directory  | enter-base-dir
 alt-p       | switch between current and (p)revious directory                      | enter-prev-dir
 alt-g       | (g)o to directory named at prompt                                    | prompt-dir
 ctrl-alt-g  | set new base directory at prompt and (g)o to it                      | set-base-dir
 alt-y       | copy (a.k.a. (y)ank) targets to clipboard                            | yank-targets
 ctrl-alt-y  | copy (a.k.a. (y)ank) current directory to clipboard                  | yank-dir
 alt-l       | toggle visibility of the status(l)ine                                | toggle-statusline
-alt-h       | toggle (v)isibility of hidden files                                  | toggle-hide
+alt-h       | toggle visibility of (h)idden files                                  | toggle-hide
 alt-i       | toggle visibility of (i)gnored files (if supported)                  | toggle-ignore
 alt-n       | toggle listing (n)ested vs. only top-level files                     | toggle-nested
 alt-s       | toggle (s)orting of results (affects performance)                    | toggle-sort
