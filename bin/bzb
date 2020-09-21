@@ -457,17 +457,17 @@ main() {
 
   # Prepare display to show status of toggle-settings
   status=()
-  [[ $hide ]] && status+=('+hide') || status+=('-hide')
-  [[ $ignore ]] && status+=("${ignore_disabled:--}ignore") || status+=("${ignore_disabled:-+}ignore")
-  [[ $nested ]] && status+=('+nested') || status+=('-nested')
+  [[ $hide ]] && status+=('-h') || status+=('-H')
+  [[ $ignore ]] && status+=("${ignore_disabled:--}i") || status+=("${ignore_disabled:--}I")
+  [[ $nested ]] && status+=('-N') || status+=('-n')
   [[ $nested_sort ]] && nested_sort_enabled="/" || nested_sort_enabled='' 
   [[ ! $sorted ]] && sort_disabled='-' || sort_disabled=''
-  [[ $sorted ]] && sort_enabled='+' || sort_enabled=''
+  [[ $sorted ]] && sort_enabled='-' || sort_enabled=''
   [[ $nested && $sort_enabled && $parallel_sort ]] && sort_enabled="="
   [[ $nested && ! $nested_sort_enabled ]] && sort_disabled='!' && sort_enabled='!'
-  [[ $sorted && $sort_enabled ]] && status+=("${sort_enabled}sort${nested_sort_enabled}") || status+=("${sort_disabled}sort${nested_sort_enabled}")
+  [[ $sorted && $sort_enabled ]] && status+=("${sort_enabled}s${nested_sort_enabled}") || status+=("${sort_disabled}S${nested_sort_enabled}")
   [[ ! $sorted || $sort_disabled ]] && reverse_disabled='!' || reverse_disabled=''
-  [[ $reverse ]] && status+=("${reverse_disabled:-+}reverse") || status+=("${reverse_disabled:--}reverse")
+  [[ $reverse ]] && status+=("${reverse_disabled:--}O") || status+=("${reverse_disabled:--}o")
 
   export BZB_FZF_HEADER="[${status[@]}]"
 
