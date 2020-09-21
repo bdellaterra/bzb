@@ -197,8 +197,8 @@ for arg in "$@"; do
     -NS|--no-nested-sort) disable BZB_NESTED_SORT; shift ;;
     -r|--reverse) enable BZB_REVERSE; shift ;;
     -R|--no-reverse) disable BZB_REVERSE; shift ;;
-    -e|--edit) disable BZB_NO_EDIT; disable BZB_ONCE; shift ;;
-    -E|--no-edit) enable BZB_NO_EDIT; enable BZB_ONCE; shift ;;
+    -e|--edit) enable BZB_EDIT; disable BZB_ONCE; shift ;;
+    -E|--no-edit) disable BZB_EDIT; enable BZB_ONCE; shift ;;
     -v|--preview) enable BZB_PREVIEW; shift ;;
     -V|--no-preview) disable BZB_PREVIEW; shift ;;
     -l|--statusline) enable BZB_STATUSLINE; shift ;;
@@ -228,7 +228,7 @@ initial_target="$1"
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    enable no_clear && readonly no_clear
+    # enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
@@ -247,11 +247,11 @@ disable alt_dir
 # Directory where data for loading/restoring sessions is saved (optional)
 init data_dir "$HOME/.bzb" && readonly data_dir
 
-# Default behavior is to launch $EDITOR as the enter-action for files. Enabling the option
+# Default behavior is to launch $EDITOR as the enter-action for files. Disabling the option
 # below will instead only log selected targets to a 'selection' file inside 'data_dir'.
 # This helps communicate user actions to an external program that has launched bzb as an
-# integrated file browser. Enabling this option will also enable the 'once' option
-disable no_edit
+# integrated file browser. Disabling this option will enable the 'once' option
+enable edit
 
 # Default enabled/disabled settings
 enable sorted preview statusline hide ignore
@@ -356,9 +356,10 @@ rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
 # FILE STATE
 
 save_selection() {
-  if [[ $no_edit && -d $data_dir ]]; then
+  if [[ -d "$data_dir" ]]; then
     selection="$data_dir/selection"
-    mkdir -p "$(dirname $selection)" && touch "$selection"
+    mkdir -p "$(dirname $selection)"
+    touch "$selection"
     if [[ -w "$selection" ]]; then
       > "$selection"
       for t in "$@"; do
@@ -412,23 +413,8 @@ init session "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
 
 
 main() {
-  # Edit file or enter directory
-  if [[ $# -eq 1 && -d "$1" ]]; then
-    cd "$1"
-    # clear query after changing directory
-    export BZB_QUERY=''
-  elif [[ $# -ge 1 ]]; then
-    edit="${EDITOR:vi}"
-    for f in "$@"; do
-      edit="$edit '"$(echo "${f}" | sed -e "s/'/'\\\\''/g")"'"
-    done
-    [[ $no_edit ]] && save_selection $@ || bash -c "$edit"
-    [[ $once ]] && exit 0
-  fi
-
   # Export variables for use in subshells
   export BZB_BASE_DIR="$(echo "${base_dir}" | sed -e "s/'/'\\\\''/g")"
-  export BZB_DIR="$(echo "${PWD}" | sed -e "s/'/'\\\\''/g")"
   export BZB_QUERY="$query"
   export BZB_COLOR="$color"
   [[ $hide ]] && export BZB_HIDDEN=1 || export BZB_HIDDEN=''
@@ -436,6 +422,22 @@ main() {
   export BZB_REVERSE="$reverse"
   export BZB_GREP_QUERY="$(echo "/${grep_query}/" | sed -e "s/'/'\\\\''/g")"
 
+  # Edit file or enter directory
+  if [[ $# -eq 1 && -d "$1" ]]; then
+    cd "$1"
+    # clear query after changing directory
+    export BZB_QUERY=''
+  elif [[ $# -ge 1 ]]; then
+    edit_targets="${EDITOR:vi}"
+    for f in "$@"; do
+      edit_targets="$edit_targets '"$(echo "${f}" | sed -e "s/'/'\\\\''/g")"'"
+    done
+    [[ $edit ]] && bash -c "$edit_targets" || save_selection $@
+    [[ $once ]] && exit 0
+  fi
+
+  # Export current directory
+  export BZB_DIR="$(echo "${PWD}" | sed -e "s/'/'\\\\''/g")"
 
   # Setup list/sort/preview commands
   [[ $nested ]] && sort="$sort_nested" || sort="$sort_shallow"
