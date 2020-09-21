@@ -67,24 +67,26 @@ ctrl-alt-s  | (s)ave session to file named at prompt                            
 
 Options:
 
---help                             Show this help text
---once,-o                          Exit browser after editing a file
---color,-c                         Show colorized output
---nested,-n                        List nested files/directories at start
---no-hide,-H                       Show hidden files/directories at start
---no-ignore,-I                     Show ignored files/directories at start
---reverse,-r                       Reverse the normal sort order
---no-sort,-S                       Disable sorting of files/directories
---no-nested-sort,-NS               Disable sorting of nested files/directories
---no-edit,-E                       Log selections to file instead of launching editor
---no-preview,-P                    Disable preview pane that shows file/directory contents
---no-statusline,-L                 Disable statusline that shows current state of various settings
---autosave-session,-as             Save bookmarks and view/sort settings continuously
---autoload-session,-al             Load bookmarks and view/sort settings on entering base directory
---grep=PATTERN,-g=PATTERN          Start in grep mode, searching files for specified pattern
---base-directory=DIR,-bd=DIR       Specify base directory instead of deriving it from target argument
---alternate-directory=DIR,-ad=DIR  Initialize alternate directory at start
---data-directory=DIR,-dd=DIR       Specify directory for storing sessions and other data
+LONG/SHORT OPTION                  | EFFECT
+-----------------------------------|-------------------------------------------------------------------
+--help                             | Show this help text
+--once,-o                          | Exit browser after editing a file
+--color,-c                         | Show colorized output
+--nested,-n                        | List nested files/directories at start
+--no-hide,-H                       | Show hidden files/directories at start
+--no-ignore,-I                     | Show ignored files/directories at start
+--reverse,-r                       | Reverse the normal sort order
+--no-sort,-S                       | Disable sorting of files/directories
+--no-nested-sort,-NS               | Disable sorting of nested files/directories
+--no-edit,-E                       | Log selections to file instead of launching editor
+--no-preview,-P                    | Disable preview pane that shows file/directory contents
+--no-statusline,-L                 | Disable statusline that shows current state of various settings
+--autosave-session,-as             | Save bookmarks and view/sort settings continuously
+--autoload-session,-al             | Load bookmarks and view/sort settings on entering base directory
+--grep=PATTERN,-g=PATTERN          | Start in grep mode, searching files for specified pattern
+--base-directory=DIR,-bd=DIR       | Specify base directory instead of deriving it from target argument
+--alternate-directory=DIR,-ad=DIR  | Initialize alternate directory at start
+--data-directory=DIR,-dd=DIR       | Specify directory for storing sessions and other data
 
 Most options can be inverted by reversing uppercase/lowercase for the short form or adding/removing
 the 'no-' prefix for the long form. Additional options will be passed on to fzf, with the long form using
