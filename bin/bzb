@@ -796,8 +796,10 @@ main() {
         fi
       fi
       if [[ ! -d "$base_dir" || ! -d "$dir" ]]; then
-        echo "Error: Cannot set base directory to invalid path" 2>&1
-        read -s -r -n 1 -p "(Press any key to continue)"
+        if [[ -n "$dir" ]]; then
+          echo "Error: Cannot set base directory to invalid path" 2>&1
+          read -s -r -n 1 -p "(Press any key to continue)"
+        fi
       elif [[ "$action" = "enter-base-dir" && "$PWD" = "$base_dir" ]]; then
         cd "$OLDPWD"
       else
