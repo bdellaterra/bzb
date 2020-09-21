@@ -19,9 +19,7 @@ escape      | exit file browser                                                 
 ctrl-c      | exit file browser                                                    | 
 enter       | enter directory or edit file                                         | 
 right       | enter directory or edit file                                         | enter
-ctrl-j      | enter directory or edit file                                         | enter2
 left        | go to parent directory (not moving past base directory)              | back
-ctrl-k      | go to parent directory (not moving past base directory)              | back2
 alt-q       | (q)uick-launch targets using native client                           | launch
 alt-f       | grep/(f)ind pattern specified at prompt ('left' will exit grep mode) | grep
 ctrl-g      | cancel submenu or prompt / toggle (g)rep mode preserving pattern     | toggle-grep
@@ -53,17 +51,19 @@ alt-u       | switch between current and base directory                         
 alt-p       | switch between current and (p)revious directory                      | enter-prev-dir
 alt-g       | (g)o to directory named at prompt                                    | prompt-dir
 ctrl-alt-g  | set new base directory at prompt and (g)o to it                      | set-base-dir
-alt-l       | toggle visibility of the statusline                                  | toggle-statusline
+alt-y       | copy (a.k.a. (y)ank) targets to clipboard                            | yank-targets
+ctrl-alt-y  | copy (a.k.a. (y)ank) current directory to clipboard                  | yank-dir
+alt-l       | toggle visibility of the status(l)ine                                | toggle-statusline
 alt-h       | toggle (v)isibility of hidden files                                  | toggle-hide
 alt-i       | toggle visibility of (i)gnored files (if supported)                  | toggle-ignore
 alt-n       | toggle listing (n)ested vs. only top-level files                     | toggle-nested
 alt-s       | toggle (s)orting of results (affects performance)                    | toggle-sort
-ctrl-alt-n  | toggle sorting of nested results (affects performance)               | toggle-nested-sort
+ctrl-alt-n  | toggle sorting of (n)ested results (affects performance)             | toggle-nested-sort
 alt-o       | toggle sort (o)rder ascending/descending                             | toggle-sort-order
 ctrl-alt-r  | (r)estore initial view/sort settings                                 | restore-settings
 alt-v       | toggle visibility of pre(v)iew pane                                  | toggle-preview
-ctrl-alt-l  | load session from file named at prompt                               | load-session
-ctrl-alt-s  | save session to file named at prompt                                 | save-session
+ctrl-alt-l  | (l)oad session from file named at prompt                             | load-session
+ctrl-alt-s  | (s)ave session to file named at prompt                               | save-session
 
 Options:
 
