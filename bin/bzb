@@ -499,7 +499,7 @@ main() {
   next_targets=()
 
   case $action in
-    # Exit grep-mode if any other directory navigation is used
+    # Exit grep-mode if any directory navigation action occurs ('back' is a special case below)
     next-bookmark|next-bookmark2|prev-bookmark|prev-bookmark2|select-bookmark|select-bookmark2|select-nested-bookmark|select-nested-bookmark2|enter-base-dir|prompt-dir|set-base-dir|enter-alt-dir|enter-prev-dir)
       disable grep_mode
     ;;
