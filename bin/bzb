@@ -592,7 +592,6 @@ main() {
     yank-targets)
       yanked_targets=''
       for t in "${targets[@]}"; do
-        # Enclose target in single-quotes, escaping any existing single-quotes
         yanked_targets+=" '"$(escape_single_quotes "$t")"'"
       done
       [[ "$clip" ]] && bash -c "echo \"$yanked_targets\" | $clip"
@@ -600,7 +599,6 @@ main() {
 
     # Use ctrl-alt-y to yank current directory to clipboard
     yank-dir)
-      # Enclose directory in single-quotes, escaping any existing single-quotes
       yanked_dir=" '"$(escape_single_quotes "$PWD")"'"
       [[ "$clip" ]] && bash -c "echo \"$yanked_dir\" | $clip"
     ;;
