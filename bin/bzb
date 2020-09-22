@@ -53,6 +53,9 @@ disable() {
 # Enable setting if disabled. Disable it if enabled
 toggle() { [[ ${!1} ]] && disable "$1" || enable "$1"; }
 
+# Escape single quotes inside strings so they can be expanded as single-quoted command line values
+escape_single_quotes() { echo "$1" | sed -e "s/'/'\\\\''/g"; }
+
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
 clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
 
@@ -415,13 +418,13 @@ init session "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
 
 main() {
   # Export variables for use in subshells
-  export BZB_BASE_DIR="$(echo "${base_dir}" | sed -e "s/'/'\\\\''/g")"
+  export BZB_BASE_DIR="$(escape_single_quotes "$base_dir")"
   export BZB_QUERY="$query"
   export BZB_COLOR="$color"
   [[ $hide ]] && export BZB_HIDDEN=1 || export BZB_HIDDEN=''
   [[ $ignore ]] && export BZB_NO_IGNORE='' || export BZB_NO_IGNORE=1
   export BZB_REVERSE="$reverse"
-  export BZB_GREP_QUERY="$(echo "/${grep_query}/" | sed -e "s/'/'\\\\''/g")"
+  export BZB_GREP_QUERY="$(escape_single_quotes "/$grep_query/")"
 
   # Edit file or enter directory
   if [[ $# -eq 1 && -d "$1" ]]; then
@@ -431,14 +434,14 @@ main() {
   elif [[ $# -ge 1 ]]; then
     edit_targets="${EDITOR:vi}"
     for f in "$@"; do
-      edit_targets="$edit_targets '"$(echo "${f}" | sed -e "s/'/'\\\\''/g")"'"
+      edit_targets="$edit_targets '"$(escape_single_quotes "$f")"'"
     done
     [[ $edit ]] && bash -c "$edit_targets" || save_selection $@
     [[ ! $persist ]] && exit 0
   fi
 
   # Export current directory
-  export BZB_DIR="$(echo "${PWD}" | sed -e "s/'/'\\\\''/g")"
+  export BZB_DIR="$(escape_single_quotes "$PWD")"
 
   # Setup list/sort/preview commands
   [[ $nested ]] && sort="$sort_nested" || sort="$sort_shallow"
@@ -585,7 +588,7 @@ main() {
       yanked_targets=''
       for t in "${targets[@]}"; do
         # Enclose target in single-quotes, escaping any existing single-quotes
-        yanked_targets+=" '"$(echo "$t" | sed -e "s/'/'\\\\''/g")"'"
+        yanked_targets+=" '"$(escape_single_quotes "$t")"'"
       done
       [[ "$clip" ]] && bash -c "echo \"$yanked_targets\" | $clip"
     ;;
@@ -593,7 +596,7 @@ main() {
     # Use ctrl-alt-y to yank current directory to clipboard
     yank-dir)
       # Enclose directory in single-quotes, escaping any existing single-quotes
-      yanked_dir=" '"$(echo "$PWD" | sed -e "s/'/'\\\\''/g")"'"
+      yanked_dir=" '"$(escape_single_quotes "$PWD")"'"
       [[ "$clip" ]] && bash -c "echo \"$yanked_dir\" | $clip"
     ;;
 
@@ -744,7 +747,7 @@ main() {
 
     # Use alt-up or ctrl-alt-k to select bookmarked directory using fzf
     select-bookmark|select-bookmark2)
-      # Omit current directory from bookmarks and position it as initial selection at bottom of list
+      # Omit current directory from bookmarks then position it as initial selection at bottom of list
       readarray -t dirs < <(dirs -p -l | sed -n '/^'"${PWD//\//\\/}"'$/!p' | LC_ALL=C sort -u)
       dirs=("$PWD" ${dirs[@]})
       next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf $fzf_submenu_bind --prompt='[go to directory]')")
