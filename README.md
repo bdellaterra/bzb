@@ -70,17 +70,17 @@ Options:
 LONG/SHORT OPTION                  | EFFECT
 -----------------------------------|-------------------------------------------------------------------
 --help                             | Show this help text
---once,-o                          | Exit browser after editing a file
 --color,-c                         | Show colorized output
 --nested,-n                        | List nested files/directories at start
 --no-hide,-H                       | Show hidden files/directories at start
 --no-ignore,-I                     | Show ignored files/directories at start
---reverse,-r                       | Reverse the normal sort order
+--reverse,-O                       | Reverse the normal sort order
 --no-sort,-S                       | Disable sorting of files/directories
 --no-nested-sort,-NS               | Disable sorting of nested files/directories
---no-edit,-E                       | Log selections to file instead of launching editor
---no-preview,-P                    | Disable preview pane that shows file/directory contents
 --no-statusline,-L                 | Disable statusline that shows current state of various settings
+--no-preview,-V                    | Disable preview pane that shows file/directory contents
+--no-persist,-P                    | Exit browser after editing a file
+--no-edit,-E                       | Log selections to file instead of launching editor
 --autosave-session,-as             | Save bookmarks and view/sort settings continuously
 --autoload-session,-al             | Load bookmarks and view/sort settings on entering base directory
 --grep=PATTERN,-g=PATTERN          | Start in grep mode, searching files for specified pattern
