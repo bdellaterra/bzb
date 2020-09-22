@@ -231,7 +231,7 @@ initial_target="$1"
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    enable no_clear && readonly no_clear
+    # enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
@@ -424,7 +424,7 @@ main() {
   [[ $hide ]] && export BZB_HIDDEN=1 || export BZB_HIDDEN=''
   [[ $ignore ]] && export BZB_NO_IGNORE='' || export BZB_NO_IGNORE=1
   export BZB_REVERSE="$reverse"
-  export BZB_GREP_QUERY="$(escape_single_quotes "/$grep_query/")"
+  export BZB_GREP_QUERY="$(escape_single_quotes "$grep_query")"
 
   # Edit file or enter directory
   if [[ $# -eq 1 && -d "$1" ]]; then
@@ -450,7 +450,7 @@ main() {
     [[ $nested ]] && grep="$grep_nested" || grep="$grep_shallow"
     preview_opts="--preview='$grep_mode_preview' --preview-window='right:62%:wrap'"
     fzf_input=$(bash -c "echo \"$grep$sort_pipe\"")
-    fzf_prompt=" --prompt='$BZB_GREP_QUERY'"
+    fzf_prompt=" --prompt='/$BZB_GREP_QUERY/'"
     [[ $grep_cannot_ignore ]] && ignore_disabled='!' || ignore_disabled=''
   else
     [[ $nested ]] && find="$find_nested" || find="$find_shallow"
