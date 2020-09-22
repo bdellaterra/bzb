@@ -150,7 +150,6 @@ KEY_USAGE
 Options:
 
 --help                             Show this help text
---once,-o                          Exit browser after editing a file
 --color,-c                         Show colorized output
 --nested,-n                        List nested files/directories at start
 --no-hide,-H                       Show hidden files/directories at start
@@ -158,9 +157,10 @@ Options:
 --reverse,-O                       Reverse the normal sort order
 --no-sort,-S                       Disable sorting of files/directories
 --no-nested-sort,-NS               Disable sorting of nested files/directories
---no-edit,-E                       Log selections to file instead of launching editor
---no-preview,-P                    Disable preview pane that shows file/directory contents
 --no-statusline,-L                 Disable statusline that shows current state of various settings
+--no-preview,-V                    Disable preview pane that shows file/directory contents
+--no-persist,-P                    Exit browser after editing a file
+--no-edit,-E                       Log selections to file instead of launching editor
 --autosave-session,-as             Save bookmarks and view/sort settings continuously
 --autoload-session,-al             Load bookmarks and view/sort settings on entering base directory
 --grep=PATTERN,-g=PATTERN          Start in grep mode, searching files for specified pattern
@@ -181,8 +181,6 @@ USAGE
 for arg in "$@"; do
   case $arg in
     --help) usage; exit 0 ;;
-    -o|--once) enable BZB_ONCE; shift ;;
-    -O|--no-once) disable BZB_ONCE; shift ;;
     -c|--color) enable BZB_COLOR; shift ;;
     -C|--no-color) disable BZB_COLOR; shift ;;
     -n|--nested) enable BZB_NESTED; shift ;;
@@ -191,18 +189,20 @@ for arg in "$@"; do
     -H|--no-hide) disable BZB_HIDE; shift ;;
     -i|--ignore) enable BZB_IGNORE; shift ;;
     -I|--no-ignore) disable BZB_IGNORE; shift ;;
+    -o|--forward) disable BZB_REVERSE; shift ;;
+    -O|--reverse) enable BZB_REVERSE; shift ;;
     -s|--sort) enable BZB_SORTED; shift ;;
     -S|--no-sort) disable BZB_SORTED; shift ;;
     -ns|--nested-sort) enable BZB_NESTED_SORT; shift ;;
     -NS|--no-nested-sort) disable BZB_NESTED_SORT; shift ;;
-    -o|--forward) disable BZB_REVERSE; shift ;;
-    -O|--reverse) enable BZB_REVERSE; shift ;;
-    -e|--edit) enable BZB_EDIT; disable BZB_ONCE; shift ;;
-    -E|--no-edit) disable BZB_EDIT; enable BZB_ONCE; shift ;;
-    -v|--preview) enable BZB_PREVIEW; shift ;;
-    -V|--no-preview) disable BZB_PREVIEW; shift ;;
     -l|--statusline) enable BZB_STATUSLINE; shift ;;
     -L|--no-statusline) disable BZB_STATUSLINE; shift ;;
+    -v|--preview) enable BZB_PREVIEW; shift ;;
+    -V|--no-preview) disable BZB_PREVIEW; shift ;;
+    -p|--persist) enable BZB_PERSIST; shift ;;
+    -P|--no-persist) disable BZB_PERSIST; shift ;;
+    -e|--edit) enable BZB_EDIT; enable BZB_PERSIST; shift ;;
+    -E|--no-edit) disable BZB_EDIT; disable BZB_PERSIST; shift ;;
     -as|--autosave-session) enable BZB_AUTOSAVE_SESSION; shift ;;
     -AS|--no-autosave-session) disable BZB_AUTOSAVE_SESSION; shift ;;
     -al|--autoload-session) enable BZB_AUTOLOAD_SESSION; shift ;;
@@ -250,12 +250,12 @@ init data_dir "$HOME/.bzb" && readonly data_dir
 # Default behavior is to launch $EDITOR as the enter-action for files. Disabling the option
 # below will instead only log selected targets to a 'selection' file inside 'data_dir'.
 # This helps communicate user actions to an external program that has launched bzb as an
-# integrated file browser. Disabling this option will enable the 'once' option
+# integrated file browser. Disabling this option will also disable the 'persist' option
 enable edit
 
 # Default enabled/disabled settings
-enable sorted preview statusline hide ignore
-disable once nested reverse grep_mode autosave_session autoload_session
+enable persist sorted preview statusline hide ignore
+disable nested reverse grep_mode autosave_session autoload_session
 
 # Additional options to be passed to fzf
 disable fzf_extra_options
@@ -433,7 +433,7 @@ main() {
       edit_targets="$edit_targets '"$(echo "${f}" | sed -e "s/'/'\\\\''/g")"'"
     done
     [[ $edit ]] && bash -c "$edit_targets" || save_selection $@
-    [[ $once ]] && exit 0
+    [[ ! $persist ]] && exit 0
   fi
 
   # Export current directory
