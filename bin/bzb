@@ -123,7 +123,7 @@ map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane
 map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
 map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at prompt"
 
-# comma-separated list of custom mappings for fzf
+# Comma-separated list of custom mappings for fzf
 readonly fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
 
 
@@ -299,12 +299,14 @@ init preview_directory \
   "ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh {}"
 init preview_text \
   "cat {}"
+# Consider file to be binary if more than a tiny fraction is non-printable characters
 init is_binary \
   'test `head -qc 8192 {} 2>/dev/null | grep -o "[^[:print:]]" 2>/dev/null | wc -c` -gt 16'
 
 if has file; then
   init preview_binary \
     "file -L {}"
+  # Also utilize 'file' command to detect binary files if available
   init is_binary \
     '[[ ! "$(file -L {})" =~ 'text' ]] && '"$is_binary"
 else
