@@ -71,12 +71,19 @@ bind '"\C-g":"\C-k\C-u
 init fzf_bind '--bind=ctrl-g:ignore,esc:cancel'
 init fzf_submenu_bind '--bind=ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
 
+# Read overrides for action/key bindings
+# Example - Swap 'launch' and 'enter' bindings by invoking bzb with:
+# BZB_BIND="[enter]=alt-q [launch]=right" bzb
+eval "declare -A BZB_BIND=( $BZB_BIND )"
+
 declare -A key_definitions key_actions action_keys
 map() {
-  keys[${#keys[@]}]="$2"
-  key_definitions["$2"]="$3"
-  key_actions["$2"]="$1"
-  action_keys["$1"]="$2"
+  [[ "${BZB_BIND["$1"]}" ]] && key="${BZB_BIND[$1]}" || key="$2"
+  keys[${#keys[@]}]="$key"
+  key_definitions["$key"]="$3"
+  key_actions["$key"]="$1"
+  action_keys["$1"]="$key"
+  echo
 }
 
 map 'enter'                   'right'       "enter directory or edit file"
