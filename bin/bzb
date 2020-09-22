@@ -352,7 +352,7 @@ has clip && init clip 'clip'
 
 # Prefer -I option to -i for removing files, if available
 rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
-  init rm_interactive 'rm -ri' || rm_interactive='rm -rI'
+  init rm_interactive 'rm -ri' || init rm_interactive 'rm -rI'
 
 
 # FILE STATE
