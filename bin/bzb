@@ -265,19 +265,19 @@ disable fzf_extra_options
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
 if has fd; then
-  disable no_find_ignore_status
+  disable find_cannot_ignore
   init find_nested \
     "fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
   init find_shallow \
     "fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
 else
-  enable no_find_ignore_status
+  enable find_cannot_ignore
   init find_nested \
     "find . -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
   init find_shallow \
     "find . -maxdepth 1 -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
 fi
-readonly no_find_ignore_status
+readonly find_cannot_ignore
 
 # Sort Command:
 enable parallel_sort
@@ -319,7 +319,7 @@ init find_mode_preview \
 
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed
 if has rg; then
-  disable no_grep_ignore_status
+  disable grep_cannot_ignore
   init grep_nested \
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
   init grep_shallow \
@@ -327,7 +327,7 @@ if has rg; then
   init grep_mode_preview \
     "rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
-  enable no_grep_ignore_status
+  enable grep_cannot_ignore
   init grep_nested \
     "grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'}"
   init grep_shallow \
@@ -335,7 +335,7 @@ else
   init grep_mode_preview \
     "grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}' {}"
 fi
-readonly no_grep_ignore_status
+readonly grep_cannot_ignore
 disable grep_query
 
 # Quick-launch Command: Used to open targets in their native client
@@ -447,13 +447,13 @@ main() {
     preview_opts="--preview='$grep_mode_preview' --preview-window='right:62%:wrap'"
     fzf_input=$(bash -c "echo \"$grep$sort_pipe\"")
     fzf_prompt=" --prompt='$BZB_GREP_QUERY'"
-    [[ $no_grep_ignore_status ]] && ignore_disabled='!' || ignore_disabled=''
+    [[ $grep_cannot_ignore ]] && ignore_disabled='!' || ignore_disabled=''
   else
     [[ $nested ]] && find="$find_nested" || find="$find_shallow"
     preview_opts="--preview='$find_mode_preview' --preview-window='right:62%:wrap'"
     fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
     fzf_prompt=" --prompt='${BZB_DIR#$BZB_BASE_DIR}'"   
-    [[ $no_find_ignore_status ]] && ignore_disabled='!' || ignore_disabled=''
+    [[ $find_cannot_ignore ]] && ignore_disabled='!' || ignore_disabled=''
   fi
   [[ ! $preview ]] && preview_opts=''
 
