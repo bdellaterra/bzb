@@ -764,7 +764,7 @@ main() {
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
 
-    # Use alt-z to go to previous directory
+    # Use alt-p to go to previous directory
     enter-prev-dir)
       cd "$OLDPWD"
     ;;
