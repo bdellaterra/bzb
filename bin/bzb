@@ -360,8 +360,7 @@ rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
 save_selection() {
   if [[ -d "$data_dir" ]]; then
     selection="$data_dir/selection"
-    mkdir -p "$(dirname $selection)"
-    touch "$selection"
+    mkdir -p "$(dirname $selection)" && touch "$selection"
     if [[ -w "$selection" ]]; then
       > "$selection"
       for t in "$@"; do
