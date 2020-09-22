@@ -65,8 +65,8 @@ bind '"\C-g":"\C-k\C-u
 "' '"\e\e":"\C-g"' &>/dev/null
 
 # Set fzf keybinds for movement and exit actions
-init fzf_bind '--bind=alt-k:up,alt-j:down,ctrl-g:ignore,esc:cancel'
-init fzf_submenu_bind '--bind=alt-k:up,alt-j:down,ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
+init fzf_bind '--bind=ctrl-g:ignore,esc:cancel'
+init fzf_submenu_bind '--bind=ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
 
 declare -A key_definitions key_actions action_keys
 map() {
