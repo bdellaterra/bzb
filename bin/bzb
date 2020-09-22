@@ -475,14 +475,14 @@ main() {
   [[ ! $sorted || $sort_disabled ]] && reverse_disabled='!' || reverse_disabled=''
   [[ $reverse ]] && status+=("${reverse_disabled:--}O") || status+=("${reverse_disabled:--}o")
 
-  export BZB_FZF_HEADER="[${status[@]}]"
+  export BZB_STATUSLINE="[${status[@]}]"
 
   # Clear leading dots from paths
   fzf_input+=" | sed 's:^\./::'"
 
   fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' $fzf_bind --expect='$fzf_keys' --query='$BZB_QUERY' $fzf_prompt $preview_opts $fzf_extra_options"
   [[ ! $color ]] && fzf_options="${color:---no-color} $fzf_options"
-  [[ $statusline ]] && fzf_options="--header=\"\$BZB_FZF_HEADER\" $fzf_options"
+  [[ $statusline ]] && fzf_options="--header=\"\$BZB_STATUSLINE\" $fzf_options"
 
   # CYCLE INTO FZF
   fzf_command="$fzf_input | fzf $fzf_options"
