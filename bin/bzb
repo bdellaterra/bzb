@@ -462,7 +462,7 @@ main() {
     [[ $nested ]] && find="$find_nested" || find="$find_shallow"
     preview_opts="--preview='$find_mode_preview' --preview-window='right:62%:wrap'"
     fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
-    fzf_prompt=" --prompt='${BZB_DIR#$BZB_BASE_DIR}'"   
+    fzf_prompt=" --prompt='${BZB_DIR#$BZB_BASE_DIR}>'"   
     [[ $find_cannot_ignore ]] && ignore_disabled='!' || ignore_disabled=''
   fi
   [[ ! $preview ]] && preview_opts=''
