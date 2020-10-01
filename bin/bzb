@@ -319,13 +319,15 @@ if has file; then
   init is_binary \
     '[[ ! "$(file -L {})" =~ 'text' ]] && '"$is_binary"
   if has less; then
+    init archive_regex \
+      '(compressed|archive)'
     init preview_archive \
       "2>/dev/null less {}"
     init is_archive \
-      '[[ "$(file -L {})" =~ (compressed|archive) ]]'
+      '[[ "$(file -L {})" =~ "$archive_regex" ]]'
+    [[ -z "$preview_archive" || -z "$is_archive" ]] && is_archive='false'
   else
-    disable is_archive
-    disable preview_archive
+    disable archive_regex is_archive preview_archive
   fi
 else
   init preview_binary \
@@ -333,7 +335,7 @@ else
 fi
 
 init preview_file \
-  "( $is_binary && ( $preview_binary; $is_archive && echo && $preview_archive ) || $preview_text )"
+  "( $is_binary && $preview_binary || $preview_text; $is_archive && echo && $preview_archive )"
 init find_mode_preview \
   "[[ -d {} ]] && $preview_directory || $preview_file"
 
