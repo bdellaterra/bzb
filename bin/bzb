@@ -318,13 +318,22 @@ if has file; then
   # Also utilize 'file' command to detect binary files if available
   init is_binary \
     '[[ ! "$(file -L {})" =~ 'text' ]] && '"$is_binary"
+  if has less; then
+    init preview_archive \
+      "2>/dev/null less {}"
+    init is_archive \
+      '[[ "$(file -L {})" =~ (compressed|archive) ]]'
+  else
+    disable is_archive
+    disable preview_archive
+  fi
 else
   init preview_binary \
     "stat -L {}"
 fi
 
 init preview_file \
-  "( $is_binary && $preview_binary || $preview_text )"
+  "( $is_binary && ( $preview_binary; $is_archive && echo && $preview_archive ) || $preview_text )"
 init find_mode_preview \
   "[[ -d {} ]] && $preview_directory || $preview_file"
 
