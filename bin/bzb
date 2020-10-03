@@ -311,32 +311,31 @@ init preview_text \
   "cat {}"
 # Consider file to be binary if more than a tiny fraction is non-printable characters
 init is_binary \
-  'test `head -qc 8192 {} 2>/dev/null | grep -o "[^[:print:]]" 2>/dev/null | wc -c` -gt 16'
+  'test $(head -qc 8192 {} 2>/dev/null | grep -so "[^[:print:]]" 2>/dev/null | wc -c) -gt 16'
 
 if has file; then
-  init preview_binary \
-    "file -L {}"
-  # Also utilize 'file' command to detect binary files if available
+  # Utilize 'file' command to better detect binary files
   init is_binary \
-    '[[ ! "$(file -L {})" =~ 'text' ]] && '"$is_binary"
+    '[[ ! "$(file -L {})" =~ text ]]' # && '"$is_binary"
+  init preview_binary_filetype \
+    "file -L {}"
   if has less; then
-    init archive_regex \
-      '(compressed|archive)'
-    init preview_archive \
-      "2>/dev/null less {}"
-    init is_archive \
-      '[[ "$(file -L {})" =~ "$archive_regex" ]]'
-    [[ -z "$preview_archive" || -z "$is_archive" ]] && is_archive='false'
+    init is_previewable_binary_content \
+      '( 2>&1 less {} | grep -sq "[^[:print:]]" )'
+    init preview_binary_content \
+      'less {}'
   else
-    disable archive_regex is_archive preview_archive
+    disable is_previewable_binary_content preview_binary_content
   fi
 else
-  init preview_binary \
+  init preview_binary_filetype \
     "stat -L {}"
 fi
+init preview_binary \
+  "( $preview_binary_filetype && $is_previewable_binary_content && echo && $preview_binary_content )"
 
 init preview_file \
-  "( $is_binary && $preview_binary || $preview_text; $is_archive && echo && $preview_archive )"
+  "( $is_binary && $preview_binary || $preview_text )"
 init find_mode_preview \
   "[[ -d {} ]] && $preview_directory || $preview_file"
 
