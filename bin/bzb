@@ -314,28 +314,26 @@ init is_binary \
   'test $(head -qc 8192 {} 2>/dev/null | grep -so "[^[:print:]]" 2>/dev/null | wc -c) -gt 16'
 
 if has file; then
-  # Utilize 'file' command to better detect binary files
-  init is_binary \
-    '[[ ! "$(file -L {})" =~ text ]]' # && '"$is_binary"
   init preview_binary_filetype \
     "file -L {}"
-  if has less; then
-    init is_previewable_binary_content \
-      '( 2>&1 less {} | grep -sq "[^[:print:]]" )'
-    init preview_binary_content \
-      'less {}'
-  else
-    disable is_previewable_binary_content preview_binary_content
-  fi
 else
   init preview_binary_filetype \
     "stat -L {}"
 fi
-init preview_binary \
-  "( $preview_binary_filetype && $is_previewable_binary_content && echo && $preview_binary_content )"
 
+if has less; then
+  init is_previewable_binary_content \
+    '[[ $(bash -c "$(printf "$LESSOPEN" {})") ]]'
+  init preview_binary_content \
+    'less {}'
+else
+  disable is_previewable_binary_content preview_binary_content
+fi
+
+[[ $is_previewable_binary_content && $preview_binary_content ]] && init preview_binary_content \
+  "&& ( $is_previewable_binary_content && echo && $preview_binary_content )"
 init preview_file \
-  "( $is_binary && $preview_binary || $preview_text )"
+  "( ! $is_binary && $preview_text || $preview_binary_filetype $preview_binary_content )"
 init find_mode_preview \
   "[[ -d {} ]] && $preview_directory || $preview_file"
 
