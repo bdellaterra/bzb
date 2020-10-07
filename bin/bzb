@@ -311,11 +311,13 @@ init preview_text \
   "cat {}"
 # Consider file to be binary if more than a tiny fraction is non-printable characters
 init is_binary \
-  'test $(head -qc 8192 {} 2>/dev/null | grep -so "[^[:print:]]" 2>/dev/null | wc -c) -gt 16'
+  '( test $(head -qc 8192 {} 2>/dev/null | grep -so "[^[:print:]]" 2>/dev/null | wc -c) -gt 16 )'
 
 if has file; then
   init preview_binary_filetype \
     "file -L {}"
+  init is_binary \
+    "( $is_binary"' || ( file -L {} | grep -q "compressed") )'
 else
   init preview_binary_filetype \
     "stat -L {}"
