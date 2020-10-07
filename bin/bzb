@@ -314,12 +314,12 @@ init is_binary \
   '( test $(head -qc 8192 {} 2>/dev/null | grep -so "[^[:print:]]" 2>/dev/null | wc -c) -gt 16 )'
 
 if has file; then
-  init preview_binary_filetype \
+  init preview_binary_file \
     "file -L {}"
   init is_binary \
     "( $is_binary"' || ( file -L {} | grep -q "compressed") )'
 else
-  init preview_binary_filetype \
+  init preview_binary_file \
     "stat -L {}"
 fi
 
@@ -327,15 +327,15 @@ if has less; then
   init is_previewable_binary_content \
     '[[ $(bash -c "$(printf "$LESSOPEN" {})") ]]'
   init preview_binary_content \
-    'less {}'
+    'echo && less {}'
 else
   disable is_previewable_binary_content preview_binary_content
 fi
 
-[[ $is_previewable_binary_content && $preview_binary_content ]] && init preview_binary_content \
-  "&& ( $is_previewable_binary_content && echo && $preview_binary_content )"
+[[ $is_previewable_binary_content && $preview_binary_content ]] && init \
+  preview_binary_file "( $preview_binary_file && $is_previewable_binary_content && $preview_binary_content )"
 init preview_file \
-  "( ! $is_binary && $preview_text || $preview_binary_filetype $preview_binary_content )"
+  "( ! $is_binary && $preview_text || $preview_binary_file )"
 init find_mode_preview \
   "[[ -d {} ]] && $preview_directory || $preview_file"
 
@@ -503,6 +503,7 @@ main() {
 
   # CYCLE INTO FZF
   fzf_command="$fzf_input | fzf $fzf_options"
+
   { read query; read command; readarray -t targets; } < <(bash -c "$fzf_command")
 
   # Parse empty command and empty target as 'exit' (fzf-native 'escape' or 'ctrl-c' mapping)
