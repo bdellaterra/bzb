@@ -381,7 +381,7 @@ rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
 save_selection() {
   if [[ -d "$data_dir" ]]; then
     selection="$data_dir/selection"
-    mkdir -p "$(dirname $selection)" && touch "$selection"
+    mkdir -p "$(dirname "$selection")" && touch "$selection"
     if [[ -w "$selection" ]]; then
       > "$selection"
       for t in "$@"; do
@@ -395,7 +395,7 @@ save_selection() {
 
 save_session() {
   if [[ -n "$1" ]]; then
-    mkdir -p "$(dirname $1)" && touch "$1"
+    mkdir -p "$(dirname "$1")" && touch "$1"
     if [[ -w "$1" ]]; then
       session="$1"
       readarray -t bookmarks < <(dirs -p -l)
