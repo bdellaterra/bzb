@@ -118,7 +118,7 @@ map 'enter-base-dir'          'alt-u'       "go (u)p to base directory, or back 
 map 'enter-prev-dir'          'alt-p'       "switch between current and (p)revious directory"
 map 'prompt-dir'              'alt-g'       "(g)o to directory named at prompt"
 map 'prompt-base-dir'         'ctrl-alt-g'  "set new base directory at prompt and (g)o to it"
-map 'set-base-dir'            'ctrl-alt-h'  "set base directory (h)ere, or one level (h)igher if at base"
+map 'set-base-dir'            'ctrl-alt-h'  "set base to current directory, or one (h)igher if at base"
 map 'yank-targets'            'alt-y'       "copy (a.k.a. (y)ank) targets to clipboard"
 map 'yank-dir'                'ctrl-alt-y'  "copy (a.k.a. (y)ank) current directory to clipboard"
 map 'toggle-statusline'       'alt-l'       "toggle visibility of the status(l)ine"

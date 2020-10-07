@@ -50,7 +50,8 @@ ctrl-alt-a  | set (a)lternate directory (default for copy/move prompts)         
 alt-u       | go (u)p to base directory, or back to previous if in base directory  | enter-base-dir
 alt-p       | switch between current and (p)revious directory                      | enter-prev-dir
 alt-g       | (g)o to directory named at prompt                                    | prompt-dir
-ctrl-alt-g  | set new base directory at prompt and (g)o to it                      | set-base-dir
+ctrl-alt-g  | set new base directory at prompt and (g)o to it                      | prompt-base-dir
+ctrl-alt-h  | set base to current directory, or one (h)igher if at base            | set-base-dir
 alt-y       | copy (a.k.a. (y)ank) targets to clipboard                            | yank-targets
 ctrl-alt-y  | copy (a.k.a. (y)ank) current directory to clipboard                  | yank-dir
 alt-l       | toggle visibility of the status(l)ine                                | toggle-statusline
