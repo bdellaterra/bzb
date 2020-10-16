@@ -210,8 +210,8 @@ for arg in "$@"; do
     -V|--no-preview) disable BZB_PREVIEW; shift ;;
     -p|--persist) enable BZB_PERSIST; shift ;;
     -P|--no-persist) disable BZB_PERSIST; shift ;;
-    -e|--edit) enable BZB_EDIT; enable BZB_PERSIST; shift ;;
-    -E|--no-edit) disable BZB_EDIT; disable BZB_PERSIST; shift ;;
+    -e|--edit) enable BZB_EDIT; shift ;;
+    -E|--no-edit) disable BZB_EDIT; shift ;;
     -as|--autosave-session) enable BZB_AUTOSAVE_SESSION; shift ;;
     -AS|--no-autosave-session) disable BZB_AUTOSAVE_SESSION; shift ;;
     -al|--autoload-session) enable BZB_AUTOLOAD_SESSION; shift ;;
@@ -263,7 +263,8 @@ init data_dir "$HOME/.bzb" && readonly data_dir
 enable edit
 
 # Default enabled/disabled settings
-enable persist sorted preview statusline hide ignore
+[[ $edit ]] && enable persist || disable persist
+enable sorted preview statusline hide ignore
 disable nested reverse grep_mode autosave_session autoload_session
 
 # Additional options to be passed to fzf
@@ -442,7 +443,7 @@ main() {
   export BZB_REVERSE="$reverse"
   export BZB_GREP_QUERY="$(escape_single_quotes "$grep_query")"
 
-  # Clear any stale persisted selection
+  # Clear any stale selection so it is not read on esc/ctrl-c exit action
   save_selection
 
   # Edit file or enter directory
