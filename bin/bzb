@@ -442,6 +442,9 @@ main() {
   export BZB_REVERSE="$reverse"
   export BZB_GREP_QUERY="$(escape_single_quotes "$grep_query")"
 
+  # Clear any stale persisted selection
+  save_selection
+
   # Edit file or enter directory
   if [[ $# -eq 1 && -d "$1" ]]; then
     cd "$1"
