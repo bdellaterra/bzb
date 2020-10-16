@@ -114,11 +114,10 @@ map 'select-nested-bookmark'  'alt-down'    "select and enter bookmarked directo
 map 'select-nested-bookmark2' 'ctrl-alt-j'  "select and enter bookmarked directory under current directory"
 map 'enter-alt-dir'           'alt-a'       "switch between current and (a)lternate directory"
 map 'set-alt-dir'             'ctrl-alt-a'  "set (a)lternate directory (default for copy/move prompts)"
-map 'enter-base-dir'          'alt-u'       "go (u)p to base directory, or back to previous if at base"
+map 'up-base-dir'             'alt-u'       "go to base directory, or if at base move it (u)p one level"
 map 'enter-prev-dir'          'alt-p'       "switch between current and (p)revious directory"
 map 'prompt-dir'              'alt-g'       "(g)o to directory named at prompt"
 map 'prompt-base-dir'         'ctrl-alt-g'  "set new base directory at prompt and (g)o to it"
-map 'set-base-dir'            'ctrl-alt-h'  "set base to current directory, or one (h)igher if at base"
 map 'yank-targets'            'alt-y'       "copy (a.k.a. (y)ank) targets to clipboard"
 map 'yank-dir'                'ctrl-alt-y'  "copy (a.k.a. (y)ank) current directory to clipboard"
 map 'toggle-statusline'       'alt-l'       "toggle visibility of the status(l)ine"
@@ -518,7 +517,7 @@ main() {
 
   case $action in
     # Exit grep-mode if any directory navigation action occurs ('back' is a special case below)
-    next-bookmark|next-bookmark2|prev-bookmark|prev-bookmark2|select-bookmark|select-bookmark2|select-nested-bookmark|select-nested-bookmark2|enter-base-dir|prompt-dir|set-base-dir|prompt-base-dir|enter-alt-dir|enter-prev-dir)
+    next-bookmark|next-bookmark2|prev-bookmark|prev-bookmark2|select-bookmark|select-bookmark2|select-nested-bookmark|select-nested-bookmark2|up-base-dir|prompt-dir|set-base-dir|prompt-base-dir|enter-alt-dir|enter-prev-dir)
       disable grep_mode
     ;;
 
@@ -807,45 +806,27 @@ main() {
     ;;
 
     # Use ctrl-alt-g to set/enter new base directory
-    # Use alt-u to go "up" to base directory, or go back
-    # to previous directory if already in base directory
-    prompt-base-dir|enter-base-dir)
+    # Use alt-u to go "up" to base directory,
+    # shifting up to parent directory if already at base
+    prompt-base-dir|up-base-dir)
       dir="$PWD"
+      next_base=""
       if [[ "$action" = "prompt-base-dir" || ! -d "$base_dir" ]]; then
         clear && read -ep "Set base directory: " -i "$dir" dir
-        if [[ -d "$dir" ]]; then
-          base_dir="${dir%/}"
-          pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
+        next_base="${dir%/}"
+      elif [[ "$action" = "up-base-dir" ]]; then
+        [[ "$PWD" = "$base_dir" ]] && next_base="$(dirname "$dir")" || cd "$base_dir"
+      fi
+      if [[ -n "$next_base" ]]; then
+        if [[ ! -d "$next_base" ]]; then
+          echo "Error: Cannot set base directory to invalid path" 2>&1
+          read -s -r -n 1 -p "(Press any key to continue)"
+        elif [[ "$next_base" != "$base_dir" ]]; then
+          base_dir="$(readlink -f "${next_base}")"
+          pushd "$base_dir" >/dev/null
           session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
           assign action "autoload-session"
         fi
-      fi
-      if [[ ! -d "$base_dir" || ! -d "$dir" ]]; then
-        if [[ -n "$dir" ]]; then
-          echo "Error: Cannot set base directory to invalid path" 2>&1
-          read -s -r -n 1 -p "(Press any key to continue)"
-        fi
-      elif [[ "$action" = "enter-base-dir" && "$PWD" = "$base_dir" ]]; then
-        cd "$OLDPWD"
-      else
-        cd "$base_dir"
-      fi
-    ;;
-
-    # Use ctrl-alt-h to set new base directory at current location, or go to
-    # parent directory and set base there if already in the base directory
-    set-base-dir)
-      old_base="$base_dir"
-      dir="$(readlink -f "$PWD")"
-      if [[ "$dir" = "$base_dir" ]]; then
-        base_dir="$(dirname "$dir")"
-      else
-        base_dir="${dir%/}"
-      fi
-      if [[ "$base_dir" != "$old_base" ]]; then
-        pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
-        session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
-        assign action "autoload-session"
       fi
     ;;
 
