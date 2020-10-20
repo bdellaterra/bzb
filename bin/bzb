@@ -506,7 +506,6 @@ main() {
 
   # CYCLE INTO FZF
   fzf_command="$fzf_input | fzf $fzf_options"
-
   { read query; read command; readarray -t targets; } < <(bash -c "$fzf_command")
 
   # Parse empty command and empty target as 'exit' (fzf-native 'escape' or 'ctrl-c' mapping)
@@ -528,7 +527,7 @@ main() {
   # Fall through to remaining cases
   esac; case $action in
 
-    # Use left arrow or ctrl-k to move up a directory, but not above base directory
+    # Use left arrow to move up a directory, but not above base directory
     # If in grep mode, exit and resume browsing current directory
     back)
       if [[ ! $grep_mode && "$PWD" != "$base_dir" ]]; then
@@ -539,7 +538,7 @@ main() {
       fi
     ;;
 
-    # Use enter or right arrow or ctrl-j to edit file or enter directory
+    # Use enter or right arrow to edit file or enter directory
     enter)
       next_targets=("${targets[@]}")
     ;;
