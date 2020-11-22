@@ -215,6 +215,8 @@ for arg in "$@"; do
     -E|--no-edit) disable BZB_EDIT; shift ;;
     -ah|--autosave-history) enable BZB_AUTOSAVE_HISTORY; shift ;;
     -AH|--no-autosave-history) disable BZB_AUTOSAVE_HISTORY; shift ;;
+    -aq|--autoload-query) enable BZB_AUTOLOAD_QUERY; shift ;;
+    -AQ|--no-autoload-query) disable BZB_AUTOLOAD_QUERY; shift ;;
     -as|--autosave-session) enable BZB_AUTOSAVE_SESSION; shift ;;
     -AS|--no-autosave-session) disable BZB_AUTOSAVE_SESSION; shift ;;
     -al|--autoload-session) enable BZB_AUTOLOAD_SESSION; shift ;;
@@ -240,7 +242,7 @@ initial_targets=("$@")
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    enable no_clear && readonly no_clear
+    # enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
@@ -258,7 +260,7 @@ enable edit
 # Default enabled/disabled settings
 [[ $edit ]] && enable persist || disable persist
 enable sorted preview statusline hide ignore
-disable nested reverse grep_mode autosave_history autosave_session autoload_session fzf_extra_options
+disable nested reverse grep_mode autosave_history autoload_query autosave_session autoload_session fzf_extra_options
 
 # Derive base directory from target, or use current directory if none given
 [[ -d "$initial_target" ]] && init base_dir "$initial_target" || init base_dir "$(dirname "${initial_target:-$PWD/.}")"
@@ -273,6 +275,9 @@ init data_dir "$HOME/.bzb" && readonly data_dir
 # Files for storing session data and fzf search history
 init session "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
 [[ $autosave_history ]] && init search_history "${data_dir:+$data_dir/sessions$base_dir/search_history.bzb}"
+
+# Dictionary for mapping directory to its last search query
+[[ $autoload_query ]] && declare -A directory_queries
 
 # COMMANDS
 
@@ -412,6 +417,7 @@ save_session() {
       declare -p sorted >> "$session"
       declare -p reverse >> "$session"
       declare -p preview >> "$session"
+      [[ ${#directory_queries[@]} ]] && declare -p directory_queries >> "$session"
     else
       echo "Error: Could not save session to '$1'" 2>&1
       read -s -r -n 1 -p "(Press any key to continue)"
@@ -450,8 +456,8 @@ main() {
   # Edit file or enter directory
   if [[ $# -eq 1 && -d "$1" ]]; then
     cd "$1"
-    # clear query after changing directory
-    export BZB_QUERY=''
+    # clear or optionally restore query after changing directory
+    [[ $autoload_query ]] && export BZB_QUERY="${directory_queries[$PWD]}" || export BZB_QUERY=''
   elif [[ $# -ge 1 ]]; then
     edit_targets="${EDITOR:vi}"
     for f in "$@"; do
@@ -860,8 +866,11 @@ main() {
     ;;
   esac
 
+  # Optionally preserve query for current directory
+  [[ $autoload_query ]] && directory_queries[$PWD]="$query"
+
   # Optionally autosave browsing session
-  [[ "$autosave_session" ]] && save_session "$session"
+  [[ $autosave_session ]] && save_session "$session"
 
   main "${next_targets[@]}"
 }
