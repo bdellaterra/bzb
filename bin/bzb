@@ -484,7 +484,7 @@ main() {
   status=()
   [[ $hide ]] && status+=('-h') || status+=('-H')
   [[ $ignore ]] && status+=("${ignore_disabled:--}i") || status+=("${ignore_disabled:--}I")
-  [[ $nested ]] && status+=('-N') || status+=('-n')
+  [[ $nested ]] && status+=('-n') || status+=('-N')
   [[ $nested_sort ]] && nested_sort_enabled="/" || nested_sort_enabled='' 
   [[ ! $sorted ]] && sort_disabled='-' || sort_disabled=''
   [[ $sorted ]] && sort_enabled='-' || sort_enabled=''
