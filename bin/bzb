@@ -345,7 +345,7 @@ if has rg; then
   init grep_nested \
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
   init grep_shallow \
-    "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --max-depth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
+    "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --maxdepth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
   init grep_mode_preview \
     "rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
