@@ -170,6 +170,7 @@ Options:
 --no-preview,-V                    Disable preview pane that shows file/directory contents
 --no-persist,-P                    Exit browser after editing a file
 --no-edit,-E                       Log selections to file instead of launching editor
+--autosave-history,-ah             Save searches so Ctrl-n and Ctrl-p will cycle through search history
 --autosave-session,-as             Save bookmarks and view/sort settings continuously
 --autoload-session,-al             Load bookmarks and view/sort settings on entering base directory
 --grep=PATTERN,-g=PATTERN          Start in grep mode, searching files for specified pattern
@@ -212,6 +213,8 @@ for arg in "$@"; do
     -P|--no-persist) disable BZB_PERSIST; shift ;;
     -e|--edit) enable BZB_EDIT; shift ;;
     -E|--no-edit) disable BZB_EDIT; shift ;;
+    -ah|--autosave-history) enable BZB_AUTOSAVE_HISTORY; shift ;;
+    -AH|--no-autosave-history) disable BZB_AUTOSAVE_HISTORY; shift ;;
     -as|--autosave-session) enable BZB_AUTOSAVE_SESSION; shift ;;
     -AS|--no-autosave-session) disable BZB_AUTOSAVE_SESSION; shift ;;
     -al|--autoload-session) enable BZB_AUTOLOAD_SESSION; shift ;;
@@ -246,6 +249,17 @@ else
   exit 1
 fi
 
+# Default behavior is to launch $EDITOR as the enter-action for files. Disabling the option
+# below will instead only log selected targets to a 'selection' file inside 'data_dir'.
+# This helps communicate user actions to an external program that has launched bzb as an
+# integrated file browser. Disabling this option will also disable the 'persist' option
+enable edit
+
+# Default enabled/disabled settings
+[[ $edit ]] && enable persist || disable persist
+enable sorted preview statusline hide ignore
+disable nested reverse grep_mode autosave_history autosave_session autoload_session fzf_extra_options
+
 # Derive base directory from target, or use current directory if none given
 [[ -d "$initial_target" ]] && init base_dir "$initial_target" || init base_dir "$(dirname "${initial_target:-$PWD/.}")"
 pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
@@ -256,20 +270,9 @@ disable alt_dir
 # Directory where data for loading/restoring sessions is saved (optional)
 init data_dir "$HOME/.bzb" && readonly data_dir
 
-# Default behavior is to launch $EDITOR as the enter-action for files. Disabling the option
-# below will instead only log selected targets to a 'selection' file inside 'data_dir'.
-# This helps communicate user actions to an external program that has launched bzb as an
-# integrated file browser. Disabling this option will also disable the 'persist' option
-enable edit
-
-# Default enabled/disabled settings
-[[ $edit ]] && enable persist || disable persist
-enable sorted preview statusline hide ignore
-disable nested reverse grep_mode autosave_session autoload_session
-
-# Additional options to be passed to fzf
-disable fzf_extra_options
-
+# Files for storing session data and fzf search history
+init session "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
+[[ $autosave_history ]] && init search_history "${data_dir:+$data_dir/sessions$base_dir/search_history.bzb}"
 
 # COMMANDS
 
@@ -429,9 +432,7 @@ restore_session() {
 # MAIN
 
 # Optionally autoload browsing session
-init session "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
 [[ $autoload_session && -r "$session" ]] && . -- "$session" && restore_session "$session"
-
 
 main() {
   # Export variables for use in subshells
@@ -503,6 +504,7 @@ main() {
   [[ ! $color ]] && fzf_options+=" ${color:---no-color}"
   [[ $statusline ]] && fzf_options+=" --header=\"\$BZB_STATUSLINE\""
   [[ $preview ]] && fzf_options+=" --preview='"$(escape_single_quotes "$fzf_preview")"' --preview-window='right:62%:wrap'"
+  [[ $search_history ]] && fzf_options+=" --history='"$(escape_single_quotes "$search_history")"'"
   [[ $fzf_extra_options ]] && fzf_options+=" $fzf_extra_options"
 
   # CYCLE INTO FZF
