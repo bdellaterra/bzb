@@ -11,12 +11,43 @@ bzb [options] [target file or directory]
 If no target specified start in the current directory.
 
 
+### Options:
+
+LONG/SHORT OPTION                  | EFFECT
+-----------------------------------|-------------------------------------------------------------------
+--help                             | Show this help text
+--color,-c                         | Show colorized output
+--nested,-n                        | List nested files/directories at start
+--no-hide,-H                       | Show hidden files/directories at start
+--no-ignore,-I                     | Show ignored files/directories at start
+--reverse,-O                       | Reverse the normal sort order
+--no-sort,-S                       | Disable sorting of files/directories (affects performance)
+--no-nested-sort,-NS               | Disable sorting of nested files/directories (affects performance)
+--no-statusline,-L                 | Disable statusline that shows current state of various settings
+--no-preview,-V                    | Disable preview pane that shows file/directory contents
+--no-persist,-P                    | Exit browser after editing a file
+--no-edit,-E                       | Log selections to file instead of launching editor
+--autosave-history,-ah             | Save queries so Ctrl-p and Ctrl-n will cycle through search history
+--autoload-query,-aq               | Restore last query used in a directory upon entering it
+--autosave-session,-as             | Save bookmarks and view/sort settings continuously
+--autoload-session,-al             | Load bookmarks and view/sort settings on entering base directory
+--grep=PATTERN,-g=PATTERN          | Start in grep mode, searching files for specified pattern
+--base-directory=DIR,-bd=DIR       | Specify base directory instead of deriving it from target argument
+--alternate-directory=DIR,-ad=DIR  | Initialize alternate directory at start
+--data-directory=DIR,-dd=DIR       | Specify directory for storing sessions and other data
+
+Most options can be inverted by reversing uppercase/lowercase for the short form or adding/removing
+the 'no-' prefix for the long form. Additional options will be passed on to fzf, with the long form using
+an equals sign required for options that take values, unless no unescaped spaces are used in the assignment.
+(e.g. '--query=STR' or '-qSTR', not '-q STR')
+
+
 ### Key mappings are as follows:
 
-KEYMAP      | DESCRIPTION                                                          | ACTION
+KEY         | DESCRIPTION                                                          | ACTION
 ------------|----------------------------------------------------------------------|------------------------
-escape      | exit file browser                                                    | 
 ctrl-c      | exit file browser                                                    | 
+escape      | clear search query / exit file browser if query is blank             | 
 enter       | enter directory or edit file                                         | 
 right       | enter directory or edit file                                         | enter
 left        | go to parent directory (not moving past base directory)              | back
@@ -65,32 +96,6 @@ alt-v       | toggle visibility of pre(v)iew pane                               
 ctrl-alt-l  | (l)oad session from file named at prompt                             | load-session
 ctrl-alt-s  | (s)ave session to file named at prompt                               | save-session
 
-Options:
-
-LONG/SHORT OPTION                  | EFFECT
------------------------------------|-------------------------------------------------------------------
---help                             | Show this help text
---color,-c                         | Show colorized output
---nested,-n                        | List nested files/directories at start
---no-hide,-H                       | Show hidden files/directories at start
---no-ignore,-I                     | Show ignored files/directories at start
---reverse,-O                       | Reverse the normal sort order
---no-sort,-S                       | Disable sorting of files/directories
---no-nested-sort,-NS               | Disable sorting of nested files/directories
---no-statusline,-L                 | Disable statusline that shows current state of various settings
---no-preview,-V                    | Disable preview pane that shows file/directory contents
---no-persist,-P                    | Exit browser after editing a file
---no-edit,-E                       | Log selections to file instead of launching editor
---autosave-history,-ah             | Save queries so Ctrl-p and Ctrl-n will cycle through search history
---autoload-query,-aq               | Restore last query used in a directory upon entering it
---autosave-session,-as             | Save bookmarks and view/sort settings continuously
---autoload-session,-al             | Load bookmarks and view/sort settings on entering base directory
---grep=PATTERN,-g=PATTERN          | Start in grep mode, searching files for specified pattern
---base-directory=DIR,-bd=DIR       | Specify base directory instead of deriving it from target argument
---alternate-directory=DIR,-ad=DIR  | Initialize alternate directory at start
---data-directory=DIR,-dd=DIR       | Specify directory for storing sessions and other data
-
-Most options can be inverted by reversing uppercase/lowercase for the short form or adding/removing
-the 'no-' prefix for the long form. Additional options will be passed on to fzf, with the long form using
-an equals sign required for options that take values, unless no unescaped spaces are used in the assignment.
-(e.g. '--query=STR' or '-qSTR', not '-q STR')
+Overrides for action/key bindings can be set using environment variable BZB_BIND.
+For example, the 'launch' and 'enter' bindings can be swapped by invoking bzb with command:
+> BZB_BIND="[enter]=alt-q [launch]=right" bzb
