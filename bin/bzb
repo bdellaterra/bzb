@@ -445,7 +445,7 @@ restore_session() {
 
 main() {
   # Export variables for use in subshells
-  export BZB_BASE_DIR="$(escape_single_quotes "$base_dir")"
+  export BZB_BASE_DIR="$base_dir"
   export BZB_QUERY="$query"
   export BZB_COLOR="$color"
   [[ $hide ]] && export BZB_HIDDEN=1 || export BZB_HIDDEN=''
@@ -459,8 +459,6 @@ main() {
   # Edit file or enter directory
   if [[ $# -eq 1 && -d "$1" ]]; then
     cd "$1"
-    # clear or optionally restore query after changing directory
-    [[ $autoload_query ]] && export BZB_QUERY="${directory_queries[$PWD]}" || export BZB_QUERY=''
   elif [[ $# -ge 1 ]]; then
     edit_targets="${EDITOR:vi}"
     for f in "$@"; do
@@ -470,8 +468,13 @@ main() {
     [[ ! $persist ]] && exit 0
   fi
 
+  # Clear or optionally restore query after changing directory
+  if [[ "$PWD" != "$BZB_DIR" ]]; then
+    [[ $autoload_query ]] && export BZB_QUERY="${directory_queries[$PWD]}" || export BZB_QUERY=''
+  fi
+
   # Export current directory
-  export BZB_DIR="$(escape_single_quotes "$PWD")"
+  export BZB_DIR="$PWD"
 
   # Setup list/sort/preview commands
   [[ $nested ]] && sort="$sort_nested" || sort="$sort_shallow"
@@ -484,7 +487,7 @@ main() {
     [[ $grep_cannot_ignore ]] && ignore_disabled='!' || ignore_disabled=''
   else
     [[ $nested ]] && find="$find_nested" || find="$find_shallow"
-    fzf_prompt=" --prompt='${BZB_DIR#$BZB_BASE_DIR}>'"   
+    fzf_prompt=" --prompt='"$(escape_single_quotes "${BZB_DIR#$BZB_BASE_DIR}")">'"   
     fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
     fzf_preview="$find_mode_preview"
     [[ $find_cannot_ignore ]] && ignore_disabled='!' || ignore_disabled=''
@@ -870,7 +873,7 @@ main() {
   esac
 
   # Optionally preserve query for current directory
-  [[ $autoload_query ]] && directory_queries[$PWD]="$query"
+  [[ $autoload_query ]] && directory_queries[$BZB_DIR]="$query"
 
   # Optionally autosave browsing session
   [[ $autosave_session ]] && save_session "$session"
