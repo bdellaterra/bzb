@@ -237,7 +237,7 @@ initial_targets=("$@")
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    # enable no_clear && readonly no_clear
+    enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
@@ -468,18 +468,17 @@ main() {
   [[ ! $nested || $nested_sort ]] && sort_pipe="${sorted:+ | $sort}" || sort_pipe=''
   if [[ $grep_mode ]]; then
     [[ $nested ]] && grep="$grep_nested" || grep="$grep_shallow"
-    preview_opts="--preview='$grep_mode_preview' --preview-window='right:62%:wrap'"
-    fzf_input=$(bash -c "echo \"$grep$sort_pipe\"")
     fzf_prompt=" --prompt='/$BZB_GREP_QUERY/'"
+    fzf_input=$(bash -c "echo \"$grep$sort_pipe\"")
+    fzf_preview=$(bash -c "echo \"$grep_mode_preview\"")
     [[ $grep_cannot_ignore ]] && ignore_disabled='!' || ignore_disabled=''
   else
     [[ $nested ]] && find="$find_nested" || find="$find_shallow"
-    preview_opts="--preview='$find_mode_preview' --preview-window='right:62%:wrap'"
-    fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
     fzf_prompt=" --prompt='${BZB_DIR#$BZB_BASE_DIR}>'"   
+    fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
+    fzf_preview="$find_mode_preview"
     [[ $find_cannot_ignore ]] && ignore_disabled='!' || ignore_disabled=''
   fi
-  [[ ! $preview ]] && preview_opts=''
 
   # Prepare display to show status of toggle-settings
   status=()
@@ -500,9 +499,11 @@ main() {
   # Clear leading dots from paths
   fzf_input+=" | sed 's:^\./::'"
 
-  fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' $fzf_bind --expect='$fzf_keys' --query='$BZB_QUERY' $fzf_prompt $preview_opts $fzf_extra_options"
-  [[ ! $color ]] && fzf_options="${color:---no-color} $fzf_options"
-  [[ $statusline ]] && fzf_options="--header=\"\$BZB_STATUSLINE\" $fzf_options"
+  fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' $fzf_bind --expect='$fzf_keys' --query='$BZB_QUERY' $fzf_prompt"
+  [[ ! $color ]] && fzf_options+=" ${color:---no-color}"
+  [[ $statusline ]] && fzf_options+=" --header=\"\$BZB_STATUSLINE\""
+  [[ $preview ]] && fzf_options+=" --preview='"$(escape_single_quotes "$fzf_preview")"' --preview-window='right:62%:wrap'"
+  [[ $fzf_extra_options ]] && fzf_options+=" $fzf_extra_options"
 
   # CYCLE INTO FZF
   fzf_command="$fzf_input | fzf $fzf_options"
