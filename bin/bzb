@@ -454,7 +454,7 @@ main() {
   elif [[ $# -ge 1 ]]; then
     edit_targets="${EDITOR:vi}"
     for f in "$@"; do
-      edit_targets="$edit_targets '"$(escape_single_quotes "$f")"'"
+      edit_targets+=" '"$(escape_single_quotes "$f")"'"
     done
     [[ $edit ]] && bash -c "$edit_targets" || save_selection "$@"
     [[ ! $persist ]] && exit 0
