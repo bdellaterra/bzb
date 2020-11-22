@@ -665,7 +665,7 @@ main() {
     delete)
       CMD="$rm_interactive"
       for t in "${targets[@]}"; do
-        CMD="$CMD '$t'"
+        CMD="$CMD '"$(escape_single_quotes "$t")"'"
       done
       clear && bash -c "$CMD"
     ;;
