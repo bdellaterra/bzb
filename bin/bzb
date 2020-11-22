@@ -170,7 +170,8 @@ Options:
 --no-preview,-V                    Disable preview pane that shows file/directory contents
 --no-persist,-P                    Exit browser after editing a file
 --no-edit,-E                       Log selections to file instead of launching editor
---autosave-history,-ah             Save searches so Ctrl-n and Ctrl-p will cycle through search history
+--autosave-history,-ah             Save queries so Ctrl-p and Ctrl-n will cycle through search history
+--autoload-query,-aq               Restore last query used in a directory upon entering it
 --autosave-session,-as             Save bookmarks and view/sort settings continuously
 --autoload-session,-al             Load bookmarks and view/sort settings on entering base directory
 --grep=PATTERN,-g=PATTERN          Start in grep mode, searching files for specified pattern
@@ -242,7 +243,7 @@ initial_targets=("$@")
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    # enable no_clear && readonly no_clear
+    enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi

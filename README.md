@@ -81,7 +81,8 @@ LONG/SHORT OPTION                  | EFFECT
 --no-preview,-V                    | Disable preview pane that shows file/directory contents
 --no-persist,-P                    | Exit browser after editing a file
 --no-edit,-E                       | Log selections to file instead of launching editor
---autosave-history,-ah             | Save searches so Ctrl-n and Ctrl-p will cycle through search history
+--autosave-history,-ah             | Save queries so Ctrl-p and Ctrl-n will cycle through search history
+--autoload-query,-aq               | Restore last query used in a directory upon entering it
 --autosave-session,-as             | Save bookmarks and view/sort settings continuously
 --autoload-session,-al             | Load bookmarks and view/sort settings on entering base directory
 --grep=PATTERN,-g=PATTERN          | Start in grep mode, searching files for specified pattern
