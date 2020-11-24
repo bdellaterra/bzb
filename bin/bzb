@@ -836,7 +836,7 @@ main() {
           echo "Error: Cannot set base directory to invalid path" 2>&1
           read -s -r -n 1 -p "(Press any key to continue)"
         elif [[ "$next_base" != "$base_dir" ]]; then
-          base_dir="$(readlink -f "${next_base}")"
+          base_dir="$(cd "$next_base" && pwd -P)"
           pushd "$base_dir" >/dev/null
           session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
           assign action "autoload-session"
