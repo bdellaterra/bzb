@@ -388,6 +388,8 @@ rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
 
 # FILE STATE
 
+[[ $search_history ]] && mkdir -p "$(dirname "$search_history")" && touch "$search_history"
+
 save_selection() {
   if [[ -d "$data_dir" ]]; then
     selection="$data_dir/selection"
