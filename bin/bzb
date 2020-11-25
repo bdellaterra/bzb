@@ -629,7 +629,7 @@ main() {
     yank-targets)
       yanked_targets=''
       for t in "${targets[@]}"; do
-        yanked_targets+=" '"$(escape_single_quotes "$t")"'"
+        yanked_targets+=" '"$PWD/$(escape_single_quotes "$t")"'"
       done
       [[ "$clip" ]] && bash -c "echo -n \"$yanked_targets\" | $clip"
     ;;
