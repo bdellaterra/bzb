@@ -631,13 +631,13 @@ main() {
       for t in "${targets[@]}"; do
         yanked_targets+=" '"$(escape_single_quotes "$t")"'"
       done
-      [[ "$clip" ]] && bash -c "echo \"$yanked_targets\" | $clip"
+      [[ "$clip" ]] && bash -c "echo -n \"$yanked_targets\" | $clip"
     ;;
 
     # Use ctrl-alt-y to yank current directory to clipboard
     yank-dir)
       yanked_dir=" '"$(escape_single_quotes "$PWD")"'"
-      [[ "$clip" ]] && bash -c "echo \"$yanked_dir\" | $clip"
+      [[ "$clip" ]] && bash -c "echo -n \"$yanked_dir\" | $clip"
     ;;
 
     # Use alt-q to quick-launch targets in their native client
