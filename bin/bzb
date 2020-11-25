@@ -303,11 +303,11 @@ readonly find_cannot_ignore
 # Sort Command:
 enable parallel_sort
 init sort_shallow \
-  "LC_ALL=C sort \${BZB_REVERSE:+-r} -fiu"
+  "LC_ALL=C sort \${BZB_SORT_NUMERIC:+-g} \${BZB_REVERSE:+-r} -fiu"
 if has parallel && test $parallel_sort; then
   enable nested_sort
   init sort_nested \
-    "LC_ALL=C parallel --pipe --block 64k sort \${BZB_REVERSE:+-r} -fiu 2>/dev/null"
+    "LC_ALL=C parallel --pipe --block 64k sort \${BZB_SORT_NUMERIC:+-g} \${BZB_REVERSE:+-r} -fiu 2>/dev/null"
 else
   disable parallel_sort
   disable nested_sort
@@ -351,23 +351,23 @@ init find_mode_preview \
   "[[ -d {} ]] && $preview_directory || $preview_file"
 
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed
-grep_sort_numeric="| awk -F ':' '{ printf( \\\"%s %s\\\n\\\", "'\$2, \$1'" ) }' | sort -g \$([[ ! \$BZB_REVERSE ]] && echo '-r')"
+list_by_grep_count="| grep -v ':0$' | awk -F ':' '{ printf( \\\"%s %s\\\n\\\", "'\$2, \$1'" ) }'"
 if has rg; then
   disable grep_cannot_ignore
   init grep_nested \
-    "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --count --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $grep_sort_numeric"
+    "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --count --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $list_by_grep_count"
   init grep_shallow \
-    "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --count --maxdepth 1 --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $grep_sort_numeric "
+    "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --count --maxdepth 1 --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $list_by_grep_count "
   init grep_mode_preview \
     "rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
   enable grep_cannot_ignore
   init grep_nested \
-    "grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'} $grep_sort_numeric"
+    "grep -r -i -s -c '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'} $list_by_grep_count"
   init grep_shallow \
-    "grep -l -i -s -C 1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'" $grep_sort_numeric"
+    "grep -i -s -c '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'" $list_by_grep_count"
   init grep_mode_preview \
-    "grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}' {}"
+    "grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}' '{}'"
 fi
 readonly grep_cannot_ignore
 disable grep_query
@@ -448,6 +448,7 @@ main() {
   [[ $hide ]] && export BZB_HIDDEN=1 || export BZB_HIDDEN=''
   [[ $ignore ]] && export BZB_NO_IGNORE='' || export BZB_NO_IGNORE=1
   export BZB_REVERSE="$reverse"
+  export BZB_SORT_NUMERIC=""
   export BZB_GREP_QUERY="$(escape_single_quotes "$grep_query")"
 
   # Clear any stale selection so it is not read on esc/ctrl-c exit action
@@ -477,6 +478,8 @@ main() {
   [[ $nested ]] && sort="$sort_nested" || sort="$sort_shallow"
   [[ ! $nested || $nested_sort ]] && sort_pipe="${sorted:+ | $sort}" || sort_pipe=''
   if [[ $grep_mode ]]; then
+    # Order grep results by number of matches descending
+    enable BZB_SORT_NUMERIC && toggle BZB_REVERSE
     [[ $nested ]] && grep="$grep_nested" || grep="$grep_shallow"
     fzf_prompt=" --prompt='/$BZB_GREP_QUERY/'"
     fzf_input=$(bash -c "echo \"$grep$sort_pipe\"")
