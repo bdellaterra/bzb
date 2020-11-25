@@ -350,6 +350,9 @@ init preview_file \
 init find_mode_preview \
   "[[ -d {} ]] && $preview_directory || $preview_file"
 
+# Clear leading dots from paths
+clear_leading_dots=" | sed 's:^\./::'"
+
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed
 list_by_grep_count="| grep -v ':0$' | awk -F ':' '{ printf( \\\"%s %s\\\n\\\", "'\$2, \$1'" ) }'"
 if has rg; then
@@ -363,9 +366,9 @@ if has rg; then
 else
   enable grep_cannot_ignore
   init grep_nested \
-    "grep -r -i -s -c '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'} $list_by_grep_count"
+    "grep -r -i -s -c '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'}$clear_leading_dots  $list_by_grep_count"
   init grep_shallow \
-    "grep -i -s -c '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'" $list_by_grep_count"
+    "grep -i -s -c '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'"$clear_leading_dots  $list_by_grep_count"
   init grep_mode_preview \
     "grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}' '{}'"
 fi
@@ -509,8 +512,7 @@ main() {
 
   export BZB_STATUSLINE="[${status[@]}]"
 
-  # Clear leading dots from paths
-  fzf_input+=" | sed 's:^\./::'"
+  fzf_input+="$clear_leading_dots"
 
   fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' $fzf_bind --expect='$fzf_keys' --query='$BZB_QUERY' $fzf_prompt"
   [[ ! $color ]] && fzf_options+=" ${color:---no-color}"
