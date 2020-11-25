@@ -846,7 +846,7 @@ main() {
 
     # Use ctrl-alt-t to open a new terminal/shell in current directory
     terminal)
-      $SHELL
+      clear && $SHELL
     ;;
 
   # Fall through to remaining cases
