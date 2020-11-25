@@ -351,20 +351,21 @@ init find_mode_preview \
   "[[ -d {} ]] && $preview_directory || $preview_file"
 
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed
+grep_sort_numeric="| awk -F ':' '{ printf( \\\"%s %s\\\n\\\", "'\$2, \$1'" ) }' | sort -g \$([[ ! \$BZB_REVERSE ]] && echo '-r')"
 if has rg; then
   disable grep_cannot_ignore
   init grep_nested \
-    "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
+    "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --count --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $grep_sort_numeric"
   init grep_shallow \
-    "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --maxdepth 1 --files-with-matches --ignore-case --no-messages '\${BZB_GREP_QUERY}' ."
+    "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --count --maxdepth 1 --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $grep_sort_numeric "
   init grep_mode_preview \
     "rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}' '{}'"
 else
   enable grep_cannot_ignore
   init grep_nested \
-    "grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'}"
+    "grep -r -l -i -s -C 1 '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'} $grep_sort_numeric"
   init grep_shallow \
-    "grep -l -i -s -C 1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'
+    "grep -l -i -s -C 1 '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'" $grep_sort_numeric"
   init grep_mode_preview \
     "grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}' {}"
 fi
