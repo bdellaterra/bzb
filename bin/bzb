@@ -71,7 +71,7 @@ bind '"\C-g":"\C-k\C-u
 init fzf_bind '--bind=ctrl-g:ignore,esc:cancel'
 init fzf_submenu_bind '--bind=ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
 
-# Read overrides for action/key bindings
+# Read overrides for action/key bindings to enable alternate keymaps
 eval "declare -A BZB_BIND=( $BZB_BIND )"
 
 declare -A key_definitions key_actions action_keys
