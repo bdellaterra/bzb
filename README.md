@@ -61,8 +61,7 @@ alt-x       | delete targets                                                    
 alt-c       | (c)opy targets to directory named at prompt                          | copy
 ctrl-alt-c  | (c)opy/rename targets into directory named at prompt                 | copy-rename
 alt-t       | create (a.k.a. "(t)ouch") file named at prompt                       | create-file
-ctrl-alt-t  | create (a.k.a. "(t)ouch") and edit file named at prompt              | create-edit-file
-alt-e       | create (a.k.a. "touch") and (e)dit file named at prompt              | create-edit-file2
+alt-e       | create (a.k.a. "touch") and (e)dit file named at prompt              | create-edit-file
 alt-d       | create (d)irectory named at prompt                                   | create-dir
 ctrl-alt-d  | create/enter (d)irectory named at prompt                             | create-enter-dir
 alt-b       | toggle (b)ookmark for current directory                              | toggle-bookmark
@@ -95,6 +94,7 @@ ctrl-alt-r  | (r)estore initial view/sort settings                              
 alt-v       | toggle visibility of pre(v)iew pane                                  | toggle-preview
 ctrl-alt-l  | (l)oad session from file named at prompt                             | load-session
 ctrl-alt-s  | (s)ave session to file named at prompt                               | save-session
+ctrl-alt-t  | open a new (t)erminal/shell in current directory                     | terminal
 
 Overrides for action/key bindings can be set using environment variable BZB_BIND.
 For example, the 'launch' and 'enter' bindings can be swapped by invoking bzb with command:

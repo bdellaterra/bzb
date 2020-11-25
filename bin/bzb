@@ -95,8 +95,7 @@ map 'delete'                  'alt-x'       "delete targets"
 map 'copy'                    'alt-c'       "(c)opy targets to directory named at prompt"
 map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into directory named at prompt"
 map 'create-file'             'alt-t'       "create (a.k.a. \"(t)ouch\") file named at prompt"
-map 'create-edit-file'        'ctrl-alt-t'  "create (a.k.a. \"(t)ouch\") and edit file named at prompt"
-map 'create-edit-file2'       'alt-e'       "create (a.k.a. \"touch\") and (e)dit file named at prompt"
+map 'create-edit-file'        'alt-e'       "create (a.k.a. \"touch\") and (e)dit file named at prompt"
 map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
 map 'create-enter-dir'        'ctrl-alt-d'  "create/enter (d)irectory named at prompt"
 map 'toggle-bookmark'         'alt-b'       "toggle (b)ookmark for current directory"
@@ -129,6 +128,7 @@ map 'restore-settings'        'ctrl-alt-r'  "(r)estore initial view/sort setting
 map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane"
 map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
 map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at prompt"
+map 'terminal'                'ctrl-alt-t'  "open a new (t)erminal/shell in current directory"
 
 # Comma-separated list of custom mappings for fzf
 readonly fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
@@ -712,8 +712,8 @@ main() {
     ;;
 
     # Use alt-t to "touch" or create file named at prompt
-    # Use ctrl-alt-t or alt-e to create file and edit it immediately
-    create-file|create-edit-file|create-edit-file2)
+    # Use alt-e to create file and edit it immediately
+    create-file|create-edit-file)
       [[ "$action" = "create-edit-file" ]] && create_edit="Create/Edit" || create_edit="Create"
       clear && read -ep "$create_edit file: " target
       if [[ -n "$target" ]]; then
@@ -842,6 +842,11 @@ main() {
           assign action "autoload-session"
         fi
       fi
+    ;;
+
+    # Use ctrl-alt-t to open a new terminal/shell in current directory
+    terminal)
+      $SHELL
     ;;
 
   # Fall through to remaining cases
