@@ -245,7 +245,7 @@ initial_targets=("$@")
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    enable no_clear && readonly no_clear
+    # enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
@@ -303,11 +303,11 @@ readonly find_cannot_ignore
 # Sort Command:
 enable parallel_sort
 init sort_shallow \
-  "LC_ALL=C sort \${BZB_SORT_NUMERIC:+-g} \${BZB_REVERSE:+-r} -fiu"
+  "LC_ALL=C sort \$([[ \$BZB_SORT_NUMERIC ]] && echo '-g' || echo '-fiu') \${BZB_REVERSE:+-r}"
 if has parallel && test $parallel_sort; then
   enable nested_sort
   init sort_nested \
-    "LC_ALL=C parallel --pipe --block 64k sort \${BZB_SORT_NUMERIC:+-g} \${BZB_REVERSE:+-r} -fiu 2>/dev/null"
+    "LC_ALL=C parallel --pipe --block 64k sort \$([[ \$BZB_SORT_NUMERIC ]] && echo '-g' || echo '-fiu') \${BZB_REVERSE:+-r} 2>/dev/null"
 else
   disable parallel_sort
   disable nested_sort
