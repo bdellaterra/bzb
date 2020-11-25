@@ -419,7 +419,7 @@ save_session() {
       declare -p PWD > "$session"
       [[ "$base_dir" ]] && declare -p base_dir >> "$session"
       [[ "$alt_dir" ]] && declare -p alt_dir >> "$session"
-      declare -p bookmarks nested hide ignore sorted reverse preview >> "$session"
+      declare -p bookmarks hide ignore nested sorted nested_sort reverse preview statusline >> "$session"
       [[ ${#directory_queries[@]} ]] && declare -p directory_queries >> "$session"
     else
       echo "Error: Could not save session to '$1'" 2>&1
@@ -592,11 +592,6 @@ main() {
       toggle hide
     ;;
 
-    # Use alt-o to toggle between normal and reverse sort order
-    toggle-sort-order)
-      toggle reverse
-    ;;
-
     # Use alt-s to enable/disable sorting
     toggle-sort)
       toggle sorted
@@ -605,6 +600,11 @@ main() {
     # Use ctrl-alt-n to enable/disable nested sorting
     toggle-nested-sort)
       toggle nested_sort
+    ;;
+
+    # Use alt-o to toggle between normal and reverse sort order
+    toggle-sort-order)
+      toggle reverse
     ;;
 
     # Use alt-v to toggle visibility of preview pane
