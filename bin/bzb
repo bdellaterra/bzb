@@ -59,6 +59,12 @@ escape_single_quotes() { echo "$1" | sed -e "s/'/'\\\\''/g"; }
 # Shell-escape special characters
 esc() { printf '%q' "$1"; }
 
+# Unescape a shell-escaped string
+unesc() { bash -c "echo $1"; }
+
+# Escape single quotes inside strings so they can be expanded as single-quoted command line values
+sing() { echo \'"${1//\'/\'\\\'\'}"\'; }
+
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
 clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
 
@@ -360,7 +366,8 @@ no_leading_dots="| sed 's:^\./::'"
 no_grep_counts="| sed -e 's/^[0-9]\+ //g'"
 
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed
-list_by_grep_count="| grep -v ':0$' | awk -F ':' '{ printf( \\\"%s %s\\\n\\\", "'\$2, \$1'" ) }'"
+no_zero_counts="| grep -v ':0$'"
+list_by_grep_count="$no_zero_counts | awk -F ':' '{ printf( \\\"%s %s\\\n\\\", "'\$2, \$1'" ) }'"
 escape_grep_results="| sed -e 's/\\s\\|'\\''/\\\\\\&/g'"
 if has rg; then
   disable grep_cannot_ignore
