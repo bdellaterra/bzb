@@ -351,10 +351,10 @@ init find_mode_preview \
   "[[ -d {} ]] && $preview_directory || $preview_file"
 
 # Clear leading dots from paths
-clear_leading_dots="| sed 's:^\./::'"
+no_leading_dots="| sed 's:^\./::'"
 
 # Clear numeric count from beginning of grep results
-clear_grep_counts="| sed -e 's/^[0-9]\+ //g'"
+no_grep_counts="| sed -e 's/^[0-9]\+ //g'"
 
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed
 list_by_grep_count="| grep -v ':0$' | awk -F ':' '{ printf( \\\"%s %s\\\n\\\", "'\$2, \$1'" ) }'"
@@ -366,15 +366,15 @@ if has rg; then
   init grep_shallow \
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --count --maxdepth 1 --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $list_by_grep_count "
   init grep_mode_preview \
-    "echo {} $clear_grep_counts | sed -e 's/\\s\\|'\\''/\\\\\\&/g' | xargs cat | rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}'"
+    "echo {} $no_grep_counts | sed -e 's/\\s\\|'\\''/\\\\\\&/g' | xargs cat | rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}'"
 else
   enable grep_cannot_ignore
   init grep_nested \
-    "grep -r -i -s -c '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'}$clear_leading_dots  $list_by_grep_count"
+    "grep -r -i -s -c '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'}$no_leading_dots  $list_by_grep_count"
   init grep_shallow \
-    "grep -i -s -c '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'"$clear_leading_dots  $list_by_grep_count"
+    "grep -i -s -c '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'"$no_leading_dots  $list_by_grep_count"
   init grep_mode_preview \
-    "echo {} $clear_grep_counts $escape_grep_results | xargs cat | grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}'"
+    "echo {} $no_grep_counts $escape_grep_results | xargs cat | grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}'"
 fi
 readonly grep_cannot_ignore
 disable grep_query
@@ -516,7 +516,7 @@ main() {
 
   export BZB_STATUSLINE="[${status[@]}]"
 
-  fzf_input+="$clear_leading_dots"
+  fzf_input+="$no_leading_dots"
 
   fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' $fzf_bind --expect='$fzf_keys' --query='$BZB_QUERY' $fzf_prompt"
   [[ ! $color ]] && fzf_options+=" ${color:---no-color}"
@@ -528,7 +528,7 @@ main() {
 
   # CYCLE INTO FZF
   fzf_command="$fzf_input | fzf $fzf_options"
-  [[ $grep_mode ]] && fzf_command+="$clear_grep_counts"
+  [[ $grep_mode ]] && fzf_command+="$no_grep_counts"
   { read query; read command; readarray -t targets; } < <(bash -c "$fzf_command")
 
   # Parse empty command and empty target as 'exit' (fzf-native 'escape' or 'ctrl-c' mapping)
