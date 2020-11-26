@@ -56,6 +56,9 @@ toggle() { [[ ${!1} ]] && disable "$1" || enable "$1"; }
 # Escape single quotes inside strings so they can be expanded as single-quoted command line values
 escape_single_quotes() { echo "$1" | sed -e "s/'/'\\\\''/g"; }
 
+# Shell-escape special characters
+esc() { printf '%q' "$1"; }
+
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
 clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
 
