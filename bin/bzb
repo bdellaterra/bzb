@@ -652,17 +652,17 @@ main() {
 
     # Use alt-y to yank targets to clipboard
     yank-targets)
-      yanked_targets=''
+      yank_targets=''
       for t in "${targets[@]}"; do
-        yanked_targets+=" '$(sq "$PWD/$t")'"
+        yank_targets+=" '$(sq "$PWD/$t")'"
       done
-      [[ "$clip" ]] && bash -c "echo -n '$(sq "$yanked_targets")' | $clip"
+      [[ "$clip" ]] && bash -c "echo -n '$(sq "$yank_targets")' | $clip"
     ;;
 
     # Use ctrl-alt-y to yank current directory to clipboard
     yank-dir)
-      yanked_directory=" '$(sq "$PWD")'"
-      [[ "$clip" ]] && bash -c "echo -n '$(sq "$yanked_directory")' | $clip"
+      yank_directory=" '$(sq "$PWD")'"
+      [[ "$clip" ]] && bash -c "echo -n '$(sq "$yank_directory")' | $clip"
     ;;
 
     # Use alt-q to quick-launch targets in their native client
@@ -678,7 +678,7 @@ main() {
     rename)
       for t in "${targets[@]}"; do
         if [[ -r "$t" ]]; then
-          clear && read -ep 'Move/Rename File: ' -i "mv \"$t\" \"$t\"" cmd
+          clear && read -r -ep 'Move/Rename File: ' -i "mv '$(sq "$t")' '$(sq "$t")'" cmd
           [[ -n "$cmd" ]] && bash -c "$cmd"
         fi
       done
@@ -696,7 +696,7 @@ main() {
       if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
           if [[ -r "$t" ]]; then
-            read -ep 'Move/Rename File: ' -i "mv '$PWD/$t' '${dir%/}/$t'" cmd
+            read -r -ep 'Move/Rename File: ' -i "mv '$(sq "$PWD/$t")' '$(sq "${dir%/}/$t")'" cmd
             [[ -n "$cmd" ]] && bash -c "$cmd"
           fi
         done
@@ -705,11 +705,12 @@ main() {
 
     # Use alt-x to delete targets
     delete)
-      CMD="$rm_interactive"
+      delete_targets=''
       for t in "${targets[@]}"; do
-        CMD+=" '"$(escape_single_quotes "$t")"'"
+        delete_targets+=" '$(sq "$t")'"
       done
-      clear && bash -c "$CMD"
+      echo "$rm_interactive $delete_targets"
+      clear && bash -c "$rm_interactive $delete_targets"
     ;;
 
     # Use alt-c to copy targets
