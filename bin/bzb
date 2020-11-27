@@ -725,7 +725,7 @@ main() {
       if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
           if [[ -r "$t" ]]; then
-            clear && read -ep 'Copy/Rename File: ' -i "cp -ir '$PWD/$t' '$dir/$t'" cmd
+            clear && read -r -ep 'Copy/Rename File: ' -i "cp -ir '$(sq "$PWD/$t")' '$(sq "$dir/$t")'" cmd
             [[ -n "$cmd" ]] && bash -c "$cmd"
           fi
         done
