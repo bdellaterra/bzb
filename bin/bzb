@@ -53,15 +53,6 @@ disable() {
 # Enable setting if disabled. Disable it if enabled
 toggle() { [[ ${!1} ]] && disable "$1" || enable "$1"; }
 
-# Escape single quotes inside strings so they can be expanded as single-quoted command line values
-escape_single_quotes() { echo "$1" | sed -e "s/'/'\\\\''/g"; }
-
-# Shell-escape special characters
-esc() { echo $(printf '%q' "$1"); }
-
-# Unescape a shell-escaped string
-unesc() { bash -c echo\ "$e"; }
-
 # Escape single-quotes to make a single-quotable string
 sq() { echo ${1//\'/\'\\\'\'}; }
 
