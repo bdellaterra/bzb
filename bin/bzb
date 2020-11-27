@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # File:         bzb
 # Description:  Browse files using fzf.
-# Author:       Brian Dellatera
 # Version:      0.0.1
 # License:      Copyright 2020 Brian Dellaterra.
 #               Distributed under the terms of the GNU Lesser General Public License Version 2.1.
