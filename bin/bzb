@@ -56,7 +56,7 @@ toggle() { [[ ${!1} ]] && disable "$1" || enable "$1"; }
 # Escape single-quotes to make a single-quotable string
 sq() { echo ${1//\'/\'\\\'\'}; }
 
-# Escape chars and newlines to make a double-quotable string
+# Escape special chars and newlines to make a double-quotable string
 dq() {
   esc_chars='s/[$`"\]/\\&/g'
   echo "$1" | sed -e "$esc_chars" | (
@@ -103,7 +103,7 @@ map 'delete'                  'alt-x'       "delete targets"
 map 'copy'                    'alt-c'       "(c)opy targets to directory named at prompt"
 map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into directory named at prompt"
 map 'create-file'             'alt-t'       "create (a.k.a. \"(t)ouch\") file named at prompt"
-map 'create-edit-file'        'alt-e'       "create (a.k.a. \"touch\") and (e)dit file named at prompt"
+map 'create-edit-file'        'alt-e'       "create and (e)dit file named at prompt"
 map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
 map 'create-enter-dir'        'ctrl-alt-d'  "create/enter (d)irectory named at prompt"
 map 'toggle-bookmark'         'alt-b'       "toggle (b)ookmark for current directory"
@@ -364,9 +364,7 @@ no_leading_dots="| sed 's:^\./::'"
 # Clear numeric count from beginning of grep results
 no_grep_counts="| sed -e 's/^[0-9]\+ //g'"
 
-# list_by_grep_count="$no_zero_counts | awk -F ':' '{ printf( \\\"%s %s\\\n\\\", "'\$2, \$1'" ) }'"
-# escape_grep_results="| sed -e 's/\\s\\|'\\''/\\\\\\&/g'"
-# Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed
+# Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed. (Uses '-c' for number of matches per file)
 no_zero_counts="| grep -v ':0$'"
 list_by_grep_count="$no_zero_counts | awk -F ':' '$(dq "$(sq '{ printf( "%s %s\n", $2, $1 ) }')")'"
 escape_grep_results="| sed -e '$(sq 's/\s\|'\''/\\\&/g')'"

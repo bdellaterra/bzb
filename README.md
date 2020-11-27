@@ -61,7 +61,7 @@ alt-x       | delete targets                                                    
 alt-c       | (c)opy targets to directory named at prompt                          | copy
 ctrl-alt-c  | (c)opy/rename targets into directory named at prompt                 | copy-rename
 alt-t       | create (a.k.a. "(t)ouch") file named at prompt                       | create-file
-alt-e       | create (a.k.a. "touch") and (e)dit file named at prompt              | create-edit-file
+alt-e       | create and (e)dit file named at prompt                               | create-edit-file
 alt-d       | create (d)irectory named at prompt                                   | create-dir
 ctrl-alt-d  | create/enter (d)irectory named at prompt                             | create-enter-dir
 alt-b       | toggle (b)ookmark for current directory                              | toggle-bookmark
