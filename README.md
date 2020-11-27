@@ -42,7 +42,7 @@ an equals sign required for options that take values, unless no unescaped spaces
 (e.g. '--query=STR' or '-qSTR', not '-q STR')
 
 
-### Key mappings are as follows:
+### Key mappings:
 
 KEY         | DESCRIPTION                                                          | ACTION
 ------------|----------------------------------------------------------------------|------------------------
