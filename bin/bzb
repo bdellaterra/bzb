@@ -461,6 +461,9 @@ path_error() {
 
 # MAIN
 
+# Save initial preferences so they can be restored later
+declare -A initial_settings=([sorted]="$sorted" [preview]="$preview" [statusline]="$statusline" [hide]="$hide" [ignore]="$ignore" [nested]="$nested" [reverse]="$reverse" [nested_sort]="$nested_sort")
+
 # Optionally autoload browsing session
 [[ $autoload_session && -r "$session" ]] && . -- "$session" && restore_session "$session"
 
@@ -640,11 +643,10 @@ main() {
     ;;
 
     # Use ctrl-alt-r to restore default settings
-    # TODO: Account for initial user preferences from config vars and command line options
     restore-settings)
-      enable sorted preview statusline hide ignore
-      disable nested reverse
-      [[ $parallel_sort ]] && enable nested_sort || disable nested_sort
+      for i in ${!initial_settings[@]}; do
+        [[ ${initial_settings[$i]} ]] && enable "$i" || disable "$i"
+      done
     ;;
 
     # Use alt-y to yank targets to clipboard
