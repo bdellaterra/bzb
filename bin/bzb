@@ -736,7 +736,7 @@ main() {
     # Use ctrl-alt-d to create directory and enter it
     create-dir|create-enter-dir)
       [[ "$action" = "create-enter-dir" ]] && create_enter="Create/Enter" || create_enter="Create"
-      clear && read -ep "$create_enter directory: " target
+      clear && read -r -ep "$create_enter directory: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$target"
         [[ "$command" = "${action_keys[create-enter-dir]}" ]] && next_targets=("$target")
@@ -747,7 +747,7 @@ main() {
     # Use alt-e to create file and edit it immediately
     create-file|create-edit-file)
       [[ "$action" = "create-edit-file" ]] && create_edit="Create/Edit" || create_edit="Create"
-      clear && read -ep "$create_edit file: " target
+      clear && read -r -ep "$create_edit file: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$(dirname "$target")" && touch "$target"
         [[ "$command" = "${action_keys[create-edit-file]}" ]] && next_targets=("$target")
@@ -838,7 +838,13 @@ main() {
     set-alt-dir|enter-alt-dir)
       if [[ "$action" = "set-alt-dir" || ! -d "$alt_dir" ]]; then
         clear && read -ep "Set alternate directory: " -i "$PWD" dir
-        [[ -d "$dir" ]] && alt_dir="${dir%/}" || echo "Not a directory"
+        if [[ -d "$dir" ]]; then
+          alt_dir="${dir%/}"
+        else
+          printf "\nError: Not a directory. Use 'Tab' key for path completion.\n" 2>&1
+          printf "Add a backslash '\\\\' before spaces and special characters below:\n\\\\ \$ \` ' \"\n\n" 2>&1
+          read -s -r -n 1 -p "(Press any key to continue)"
+        fi
       fi
       if [[ "$action" = "enter-alt-dir" && -d "$alt_dir" ]]; then
         [[ "$PWD" = "$alt_dir" ]] && cd "$OLDPWD" || cd "$alt_dir"
@@ -848,7 +854,13 @@ main() {
     # Use alt-g to go to directory named at prompt
     prompt-dir)
       clear && read -ep "Go to directory: " -i "$PWD" dir
-      [[ -d "$dir" ]] && cd "$dir" || echo "Not a directory"
+      if [[ -d "$dir" ]]; then
+        cd "$dir"
+      else
+        printf "\nError: Not a directory. Use 'Tab' key for path completion.\n" 2>&1
+        printf "Add a backslash '\\\\' before spaces and special characters below:\n\\\\ \$ \` ' \"\n\n" 2>&1
+        read -s -r -n 1 -p "(Press any key to continue)"
+      fi
     ;;
 
     # Use ctrl-alt-g to set/enter new base directory
@@ -865,7 +877,8 @@ main() {
       fi
       if [[ -n "$next_base" ]]; then
         if [[ ! -d "$next_base" ]]; then
-          echo "Error: Cannot set base directory to invalid path" 2>&1
+          printf "\nError: Not a directory. Use 'Tab' key for path completion.\n" 2>&1
+          printf "Add a backslash '\\\\' before spaces and special characters below:\n\\\\ \$ \` ' \"\n\n" 2>&1
           read -s -r -n 1 -p "(Press any key to continue)"
         elif [[ "$next_base" != "$base_dir" ]]; then
           base_dir="$(cd "$next_base" && pwd -P)"
