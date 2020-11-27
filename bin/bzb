@@ -461,6 +461,12 @@ restore_session() {
   cd "$base_dir"
 }
 
+path_error() {
+  printf "\nError: ${1:-Not a directory.}${2:- Use 'Tab' key for path completion.\n}" 2>&1
+  printf "${3:-Add a backslash '\\\\' before spaces and special characters below:\n\\\\ \$ \` \' \"\n\n}" 2>&1
+  read -s -r -n 1 -p "(Press any key to continue)"
+}
+
 
 # MAIN
 
@@ -841,9 +847,7 @@ main() {
         if [[ -d "$dir" ]]; then
           alt_dir="${dir%/}"
         else
-          printf "\nError: Not a directory. Use 'Tab' key for path completion.\n" 2>&1
-          printf "Add a backslash '\\\\' before spaces and special characters below:\n\\\\ \$ \` ' \"\n\n" 2>&1
-          read -s -r -n 1 -p "(Press any key to continue)"
+          path_error
         fi
       fi
       if [[ "$action" = "enter-alt-dir" && -d "$alt_dir" ]]; then
@@ -857,9 +861,7 @@ main() {
       if [[ -d "$dir" ]]; then
         cd "$dir"
       else
-        printf "\nError: Not a directory. Use 'Tab' key for path completion.\n" 2>&1
-        printf "Add a backslash '\\\\' before spaces and special characters below:\n\\\\ \$ \` ' \"\n\n" 2>&1
-        read -s -r -n 1 -p "(Press any key to continue)"
+        path_error
       fi
     ;;
 
@@ -877,9 +879,7 @@ main() {
       fi
       if [[ -n "$next_base" ]]; then
         if [[ ! -d "$next_base" ]]; then
-          printf "\nError: Not a directory. Use 'Tab' key for path completion.\n" 2>&1
-          printf "Add a backslash '\\\\' before spaces and special characters below:\n\\\\ \$ \` ' \"\n\n" 2>&1
-          read -s -r -n 1 -p "(Press any key to continue)"
+          path_error
         elif [[ "$next_base" != "$base_dir" ]]; then
           base_dir="$(cd "$next_base" && pwd -P)"
           pushd "$base_dir" >/dev/null
@@ -909,9 +909,7 @@ main() {
         . -- "$session"
         restore_session
       else
-        printf "\nError: Cannot read session file. Use 'Tab' key for path completion.\n" 2>&1
-        printf "Add a backslash '\\\\' before spaces and special characters below:\n\\\\ \$ \` ' \"\n\n" 2>&1
-        read -s -r -n 1 -p "(Press any key to continue)"
+        path_error 'Cannot read session file.'
       fi
     ;;
 
@@ -921,9 +919,7 @@ main() {
       if [[ -w "$save" ]]; then
         save_session "$save"
       else
-        printf "\nError: Cannot write session file. Use 'Tab' key for path completion.\n" 2>&1
-        printf "Add a backslash '\\\\' before spaces and special characters below:\n\\\\ \$ \` ' \"\n\n" 2>&1
-        read -s -r -n 1 -p "(Press any key to continue)"
+        path_error 'Cannot write session file.'
       fi
     ;;
   esac
