@@ -903,13 +903,12 @@ main() {
       restore="$session"
       if [[ "$action" = 'load-session' || ! $autoload_session ]]; then
         clear && read -ep "Load session: " -i "$restore" restore
+        [[ $restore && ! -r "$restore" ]] && path_error 'Cannot read session file.'
       fi
       if [[ -r "$restore" ]]; then
         session="$restore"
         . -- "$session"
         restore_session
-      else
-        path_error 'Cannot read session file.'
       fi
     ;;
 
