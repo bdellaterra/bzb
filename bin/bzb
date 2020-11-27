@@ -908,13 +908,23 @@ main() {
         session="$restore"
         . -- "$session"
         restore_session
+      else
+        printf "\nError: Cannot read session file. Use 'Tab' key for path completion.\n" 2>&1
+        printf "Add a backslash '\\\\' before spaces and special characters below:\n\\\\ \$ \` ' \"\n\n" 2>&1
+        read -s -r -n 1 -p "(Press any key to continue)"
       fi
     ;;
 
     # Use ctrl-alt-s to save session
     save-session)
       clear && read -ep "Save session: " -i "$session" save
-      save_session "$save"
+      if [[ -w "$save" ]]; then
+        save_session "$save"
+      else
+        printf "\nError: Cannot write session file. Use 'Tab' key for path completion.\n" 2>&1
+        printf "Add a backslash '\\\\' before spaces and special characters below:\n\\\\ \$ \` ' \"\n\n" 2>&1
+        read -s -r -n 1 -p "(Press any key to continue)"
+      fi
     ;;
   esac
 
