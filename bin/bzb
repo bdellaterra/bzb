@@ -897,13 +897,13 @@ main() {
     # Use ctrl-alt-l to load session. May be triggered automatically by other actions,
     # in which case prompt will still appear if autoload_session setting is disabled
     load-session|autoload-session)
-      restore="$session"
+      session_file="$session"
       if [[ "$action" = 'load-session' || ! $autoload_session ]]; then
-        clear && read -ep "Load session: " -i "$restore" restore
-        [[ $restore && ! -r "$restore" ]] && path_error 'Cannot read session file.'
+        clear && read -ep "Load session: " -i "$session_file" session_file
+        [[ $session_file && ! -r "$session_file" ]] && path_error 'Cannot read session file.'
       fi
-      if [[ -r "$restore" ]]; then
-        session="$restore"
+      if [[ -r "$session_file" ]]; then
+        session="$session_file"
         . -- "$session"
         restore_session
       fi
@@ -911,11 +911,9 @@ main() {
 
     # Use ctrl-alt-s to save session
     save-session)
-      clear && read -ep "Save session: " -i "$session" save
-      if [[ -w "$save" ]]; then
-        save_session "$save"
-      else
-        path_error 'Cannot write session file.'
+      clear && read -ep "Save session: " -i "$session" session_file
+      if [[ $session_file ]]; then
+        [[ -w "$session_file" ]] && save_session "$session_file" || path_error 'Cannot write session file.'
       fi
     ;;
   esac
