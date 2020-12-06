@@ -440,6 +440,7 @@ save_session() {
       [[ "$base_dir" ]] && declare -p base_dir >> "$session"
       [[ "$alt_dir" ]] && declare -p alt_dir >> "$session"
       declare -p bookmarks hide ignore nested sorted nested_sort reverse preview statusline >> "$session"
+      [[ "$grep_query" ]] && declare -p grep_query >> "$session"
       [[ ${#directory_queries[@]} ]] && declare -p directory_queries >> "$session"
     else
       echo "Error: Could not save session to '$1'" 2>&1
