@@ -295,7 +295,7 @@ init session "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
 [[ $autosave_history ]] && init search_history "${data_dir:+$data_dir/sessions$base_dir/search_history.bzb}"
 
 # Dictionary for mapping directory to its last search query
-[[ $autoload_query ]] && declare -A directory_queries
+declare -A directory_queries
 
 # COMMANDS
 
