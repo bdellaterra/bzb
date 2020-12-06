@@ -97,6 +97,7 @@ map() {
   action_keys["$1"]="$key"
 }
 
+map 'exit'                    'esc'         "exit file browser"
 map 'enter'                   'right'       "enter directory or edit file"
 map 'back'                    'left'        "go to parent directory (not moving past base directory)"
 map 'launch'                  'alt-q'       "(q)uick-launch targets using native client"
@@ -145,7 +146,7 @@ map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at pro
 map 'terminal'                'ctrl-alt-t'  "open a new (t)erminal/shell in current directory"
 
 # Comma-separated list of custom mappings for fzf
-readonly fzf_keys="$(printf ",%s" "${keys[@]}" | cut -c2-)"
+readonly fzf_keys="esc,$(printf ",%s" "${keys[@]}" | cut -c2-)"
 
 
 # USAGE
@@ -554,7 +555,10 @@ main() {
   [[ $grep_mode ]] && fzf_command+="$no_grep_counts"
   { read query; read command; readarray -t targets; } < <(bash -c "$fzf_command")
 
-  # Parse empty command and empty target as 'exit' (fzf-native 'escape' or 'ctrl-c' mapping)
+  # Optionally preserve query for current directory
+  [[ $autoload_query ]] && directory_queries[$BZB_DIR]="$query"
+
+  # Parse empty command and empty target as 'exit' (fzf-native 'ctrl-c' mapping)
   [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && exit 0
 
   # Parse empty command as 'enter' action
@@ -918,13 +922,11 @@ main() {
     ;;
   esac
 
-  # Optionally preserve query for current directory
-  [[ $autoload_query ]] && directory_queries[$BZB_DIR]="$query"
-
   # Optionally autosave browsing session
   [[ $autosave_session ]] && save_session "$session"
 
-  main "${next_targets[@]}"
+  # Loop until terminated
+  [[ "$action" = 'exit' ]] && exit 0 || main "${next_targets[@]}"
 }
 
 # Default initial target is current directory
