@@ -139,7 +139,7 @@ map 'toggle-nested'           'alt-n'       "toggle listing (n)ested vs. only to
 map 'toggle-sort'             'alt-s'       "toggle (s)orting of results (affects performance)"
 map 'toggle-nested-sort'      'ctrl-alt-n'  "toggle sorting of (n)ested results (affects performance)"
 map 'toggle-sort-order'       'alt-o'       "toggle sort (o)rder ascending/descending"
-map 'restore-settings'        'ctrl-alt-r'  "(r)estore initial view/sort settings"
+map 'initial-settings'        'ctrl-alt-i'  "restore (i)nitial view/sort settings"
 map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane"
 map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
 map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at prompt"
@@ -651,8 +651,8 @@ main() {
       toggle statusline
     ;;
 
-    # Use ctrl-alt-r to restore default settings
-    restore-settings)
+    # Use ctrl-alt-i to restore initial view/sort settings
+    initial-settings)
       for i in ${!initial_settings[@]}; do
         [[ ${initial_settings[$i]} ]] && enable "$i" || disable "$i"
       done

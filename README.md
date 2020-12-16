@@ -90,7 +90,7 @@ alt-n       | toggle listing (n)ested vs. only top-level files                  
 alt-s       | toggle (s)orting of results (affects performance)                    | toggle-sort
 ctrl-alt-n  | toggle sorting of (n)ested results (affects performance)             | toggle-nested-sort
 alt-o       | toggle sort (o)rder ascending/descending                             | toggle-sort-order
-ctrl-alt-r  | (r)estore initial view/sort settings                                 | restore-settings
+ctrl-alt-i  | restore (i)nitial view/sort settings                                 | initial-settings
 alt-v       | toggle visibility of pre(v)iew pane                                  | toggle-preview
 ctrl-alt-l  | (l)oad session from file named at prompt                             | load-session
 ctrl-alt-s  | (s)ave session to file named at prompt                               | save-session
