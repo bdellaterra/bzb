@@ -282,7 +282,7 @@ disable nested reverse grep_mode autosave_history autoload_query autosave_sessio
 
 # Derive base directory from target, or use current directory if none given
 [[ -d "$initial_target" ]] && init base_dir "$initial_target" || init base_dir "$(dirname "${initial_target:-$PWD/.}")"
-pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
+[[ ! "$(dirs -l)" =~ " $base_dir" ]] && pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
 
 # Alternate directory for quick naviagtion and file-operations not set by default 
 disable alt_dir
@@ -434,7 +434,7 @@ save_session() {
     mkdir -p "$(dirname "$1")" && touch "$1"
     if [[ -w "$1" ]]; then
       session="$1"
-      readarray -t bookmarks < <(dirs -p -l)
+      readarray -s 1 -t bookmarks < <(dirs -p -l)
       # Write session data to file
       declare -p PWD > "$session"
       [[ "$base_dir" ]] && declare -p base_dir >> "$session"
@@ -451,11 +451,11 @@ save_session() {
 
 restore_session() {
   dirs -c
-  pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
   for b in "${bookmarks[@]}"; do
-    [[ -d "$b" ]] && pushd "$b" >/dev/null
+    [[ -d "$b" && ! "$(dirs -l)" =~ " $b" ]] && pushd "$b" >/dev/null
   done
-  cd "$base_dir"
+  [[ ! "$(dirs -l)" =~ " $base_dir" ]] && pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
+  pushd "$base_dir" >/dev/null
 }
 
 path_error() {
@@ -765,10 +765,11 @@ main() {
     # Use alt-b to toggle bookmark for current directory
     toggle-bookmark)
       current_dir="$PWD"
+      readarray -s 1 -t bookmarks < <(dirs -p -l)
       if [[ "$(dirs -l)" =~ " $current_dir" ]]; then
         for b in ${bookmarks[@]}; do
           if [[ "$current_dir" = "$b" ]]; then
-            popd -n +$i >/dev/null
+            popd -n +$((i+1)) >/dev/null
           fi
         done
       else
@@ -778,29 +779,35 @@ main() {
 
     # Use ctrl-alt-b to bookmark targets
     bookmark-targets)
-      dir="$PWD"
+      current_dir="$PWD"
       for b in "${targets[@]}"; do
-        if [[ -d "$dir/$b" ]]; then
-          cd "$dir/$b"
+        if [[ -d "$current_dir/$b" ]]; then
+          # Use $PWD for full path
+          cd "$current_dir/$b"
           [[ ! "$(dirs -l)" =~ " $PWD" ]] && pushd "$PWD" >/dev/null
         fi
       done
-      cd "$dir"
+      cd "$current_dir"
     ;;
 
     # Use ctrl-alt-u to select bookmarks to delete
     unbookmark)
       current_dir="$PWD"
+      readarray -s 1 -t bookmarks < <(dirs -p -l)
       # base_dir must stay bookmarked and is omitted from selection menu
-      readarray -t dirs < <(dirs -p -l | sed -n '/^'"${base_dir//\//\\/}"'$/!p')
-      bookmarks=("$(printf '%s\n' "${dirs[@]# $base_dir}" | LC_ALL=C sort -u | fzf $fzf_submenu_bind --multi --prompt='[unbookmark]')")
-      for b in ${bookmarks[@]}; do
-        for i in "${!dirs[@]}"; do
-          if [[ $i -ge 1 && -d "${dirs[$i]}" && "${dirs[$i]}" = "$b" ]]; then
-            popd -n +$i >/dev/null
-          fi
+      readarray -s 1 -t bookmarks < <(printf '%s\n' "${bookmarks[@]}" | sed -n '/^'"${base_dir//\//\\/}"'$/!p')
+      if [[ "${#bookmarks[@]}" -gt 0 ]]; then
+        unmarks=("$(printf '%s\n' "${bookmarks[@]}" | LC_ALL=C sort -ru | fzf $fzf_submenu_bind --multi --prompt='[unbookmark]')")
+        for b in ${unmarks[@]}; do
+          readarray -t bookmarks < <(dirs -p -l)
+          for i in "${!bookmarks[@]}"; do
+            [[ $i -ge 1 && "${bookmarks[$i]}" = "$b" ]] && popd -n +$i >/dev/null
+          done
         done
-      done
+      else
+        echo "No bookmarks to delete." 2>&1
+        read -s -r -n 1 -p "(Press any key to continue)"
+      fi
       cd "$current_dir"
     ;;
 
@@ -885,7 +892,7 @@ main() {
           path_error
         elif [[ "$next_base" != "$base_dir" ]]; then
           base_dir="$(cd "$next_base" && pwd -P)"
-          pushd "$base_dir" >/dev/null
+          [[ ! "$(dirs -l)" =~ " $base_dir" ]] && pushd "$base_dir" >/dev/null
           session="${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
           assign action "autoload-session"
         fi
