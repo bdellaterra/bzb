@@ -764,14 +764,15 @@ main() {
 
     # Use alt-b to toggle bookmark for current directory
     toggle-bookmark)
-      if [[ "$(dirs -l)" =~ " $PWD" ]]; then
+      current_dir="$PWD"
+      if [[ "$(dirs -l)" =~ " $current_dir" ]]; then
         for b in ${bookmarks[@]}; do
-          if [[ "$dir" = "$b" ]]; then
+          if [[ "$current_dir" = "$b" ]]; then
             popd -n +$i >/dev/null
           fi
         done
       else
-        pushd "$dir" >/dev/null
+        pushd "$current_dir" >/dev/null
       fi
     ;;
 
