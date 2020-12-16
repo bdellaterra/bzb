@@ -452,7 +452,7 @@ save_session() {
 restore_session() {
   dirs -c
   for b in "${bookmarks[@]}"; do
-    [[ -d "$b" && ! "$(dirs -l)" =~ " $b" ]] && pushd "$b" >/dev/null
+    [[ -d "$b" && ! "$(dirs -l)" =~ " $b" ]] && pushd "$b" >/dev/null && pushd +1 >/dev/null
   done
   [[ ! "$(dirs -l)" =~ " $base_dir" ]] && pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
   pushd "$base_dir" >/dev/null
@@ -767,13 +767,13 @@ main() {
       current_dir="$PWD"
       readarray -s 1 -t bookmarks < <(dirs -p -l)
       if [[ "$(dirs -l)" =~ " $current_dir" ]]; then
-        for b in ${bookmarks[@]}; do
-          if [[ "$current_dir" = "$b" ]]; then
+        for i in "${!bookmarks[@]}"; do
+          if [[ "$current_dir" = "${bookmarks[$i]}" && ! "$current_dir" = "$base_dir" ]]; then
             popd -n +$((i+1)) >/dev/null
           fi
         done
       else
-        pushd "$current_dir" >/dev/null
+        pushd "$current_dir" >/dev/null && pushd +1 >/dev/null
       fi
     ;;
 
@@ -795,7 +795,7 @@ main() {
       current_dir="$PWD"
       readarray -s 1 -t bookmarks < <(dirs -p -l)
       # base_dir must stay bookmarked and is omitted from selection menu
-      readarray -s 1 -t bookmarks < <(printf '%s\n' "${bookmarks[@]}" | sed -n '/^'"${base_dir//\//\\/}"'$/!p')
+      readarray -t bookmarks < <(printf '%s\n' "${bookmarks[@]}" | sed -n '/^'"${base_dir//\//\\/}"'$/!p')
       if [[ "${#bookmarks[@]}" -gt 0 ]]; then
         unmarks=("$(printf '%s\n' "${bookmarks[@]}" | LC_ALL=C sort -ru | fzf $fzf_submenu_bind --multi --prompt='[unbookmark]')")
         for b in ${unmarks[@]}; do
@@ -805,7 +805,7 @@ main() {
           done
         done
       else
-        echo "No bookmarks to delete." 2>&1
+        clear && echo "No bookmarks to delete." 2>&1
         read -s -r -n 1 -p "(Press any key to continue)"
       fi
       cd "$current_dir"
