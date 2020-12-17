@@ -679,7 +679,7 @@ main() {
         echo "Error: Cannot record to a file that is currently playing back" 2>&1
         [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
       else
-        assign recording_file "$file" && toggle action-record
+        assign recording_file "$file" && toggle autorecord
       fi
     ;;
 
@@ -694,7 +694,7 @@ main() {
         echo "Error: Cannot playback from a file that is currently recording" 2>&1
         [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
       else
-        assign playback_file "$file" && toggle action-playback
+        assign playback_file "$file" && toggle autoplay
       fi
     ;;
 
