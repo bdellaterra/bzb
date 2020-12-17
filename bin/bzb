@@ -557,7 +557,7 @@ main() {
   [[ ! $sorted || $sort_disabled ]] && reverse_disabled='!' || reverse_disabled=''
   [[ $reverse ]] && status+=("${reverse_disabled:--}O") || status+=("${reverse_disabled:--}o")
 
-  export BZB_STATUSLINE="[${status[@]}]"
+  export BZB_STATUSLINE="${autorecord:+REC }${autoplay:+PLAY }[${status[@]}]"
 
   fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' $fzf_bind --expect='$(sq "$fzf_keys")' --query=\"\$BZB_QUERY\" $fzf_prompt"
   [[ ! $color ]] && fzf_options+=" ${color:---no-color}"
@@ -688,7 +688,7 @@ main() {
       [[ -r "$recording_file" && ! $playback_file ]] && file="$recording_file" || file="$playback_file"
       clear && read -ep "Playback actions from file: " -i "$file" file
       if [[ ! -r "$file" ]]; then
-        echo "Error: File does not exist or read permission not granted" 2>&1
+        echo "Error: Cannot playback. File does not exist or read permission not granted" 2>&1
         [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
       elif [[ $autorecord || ! $autoplay && "$recording_file" -ef "$file" ]]; then
         echo "Error: Cannot playback from a file that is currently recording" 2>&1
