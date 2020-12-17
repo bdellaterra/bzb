@@ -197,7 +197,6 @@ $(awk -F ':' '{ printf("%-12s %-69s %s\n", $1, $2, $3) }' <(
 cat <<KEY_USAGE
 KEYMAP:DESCRIPTION:ACTION
 ctrl-c:exit file browser
-escape:clear search query / exit file browser if query is blank
 enter:enter directory or edit file
 $(for k in "${keys[@]}"; do echo "$k:${key_definitions[$k]}:${key_actions[$k]}"; done)
 KEY_USAGE
@@ -474,6 +473,17 @@ restore_session() {
   pushd "$base_dir" >/dev/null
 }
 
+record_action() {
+  mkdir -p "$(dirname "$recording_file")" && touch "$recording_file"
+  if [[ -w "$recording_file" ]]; then
+    printf "%q\n" $@ | tr '\n' ' ' >> "$recording_file"
+    printf "\n" >> "$recording_file"
+  else
+    echo "Error: Could not record actions to '$recording_file'" 2>&1
+    [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
+  fi
+}
+
 path_error() {
   printf "\nError: ${1:-Not a directory.}${2:- Use 'Tab' key for path completion.\n}" 2>&1
   printf "${3:-Add a backslash '\\\\' before spaces and special characters below:\n\\\\ \$ \` \' \"\n\n}" 2>&1
@@ -576,12 +586,15 @@ main() {
   [[ $autoload_query && $query ]] && directory_queries[$BZB_DIR]="$query"
 
   # Parse empty command and empty target as 'exit' (fzf-native 'ctrl-c' mapping)
-  [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && exit 0
+  [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && command='esc'
 
   # Parse empty command as 'enter' action
   [[ -z "$command" ]] && command='right'
 
   assign action "${key_actions[$command]}"
+
+  # Optionally record actions to file
+  [[ $autorecord && $recording_file ]] && record_action "$action" "${targets[@]}"
 
   next_targets=()
 
@@ -674,6 +687,9 @@ main() {
       else
         [[ -w "$playback_file" && ! $recording_file ]] && file="$playback_file" || file="$recording_file"
         clear && read -ep "Record actions to file: " -i "$file" file
+        file=$(readlink -f "$file")
+        # TODO: Get full path to file
+        [[ -f "$file" ]] && printf "Clear existing file? [Y/n] " && bash -c "$rm_interactive $file 2>/dev/null"
         if [[ $file ]]; then
           mkdir -p "$(dirname "$file")" && touch "$file"
           if [[ ! -w "$file" ]]; then
