@@ -177,8 +177,8 @@ Options:
 --autoload-query,-aq               Restore last query used in a directory upon entering it
 --autosave-session,-as             Save bookmarks and view/sort settings continuously
 --autoload-session,-al             Load bookmarks and view/sort settings on entering base directory
---action-record,-ar                Enable auto-saving actions to a recording file at start
---action-playback,-ap              Enable auto-playing actions from a recording file at start
+--autorecord,-ar                   Enable automatically recording actions to a file at start
+--autoplay,-ap                     Enable automatically playing actions from a file at start
 --recording-file=FILE,-rf=FILE     Specify target file for saving recorded actions
 --playback-file=FILE,-pf=FILE      Specify source file for playing recorded actions
 --base-directory=DIR,-bd=DIR       Specify base directory instead of deriving it from target argument
@@ -245,10 +245,10 @@ for arg in "$@"; do
     -AS|--no-autosave-session) disable BZB_AUTOSAVE_SESSION; shift ;;
     -al|--autoload-session) enable BZB_AUTOLOAD_SESSION; shift ;;
     -AL|--no-autoload-session) disable BZB_AUTOLOAD_SESSION; shift ;;
-    -ar|--action-record) enable BZB_ACTION_RECORD; shift ;;
-    -AR|--no-action-record) disable BZB_ACTION_RECORD; shift ;;
-    -ap|--action-playback) enable BZB_ACTION_PLAYBACK; shift ;;
-    -AP|--no-action-playback) disable BZB_ACTION_PLAYBACK; shift ;;
+    -ar|--autorecord) enable BZB_AUTORECORD; shift ;;
+    -AR|--no-autorecord) disable BZB_AUTORECORD; shift ;;
+    -ap|--autoplay) enable BZB_AUTOPLAY; shift ;;
+    -AP|--no-autoplay) disable BZB_AUTOPLAY; shift ;;
     -rf=*|--recording-file=*=*) BZB_RECORDING_FILE="${arg#*=}"; shift ;;
     -pf=*|--playback-file=*=*) BZB_PLAYBACK_FILE="${arg#*=}"; shift ;;
     -bd=*|--base-dir=*|--base_directory=*) BZB_BASE_DIR="${arg#*=}"; shift ;;
@@ -290,13 +290,13 @@ enable edit
 # Default enabled/disabled settings
 [[ $edit ]] && enable persist || disable persist
 enable sorted preview statusline hide ignore
-disable nested reverse autosave_history autoload_query autosave_session autoload_session action_record action_playback grep_mode fzf_extra_options
+disable nested reverse autosave_history autoload_query autosave_session autoload_session autorecord autoplay grep_mode fzf_extra_options
 
 # Derive base directory from target, or use current directory if none given
 [[ -d "$initial_target" ]] && init base_dir "$initial_target" || init base_dir "$(dirname "${initial_target:-$PWD/.}")"
 [[ ! "$(dirs -l)" =~ " $base_dir" ]] && pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
 
-# Files for saving/playing recorded actions not defined by default
+# Files for recording and playing back actions not defined by default
 disable recording_file
 disable playback_file
 
@@ -667,17 +667,17 @@ main() {
       toggle statusline
     ;;
 
-    # Use ctrl-alt-r to toggle recording to file named at prompt
+    # Use ctrl-alt-r to toggle recording actions to file named at prompt
     toggle-recording)
-      if [[ $action_record || ! $action_playback ]]; then
+      if [[ $autorecord || ! $autoplay ]]; then
         [[ -w "$playback_file" && ! $recording_file ]] && default_file="$playback_file" || default_file="$recording_file"
         clear && read -ep "Record actions to file: " -i "$default_file" file
-        if [[ "$recording_file" -ef "$file" ]]; then
+        if [[ "$playback_file" -ef "$file" ]]; then
           echo "Error: Cannot record to a file that is currently playing back" 2>&1
-          [[ ! $action_playback ]] && read -s -r -n 1 -p "(Press any key to continue)"
+          [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
         elif [[ ! -w "$file" ]]; then
           echo "Error: Cannot record actions to file without write permission" 2>&1
-          [[ ! $action_playback ]] && read -s -r -n 1 -p "(Press any key to continue)"
+          [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
         else
           assign recording_file "$file" && toggle action-record
         fi
@@ -686,15 +686,15 @@ main() {
 
     # Use ctrl-alt-p to playback recording from file named at prompt
     toggle-playback)
-      if [[ $action_playback || ! $action_record ]]; then
+      if [[ $autoplay || ! $autorecord ]]; then
         [[ -r "$recording_file" && ! $playback_file ]] && default_file="$recording_file" || default_file="$playback_file"
         clear && read -ep "Playback actions from file: " -i "$default_file" file
-        if [[ "$playback_file" -ef "$file" ]]; then
+        if [[ "$recording_file" -ef "$file" ]]; then
           echo "Error: Cannot playback from a file that is currently recording" 2>&1
-          [[ ! $action_playback ]] && read -s -r -n 1 -p "(Press any key to continue)"
+          [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
         elif [[ ! -r "$file" ]]; then
           echo "Error: Cannot playback actions from file without read permission" 2>&1
-          [[ ! $action_playback ]] && read -s -r -n 1 -p "(Press any key to continue)"
+          [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
         else
           assign playback_file "$file" && toggle action-playback
         fi
