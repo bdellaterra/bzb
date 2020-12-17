@@ -671,6 +671,7 @@ main() {
     toggle-recording)
       [[ -w "$playback_file" && ! $recording_file ]] && file="$playback_file" || file="$recording_file"
       clear && read -ep "Record actions to file: " -i "$file" file
+      mkdir -p "$(dirname "$file")" && touch "$file"
       if [[ ! -w "$file" ]]; then
         echo "Error: Cannot record actions to file without write permission" 2>&1
         [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
