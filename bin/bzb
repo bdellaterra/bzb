@@ -141,6 +141,8 @@ map 'toggle-nested-sort'      'ctrl-alt-n'  "toggle sorting of (n)ested results 
 map 'toggle-sort-order'       'alt-o'       "toggle sort (o)rder ascending/descending"
 map 'initial-settings'        'ctrl-alt-i'  "restore (i)nitial view/sort settings"
 map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane"
+map 'toggle-recording'        'ctrl-alt-r'  "record actions to file named at prompt"
+map 'toggle-playback'         'ctrl-alt-p'  "playback actions from file named at prompt"
 map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
 map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at prompt"
 map 'terminal'                'ctrl-alt-t'  "open a new (t)erminal/shell in current directory"
@@ -663,6 +665,40 @@ main() {
     # Use alt-l to toggle visibility of statusline
     toggle-statusline)
       toggle statusline
+    ;;
+
+    # Use ctrl-alt-r to toggle recording to file named at prompt
+    toggle-recording)
+      if [[ $action_record || ! $action_playback ]]; then
+        [[ -w "$playback_file" && ! $recording_file ]] && default_file="$playback_file" || default_file="$recording_file"
+        clear && read -ep "Record actions to file: " -i "$default_file" file
+        if [[ "$recording_file" -ef "$file" ]]; then
+          echo "Error: Cannot record to a file that is currently playing back" 2>&1
+          [[ ! $action_playback ]] && read -s -r -n 1 -p "(Press any key to continue)"
+        elif [[ ! -w "$file" ]]; then
+          echo "Error: Cannot record actions to file without write permission" 2>&1
+          [[ ! $action_playback ]] && read -s -r -n 1 -p "(Press any key to continue)"
+        else
+          assign recording_file "$file" && toggle action-record
+        fi
+      fi
+    ;;
+
+    # Use ctrl-alt-p to playback recording from file named at prompt
+    toggle-playback)
+      if [[ $action_playback || ! $action_record ]]; then
+        [[ -r "$recording_file" && ! $playback_file ]] && default_file="$recording_file" || default_file="$playback_file"
+        clear && read -ep "Playback actions from file: " -i "$default_file" file
+        if [[ "$playback_file" -ef "$file" ]]; then
+          echo "Error: Cannot playback from a file that is currently recording" 2>&1
+          [[ ! $action_playback ]] && read -s -r -n 1 -p "(Press any key to continue)"
+        elif [[ ! -r "$file" ]]; then
+          echo "Error: Cannot playback actions from file without read permission" 2>&1
+          [[ ! $action_playback ]] && read -s -r -n 1 -p "(Press any key to continue)"
+        else
+          assign playback_file "$file" && toggle action-playback
+        fi
+      fi
     ;;
 
     # Use ctrl-alt-i to restore initial view/sort settings
