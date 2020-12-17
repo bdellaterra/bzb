@@ -669,32 +669,44 @@ main() {
 
     # Use ctrl-alt-r to toggle recording actions to file named at prompt
     toggle-recording)
-      [[ -w "$playback_file" && ! $recording_file ]] && file="$playback_file" || file="$recording_file"
-      clear && read -ep "Record actions to file: " -i "$file" file
-      mkdir -p "$(dirname "$file")" && touch "$file"
-      if [[ ! -w "$file" ]]; then
-        echo "Error: Cannot record. File could not be created or write permission not granted" 2>&1
-        [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
-      elif [[ $autoplay && ! $autorecord && "$playback_file" -ef "$file" ]]; then
-        echo "Error: Cannot record to a file that is currently playing back" 2>&1
-        [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
+      if [[ $autorecord ]]; then
+        toggle autorecord
       else
-        assign recording_file "$file" && toggle autorecord
+        [[ -w "$playback_file" && ! $recording_file ]] && file="$playback_file" || file="$recording_file"
+        clear && read -ep "Record actions to file: " -i "$file" file
+        if [[ $file ]]; then
+          mkdir -p "$(dirname "$file")" && touch "$file"
+          if [[ ! -w "$file" ]]; then
+            echo "Error: Cannot record. File could not be created or write permission not granted" 2>&1
+            [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
+          elif [[ $autoplay && "$playback_file" -ef "$file" ]]; then
+            echo "Error: Cannot record to a file that is currently playing back" 2>&1
+            [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
+          else
+            assign recording_file "$file" && toggle autorecord
+          fi
+        fi
       fi
     ;;
 
     # Use ctrl-alt-p to playback recording from file named at prompt
     toggle-playback)
-      [[ -r "$recording_file" && ! $playback_file ]] && file="$recording_file" || file="$playback_file"
-      clear && read -ep "Playback actions from file: " -i "$file" file
-      if [[ ! -r "$file" ]]; then
-        echo "Error: Cannot playback. File does not exist or read permission not granted" 2>&1
-        [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
-      elif [[ $autorecord || ! $autoplay && "$recording_file" -ef "$file" ]]; then
-        echo "Error: Cannot playback from a file that is currently recording" 2>&1
-        [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
+      if [[ $autoplay ]]; then
+        toggle autoplay
       else
-        assign playback_file "$file" && toggle autoplay
+        [[ -r "$recording_file" && ! $playback_file ]] && file="$recording_file" || file="$playback_file"
+        clear && read -ep "Playback actions from file: " -i "$file" file
+        if [[ $file ]]; then
+          if [[ ! -r "$file" ]]; then
+            echo "Error: Cannot playback. File does not exist or read permission not granted" 2>&1
+            [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
+          elif [[ $autorecord && "$recording_file" -ef "$file" ]]; then
+            echo "Error: Cannot playback from a file that is currently recording" 2>&1
+            [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
+          else
+            assign playback_file "$file" && toggle autoplay
+          fi
+        fi
       fi
     ;;
 
