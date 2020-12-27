@@ -557,7 +557,9 @@ main() {
   { read query; read command; readarray -t targets; } < <(bash -c "$fzf_command")
 
   # Optionally preserve query for current directory
-  [[ $autoload_query && $query ]] && directory_queries[$BZB_DIR]="$query"
+  if [[ $autoload_query ]]; then
+    [[ $query || ( ! $query && ${directory_queries[$BZB_DIR]} ) ]] && directory_queries[$BZB_DIR]="$query"
+  fi
 
   # Parse empty command and empty target as 'exit' (fzf-native 'ctrl-c' mapping)
   [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && exit 0
