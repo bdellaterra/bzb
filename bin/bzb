@@ -546,7 +546,7 @@ main() {
     [[ $grep_cannot_ignore ]] && ignore_disabled='!' || ignore_disabled=''
   else
     [[ $nested ]] && find="$find_nested" || find="$find_shallow"
-    fzf_prompt=" --prompt='"$(sq "${BZB_DIR#$BZB_BASE_DIR}")">'"   
+    fzf_prompt=" --prompt='$(sq "${BZB_DIR#$BZB_BASE_DIR}")>'"   
     fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
     fzf_preview="$find_mode_preview"
     [[ $find_cannot_ignore ]] && ignore_disabled='!' || ignore_disabled=''
