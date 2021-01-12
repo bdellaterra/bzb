@@ -60,7 +60,7 @@ disable() {
 toggle() { [[ ${!1} ]] && disable "$1" || enable "$1"; }
 
 # Escape single-quotes to make a single-quotable string
-sq() { echo ${1//\'/\'\\\'\'}; }
+sq() { echo "${1//\'/\'\\\'\'};" }
 
 # Escape special chars and newlines to make a double-quotable string
 dq() {
