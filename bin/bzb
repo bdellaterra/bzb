@@ -64,7 +64,7 @@ sq() { echo "${1//\'/\'\\\'\'}"; }
 
 # Escape special chars and newlines to make a double-quotable string
 dq() {
-  esc_chars='s/[$`"\]/\\&/g'
+  local esc_chars='s/[$`"\]/\\&/g'
   echo "$1" | sed -e "$esc_chars" | (
     while read line; do echo "$(echo "$line" | sed -e "$esc_chars")"; done
   ) | sed -e 's/\\n$//'
