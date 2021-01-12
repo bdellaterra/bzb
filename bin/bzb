@@ -334,7 +334,7 @@ readonly find_cannot_ignore
 enable parallel_sort
 init sort_shallow \
   "LC_ALL=C sort \$([[ \$BZB_SORT_NUMERIC ]] && echo '-g' || echo '-fiu') \${BZB_REVERSE:+-r}"
-if has parallel && test $parallel_sort; then
+if has parallel && test "$parallel_sort"; then
   enable nested_sort
   init sort_nested \
     "LC_ALL=C parallel --pipe --block 64k sort \$([[ \$BZB_SORT_NUMERIC ]] && echo '-g' || echo '-fiu') \${BZB_REVERSE:+-r} 2>/dev/null"
@@ -476,7 +476,7 @@ restore_session() {
 record_action() {
   mkdir -p "$(dirname "$recording_file")" && touch "$recording_file"
   if [[ -w "$recording_file" ]]; then
-    printf "%q\n" $@ | tr '\n' ' ' >> "$recording_file"
+    printf "%q\n" "$@" | tr '\n' ' ' >> "$recording_file"
     printf "\n" >> "$recording_file"
   else
     echo "Error: Could not record actions to '$recording_file'" 2>&1
