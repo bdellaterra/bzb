@@ -906,7 +906,7 @@ main() {
     select-bookmark|select-bookmark2)
       # Omit current directory from bookmarks then position it as initial selection at bottom of list
       readarray -t dirs < <(dirs -p -l | sed -n '/^'"${PWD//\//\\/}"'$/!p' | LC_ALL=C sort -u)
-      dirs=("$PWD" ${dirs[@]})
+      dirs=("$PWD" "${dirs[@]}")
       next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf $fzf_submenu_bind --prompt='[go to directory]')")
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
