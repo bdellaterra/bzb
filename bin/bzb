@@ -25,7 +25,7 @@ defined() { [[ -n "$1" && -n "${!1+defined}" ]] || return 1; }
 
 # Set global variable with name matching first argument to value provided as second argument
 assign() {
-  # Avoid polluting global namespace when setting variable if declare supports -g option (bash version 4.2+)
+  # Avoid polluting export namespace when setting variable if declare supports -g option (bash version 4.2+)
   if [[ "${BASH_VERSINFO[0]}" -ge 4 && "${BASH_VERSINFO[1]}" -ge 2 ]]; then
     declare -g "$1=$2"
   else
