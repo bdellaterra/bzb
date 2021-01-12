@@ -907,14 +907,14 @@ main() {
       # Omit current directory from bookmarks then position it as initial selection at bottom of list
       readarray -t dirs < <(dirs -p -l | sed -n '/^'"${PWD//\//\\/}"'$/!p' | LC_ALL=C sort -u)
       dirs=("$PWD" "${dirs[@]}")
-      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf $fzf_submenu_bind --prompt='[go to directory]')")
+      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf "$fzf_submenu_bind" --prompt='[go to directory]')")
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
 
     # Use alt-down or ctrl-alt-j to select bookmarked directory under current directory
     select-nested-bookmark|select-nested-bookmark2)
       readarray -t dirs < <(dirs -p -l | grep "$PWD" | LC_ALL=C sort -u)
-      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf $fzf_submenu_bind --prompt='[go to subdirectory]')")
+      next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf "$fzf_submenu_bind" --prompt='[go to subdirectory]')")
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
 
