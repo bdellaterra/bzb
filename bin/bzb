@@ -1014,4 +1014,4 @@ main() {
 }
 
 # Default initial target is current directory
-main "${initial_target:-$base_dir}" ${initial_targets[@]:1}
+main "${initial_target:-$base_dir}" "${initial_targets[@]:1}"
