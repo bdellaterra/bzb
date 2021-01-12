@@ -728,7 +728,7 @@ main() {
 
     # Use ctrl-alt-i to restore initial view/sort settings
     initial-settings)
-      for i in ${!initial_settings[@]}; do
+      for i in "${!initial_settings[@]}"; do
         [[ ${initial_settings[$i]} ]] && enable "$i" || disable "$i"
       done
     ;;
