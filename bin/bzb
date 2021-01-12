@@ -872,7 +872,7 @@ main() {
       # base_dir must stay bookmarked and is omitted from selection menu
       readarray -t bookmarks < <(printf '%s\n' "${bookmarks[@]}" | sed -n '/^'"${base_dir//\//\\/}"'$/!p')
       if [[ "${#bookmarks[@]}" -gt 0 ]]; then
-        unmarks=("$(printf '%s\n' "${bookmarks[@]}" | LC_ALL=C sort -ru | fzf $fzf_submenu_bind --multi --prompt='[unbookmark]')")
+        unmarks=("$(printf '%s\n' "${bookmarks[@]}" | LC_ALL=C sort -ru | fzf "$fzf_submenu_bind" --multi --prompt='[unbookmark]')")
         for b in ${unmarks[@]}; do
           readarray -t bookmarks < <(dirs -p -l)
           for i in "${!bookmarks[@]}"; do
