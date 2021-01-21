@@ -60,15 +60,10 @@ disable() {
 toggle() { [[ ${!1} ]] && disable "$1" || enable "$1"; }
 
 # Escape single-quotes to make a single-quotable string
-sq() { echo "${1//\'/\'\\\'\'}"; }
+sq() { printf '%s' "${1//\'/\'\\\'\'}"; }
 
 # Escape special chars and newlines to make a double-quotable string
-dq() {
-  local esc_chars='s/[$`"\]/\\&/g'
-  echo "$1" | sed -e "$esc_chars" | (
-    while read line; do echo "$(echo "$line" | sed -e "$esc_chars")"; done
-  ) | sed -e 's/\\n$//'
-}
+dq() { printf '%s' "$1" | sed -e 's/[$!&`"\]/\\&/g'; }
 
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
 clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
@@ -82,8 +77,8 @@ bind '"\C-g":"\C-k\C-u
 "' '"\e\e":"\C-g"' &>/dev/null
 
 # Set fzf keybinds for movement and exit actions
-init fzf_bind '--bind=ctrl-g:ignore,esc:cancel'
-init fzf_submenu_bind '--bind=ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
+init fzf_bind "--bind='ctrl-g:ignore,esc:cancel'"
+init fzf_submenu_bind "--bind='ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'"
 
 # Read overrides for action/key bindings to enable alternate keymaps
 eval "declare -A BZB_BIND=( $BZB_BIND )"
