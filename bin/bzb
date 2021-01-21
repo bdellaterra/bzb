@@ -76,16 +76,16 @@ clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
 bind '"\C-g":"\C-k\C-u
 "' '"\e\e":"\C-g"' &>/dev/null
 
-# Set fzf keybinds for movement and exit actions
-init fzf_bind "--bind='ctrl-g:ignore,esc:cancel'"
-init fzf_submenu_bind "--bind='ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'"
+# Set fzf keybinds for movement and exit actions (Avoid spaces or quotes for this assignment)
+init fzf_bind '--bind=ctrl-g:ignore,esc:cancel'
+init fzf_submenu_bind '--bind=ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
 
 # Read overrides for action/key bindings to enable alternate keymaps
 eval "declare -A BZB_BIND=( $BZB_BIND )"
 
 declare -A key_definitions key_actions action_keys
 map() {
-  [[ "${BZB_BIND["$1"]}" ]] && key="${BZB_BIND[$1]}" || key="$2"
+  [[ "${BZB_BIND[$1]}" ]] && key="${BZB_BIND[$1]}" || key="$2"
   keys[${#keys[@]}]="$key"
   key_definitions["$key"]="$3"
   key_actions["$key"]="$1"
