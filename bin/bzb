@@ -141,6 +141,7 @@ map 'toggle-playback'         'ctrl-alt-p'  "playback actions from file named at
 map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
 map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at prompt"
 map 'terminal'                'ctrl-alt-t'  "open a new (t)erminal/shell in current directory"
+map 'execute'                 'ctrl-alt-x'  "e(x)ecute a single shell command in current directory"
 
 # Comma-separated list of custom mappings for fzf
 readonly fzf_keys="esc,$(printf ",%s" "${keys[@]}" | cut -c2-)"
@@ -971,7 +972,12 @@ main() {
 
     # Use ctrl-alt-t to open a new terminal/shell in current directory
     terminal)
-      clear && $SHELL
+      clear
+      if [[ $autorecord && $recording_file ]]; then
+        PS1='>> ' /usr/bin/env bash --init-file <(echo 'trap '\''printf "execute %s\n" "$BASH_COMMAND" >> '"$recording_file"\'' DEBUG')
+      else
+        PS1='>> ' /usr/bin/env bash
+      fi
     ;;
 
   # Fall through to remaining cases
