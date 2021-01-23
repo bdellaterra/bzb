@@ -684,7 +684,7 @@ main() {
         [[ -w "$playback_file" && ! $recording_file ]] && file="$playback_file" || file="$recording_file"
         clear && read -rep "Record actions to file: " -i "$file" file
         file=$(readlink -f "$file")
-        # TODO: Get full path to file
+        # use rm command to confirm before clearing logfile, overriding default prompt
         [[ -f "$file" ]] && printf "Clear existing file? [Y/n] " && bash -c "$rm_interactive $file 2>/dev/null"
         if [[ $file ]]; then
           mkdir -p "$(dirname "$file")" && touch "$file"
