@@ -267,7 +267,7 @@ initial_targets=("$@")
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    enable no_clear && readonly no_clear
+    # enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
@@ -574,23 +574,35 @@ main() {
   [[ $fzf_extra_options ]] && fzf_options+=" $fzf_extra_options"
 
   # CYCLE INTO FZF
-  fzf_command="$fzf_input | fzf $fzf_options"
-  [[ $grep_mode ]] && fzf_command+="$no_grep_counts"
-  { read -r query; read -r command; readarray -t targets; } < <(bash -c "$fzf_command")
+  if [[ $autoplay && ${#pending_actions} -gt 0 ]]; then
+    read -a next_action <<< "${pending_actions[0]}"
+    pending_actions=("${pending_actions[@]:1}")
+    [[ ${#pending_actions} -eq 0 ]] && toggle autoplay
+    action="${next_action[0]}"
+    targets=("${next_action[@]:1}")
+    echo "NEXT ACTION: $next_action"
+    echo "PENDING ACTIONS: ${pending_actions[@]}"
+    echo "ACTION: ${action}"
+    echo "TARGETS: ${targets[@]}"
+  else
+    fzf_command="$fzf_input | fzf $fzf_options"
+    [[ $grep_mode ]] && fzf_command+="$no_grep_counts"
+    { read -r query; read -r command; readarray -t targets; } < <(bash -c "$fzf_command")
 
-  # Optionally preserve query for current directory
-  [[ $autoload_query ]] && directory_queries[$BZB_DIR]="$query"
+    # Optionally preserve query for current directory
+    [[ $autoload_query ]] && directory_queries[$BZB_DIR]="$query"
 
-  # Parse empty command and empty target as 'exit' (fzf-native 'ctrl-c' mapping)
-  [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && command='esc'
+    # Parse empty command and empty target as 'exit' (fzf-native 'ctrl-c' mapping)
+    [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && command='esc'
 
-  # Parse empty command as 'enter' action
-  [[ -z "$command" ]] && command='right'
+    # Parse empty command as 'enter' action
+    [[ -z "$command" ]] && command='right'
 
-  assign action "${key_actions[$command]}"
+    assign action "${key_actions[$command]}"
 
-  # Optionally record actions to file
-  [[ $autorecord && $recording_file ]] && record_action "$action" "${targets[@]}"
+    # Optionally record actions to file
+    [[ $autorecord && $recording_file ]] && record_action "$action" "${targets[@]}"
+  fi
 
   next_targets=()
 
@@ -716,7 +728,9 @@ main() {
             echo "Error: Cannot playback from a file that is currently recording" 2>&1
             [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
           else
-            assign playback_file "$file" && toggle autoplay
+            assign playback_file "$file"
+            readarray -t pending_actions < "$playback_file"
+            toggle autoplay
           fi
         fi
       fi
