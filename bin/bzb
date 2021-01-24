@@ -583,6 +583,8 @@ main() {
     [[ ${#pending_actions} -eq 0 ]] && toggle autoplay
     action="${next_action[0]}"
     targets=("${next_action[@]:1}")
+    # Skip comment lines
+    [[ "$action" =~ ^[[:space:]]*# ]] && echo "...comment" && main
     echo "NEXT ACTION: $next_action"
     echo "PENDING ACTIONS: ${pending_actions[@]}"
     echo "ACTION: ${action}"
