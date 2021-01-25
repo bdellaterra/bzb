@@ -774,7 +774,7 @@ main() {
     rename)
       for t in "${targets[@]}"; do
         if [[ -r "$t" ]]; then
-          clear && read -r -ep 'Move/Rename File: ' -i "mv '$(sq "$t")' '$(sq "$t")'" cmd
+          clear && read -rep 'Move/Rename File: ' -i "mv '$(sq "$t")' '$(sq "$t")'" cmd
           [[ -n "$cmd" ]] && bash -c "$cmd"
         fi
       done
@@ -821,7 +821,7 @@ main() {
       if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
           if [[ -r "$t" ]]; then
-            clear && read -r -ep 'Copy/Rename File: ' -i "cp -ir '$(sq "$PWD/$t")' '$(sq "$dir/$t")'" cmd
+            clear && read -rep 'Copy/Rename File: ' -i "cp -ir '$(sq "$PWD/$t")' '$(sq "$dir/$t")'" cmd
             [[ -n "$cmd" ]] && bash -c "$cmd"
           fi
         done
@@ -832,7 +832,7 @@ main() {
     # Use ctrl-alt-d to create directory and enter it
     create-dir|create-enter-dir)
       [[ "$action" = "create-enter-dir" ]] && create_enter="Create/Enter" || create_enter="Create"
-      clear && read -r -ep "$create_enter directory: " target
+      clear && read -rep "$create_enter directory: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$target"
         [[ "$command" = "${action_keys[create-enter-dir]}" ]] && next_targets=("$target")
@@ -843,7 +843,7 @@ main() {
     # Use alt-e to create file and edit it immediately
     create-file|create-edit-file)
       [[ "$action" = "create-edit-file" ]] && create_edit="Create/Edit" || create_edit="Create"
-      clear && read -r -ep "$create_edit file: " target
+      clear && read -rep "$create_edit file: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$(dirname "$target")" && touch "$target"
         [[ "$command" = "${action_keys[create-edit-file]}" ]] && next_targets=("$target")
