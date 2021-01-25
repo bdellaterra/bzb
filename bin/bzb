@@ -65,6 +65,8 @@ sq() { printf '%s' "${1//\'/\'\\\'\'}"; }
 # Escape special chars and newlines to make a double-quotable string
 dq() { printf '%s' "$1" | sed -e 's/[$!&`"\]/\\&/g'; }
 
+display_error() { printf '\nError: %s\n' "$@" 2>&1; [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"; }
+
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
 clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
 
@@ -455,8 +457,7 @@ save_session() {
       [[ "$grep_query" ]] && declare -p grep_query >> "$session"
       [[ ${#directory_queries[@]} ]] && declare -p directory_queries >> "$session"
     else
-      echo "Error: Could not save session to '$1'" 2>&1
-      read -s -r -n 1 -p "(Press any key to continue)"
+      display_error "Could not save session to '$1'"
     fi
   fi
 }
@@ -478,16 +479,16 @@ record_action() {
       printf "\n" >> "$recording_file"
     fi
   else
-    echo "Error: Could not record actions to '$recording_file'" 2>&1
-    [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
+    display_error "Could not record actions to '$recording_file'"
   fi
 }
 
-path_error() {
-  printf "\nError: ${1:-Not a directory.}${2:- Use 'Tab' key for path completion.\n}" 2>&1
-  printf "${3:-Add a backslash '\\\\' before spaces and special characters below:\n\\\\ \$ \` \' \"\n\n}" 2>&1
-  read -s -r -n 1 -p "(Press any key to continue)"
-}
+path_error() { display_error "$(cat << EOF
+${1:-Not a directory.}${2:- Use 'Tab' key for path completion.}
+Add a backslash '\' before spaces and special characters below:
+\ \$ \` ' "
+EOF
+)"; }
 
 
 # MAIN
@@ -706,11 +707,9 @@ main() {
         if [[ $file ]]; then
           mkdir -p "$(dirname "$file")" && touch "$file"
           if [[ ! -w "$file" ]]; then
-            echo "Error: Cannot record. File could not be created or write permission not granted" 2>&1
-            [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
+            display_error "Cannot record. File could not be created or write permission not granted"
           elif [[ $autoplay && "$playback_file" -ef "$file" ]]; then
-            echo "Error: Cannot record to a file that is currently playing back" 2>&1
-            [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
+            display_error "Cannot record to a file that is currently playing back"
           else
             assign recording_file "$file" && toggle autorecord
           fi
@@ -727,11 +726,9 @@ main() {
         clear && read -rep "Playback actions from file: " -i "$file" file
         if [[ $file ]]; then
           if [[ ! -r "$file" ]]; then
-            echo "Error: Cannot playback. File does not exist or read permission not granted" 2>&1
-            [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
+            display_error "Cannot playback. File does not exist or read permission not granted"
           elif [[ $autorecord && "$recording_file" -ef "$file" ]]; then
-            echo "Error: Cannot playback from a file that is currently recording" 2>&1
-            [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"
+            display_error "Cannot playback from a file that is currently recording"
           else
             assign playback_file "$file"
             readarray -t pending_actions < "$playback_file"
