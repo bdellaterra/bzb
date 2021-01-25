@@ -996,7 +996,7 @@ main() {
       clear
       set +e
       # Trap each command to log previous command, commented out if exit status indicates failure
-      PS1='>> ' /usr/bin/env bash --init-file <(echo 'trap '\''export BZB_LAST_EXIT_CODE="$?" BZB_LAST_COMMAND="$BZB_THIS_COMMAND" BZB_THIS_COMMAND="$BASH_COMMAND";([[ $BZB_LAST_EXIT_CODE -ne 0 ]] && printf "# (EXIT_CODE $BZB_LAST_EXIT_CODE) ";[[ $BZB_LAST_COMMAND ]] && printf "execute %q\n" "$BZB_LAST_COMMAND") >> "$recording_file"'"$QUIT"\'' DEBUG')
+      PS1='>> ' /usr/bin/env bash --init-file <(echo 'trap '\''export BZB_LAST_EXIT_CODE="$?" BZB_LAST_COMMAND="$BZB_THIS_COMMAND" BZB_THIS_COMMAND="$BASH_COMMAND";[[ $autorecord && $recording_file ]] && ([[ $BZB_LAST_EXIT_CODE -ne 0 ]] && printf "# (EXIT_CODE $BZB_LAST_EXIT_CODE) ";[[ $BZB_LAST_COMMAND ]] && printf "execute %q\n" "$BZB_LAST_COMMAND") >> "$recording_file"'"$QUIT"\'' DEBUG')
       set -e
     ;;
 
