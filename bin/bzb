@@ -26,7 +26,8 @@ defined() { [[ -n "$1" && -n "${!1+defined}" ]] || return 1; }
 # Set global variable with name matching first argument to value provided as second argument
 assign() {
   # Avoid polluting export namespace when setting variable if declare supports -g option (bash version 4.2+)
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 && "${BASH_VERSINFO[1]}" -ge 2 ]]; then
+  # Variables prefixed with 'BZB_' are always exported
+  if [[ ! "$1" =~ ^BZB_ && "${BASH_VERSINFO[0]}" -ge 4 && "${BASH_VERSINFO[1]}" -ge 2 ]]; then
     declare -g "$1=$2"
   else
     export "$1=$2"
@@ -92,6 +93,7 @@ map() {
   key_definitions["$key"]="$3"
   key_actions["$key"]="$1"
   action_keys["$1"]="$key"
+  # 4th field of 'n' or 'no' indicates action is not recordable
   [[ "$4" =~ ^[nN] ]] && action_recordable["$1"]='' || action_recordable["$1"]=1
 }
 
@@ -247,12 +249,12 @@ for arg in "$@"; do
     -AR|--no-autorecord) disable BZB_AUTORECORD; shift ;;
     -ap|--autoplay) enable BZB_AUTOPLAY; shift ;;
     -AP|--no-autoplay) disable BZB_AUTOPLAY; shift ;;
-    -rf=*|--recording-file=*=*) BZB_RECORDING_FILE="${arg#*=}"; shift ;;
-    -pf=*|--playback-file=*=*) BZB_PLAYBACK_FILE="${arg#*=}"; shift ;;
-    -bd=*|--base-dir=*|--base_directory=*) BZB_BASE_DIR="${arg#*=}"; shift ;;
-    -ad=*|--alt-dir=*|--alternate-directory=*) BZB_ALT_DIR="${arg#*=}"; shift ;;
-    -dd=*|--data-dir=*|--data-directory=*) BZB_DATA_DIR="${arg#*=}"; shift ;;
-    -g=*|--grep=*) enable BZB_GREP_MODE; BZB_GREP_QUERY="${arg#*=}"; shift ;;
+    -rf=*|--recording-file=*=*) assign BZB_RECORDING_FILE "${arg#*=}"; shift ;;
+    -pf=*|--playback-file=*=*) assign BZB_PLAYBACK_FILE "${arg#*=}"; shift ;;
+    -bd=*|--base-dir=*|--base_directory=*) assign BZB_BASE_DIR "${arg#*=}"; shift ;;
+    -ad=*|--alt-dir=*|--alternate-directory=*) assign BZB_ALT_DIR "${arg#*=}"; shift ;;
+    -dd=*|--data-dir=*|--data-directory=*) assign BZB_DATA_DIR "${arg#*=}"; shift ;;
+    -g=*|--grep=*) enable BZB_GREP_MODE; assign BZB_GREP_QUERY "${arg#*=}"; shift ;;
     # Save remaining options for fzf with quoting preserved
     -*) [[ "$arg" == *=* ]] && BZB_FZF_EXTRA_OPTIONS+=" ${arg%%=*}=\"${arg#*=}\"" || BZB_FZF_EXTRA_OPTIONS+=" \"$arg\""; shift ;;
   esac
@@ -500,15 +502,14 @@ declare -A initial_settings=([sorted]="$sorted" [preview]="$preview" [statusline
 [[ $autoload_session && -r "$session" ]] && . -- "$session" && restore_session "$session"
 
 main() {
-  # Export variables for use in subshells
-  export BZB_BASE_DIR="$base_dir"
-  export BZB_QUERY="$query"
-  export BZB_COLOR="$color"
-  [[ $hide ]] && export BZB_HIDDEN=1 || export BZB_HIDDEN=''
-  [[ $ignore ]] && export BZB_NO_IGNORE='' || export BZB_NO_IGNORE=1
-  export BZB_REVERSE="$reverse"
-  export BZB_SORT_NUMERIC=""
-  export BZB_GREP_QUERY="$(sq "$grep_query")" # escaped for single-quoting here
+  assign BZB_BASE_DIR "$base_dir"
+  assign BZB_QUERY "$query"
+  assign BZB_COLOR "$color"
+  [[ $hide ]] && enable BZB_HIDDEN || disable BZB_HIDDEN
+  [[ $ignore ]] && disable BZB_NO_IGNORE || enable BZB_NO_IGNORE
+  assign BZB_REVERSE "$reverse"
+  disable BZB_SORT_NUMERIC
+  assign BZB_GREP_QUERY "$(sq "$grep_query")" # escaped for single-quoting here
 
   # Clear any stale selection so it is not read on esc/ctrl-c exit action
   save_selection
@@ -527,11 +528,11 @@ main() {
 
   # Clear or optionally restore query after changing directory
   if [[ "$PWD" != "$BZB_DIR" ]]; then
-    [[ $autoload_query ]] && export BZB_QUERY="${directory_queries[$PWD]}" || export BZB_QUERY=''
+    [[ $autoload_query ]] && assign BZB_QUERY "${directory_queries[$PWD]}" || disable BZB_QUERY
   fi
 
   # Export current directory
-  export BZB_DIR="$PWD"
+  assign BZB_DIR "$PWD"
 
   # Setup list/sort/preview commands
   [[ $nested ]] && sort="$sort_nested" || sort="$sort_shallow"
@@ -567,7 +568,7 @@ main() {
   [[ ! $sorted || $sort_disabled ]] && reverse_disabled='!' || reverse_disabled=''
   [[ $reverse ]] && status+=("${reverse_disabled:--}O") || status+=("${reverse_disabled:--}o")
 
-  export BZB_STATUSLINE="${autorecord:+REC }${autoplay:+PLAY }[${status[@]}]"
+  assign BZB_STATUSLINE "${autorecord:+REC }${autoplay:+PLAY }[${status[@]}]"
 
   fzf_options="${no_clear:+--no-clear} --print-query --multi --layout='reverse' $fzf_bind --expect='$(sq "$fzf_keys")' --query=\"\$BZB_QUERY\" $fzf_prompt"
   [[ ! $color ]] && fzf_options+=" ${color:---no-color}"
