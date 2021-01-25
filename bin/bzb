@@ -485,6 +485,8 @@ record_action() {
   fi
 }
 
+input() { clear && read -rep "$1" -i "$3" "$2"; }
+
 path_error() { display_error "$(cat << EOF
 ${1:-Not a directory.}${2:- Use 'Tab' key for path completion.}
 Add a backslash '\' before spaces and special characters below:
@@ -701,7 +703,7 @@ main() {
         toggle autorecord
       else
         [[ -w "$playback_file" && ! $recording_file ]] && file="$playback_file" || file="$recording_file"
-        clear && read -rep "Record actions to file: " -i "$file" file
+        input "Record actions to file: " file "$file" 
         file=$(readlink -f "$file")
         # use rm command to confirm before clearing logfile, overriding default prompt
         [[ -f "$file" ]] && printf "Clear existing file? [Y/n] " && bash -c "$rm_interactive $file 2>/dev/null"
@@ -724,7 +726,7 @@ main() {
         toggle autoplay
       else
         [[ -r "$recording_file" && ! $playback_file ]] && file="$recording_file" || file="$playback_file"
-        clear && read -rep "Playback actions from file: " -i "$file" file
+        input "Playback actions from file: " file "$file" 
         if [[ $file ]]; then
           if [[ ! -r "$file" ]]; then
             display_error "Cannot playback. File does not exist or read permission not granted"
@@ -774,7 +776,7 @@ main() {
     rename)
       for t in "${targets[@]}"; do
         if [[ -r "$t" ]]; then
-          clear && read -rep 'Move/Rename File: ' -i "mv '$(sq "$t")' '$(sq "$t")'" cmd
+          input "Move/Rename File: " cmd "mv '$(sq "$t")' '$(sq "$t")'" 
           [[ -n "$cmd" ]] && bash -c "$cmd"
         fi
       done
@@ -782,17 +784,17 @@ main() {
 
     # Use alt-m to move targets
     move)
-      clear && read -rep 'Move to Directory: ' -i "${alt_dir:-$base_dir}" dir
+      input "Move to Directory: " dir "${alt_dir:-$base_dir}" 
       [[ -n "$dir" ]] && mv -i "${targets[@]}" "$dir"
     ;;
 
     # Use ctrl-alt-m to move and rename targets
     move-rename)
-      clear && read -rep 'Move/Rename to Directory: ' -i "${alt_dir:-$base_dir}" dir
+      input "Move/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
       if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
           if [[ -r "$t" ]]; then
-            read -rep 'Move/Rename File: ' -i "mv '$(sq "$PWD/$t")' '$(sq "${dir%/}/$t")'" cmd
+            input "Move/Rename File: " cmd "mv '$(sq "$PWD/$t")' '$(sq "${dir%/}/$t")'" 
             [[ -n "$cmd" ]] && bash -c "$cmd"
           fi
         done
@@ -811,17 +813,17 @@ main() {
 
     # Use alt-c to copy targets
     copy)
-      clear && read -rep 'Copy to Directory: ' -i "${alt_dir:-$base_dir}" dir
+      input "Copy to Directory: " dir "${alt_dir:-$base_dir}" 
       [[ -n "$dir" ]] && cp -ir "${targets[@]}" "$dir"
     ;;
 
     # Use ctrl-alt-c to copy and rename targets
     copy-rename)
-      clear && read -rep 'Copy/Rename to Directory: ' -i "${alt_dir:-$base_dir}" dir
+      input "Copy/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
       if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
           if [[ -r "$t" ]]; then
-            clear && read -rep 'Copy/Rename File: ' -i "cp -ir '$(sq "$PWD/$t")' '$(sq "$dir/$t")'" cmd
+            input "Copy/Rename File: " cmd "cp -ir '$(sq "$PWD/$t")' '$(sq "$dir/$t")'" 
             [[ -n "$cmd" ]] && bash -c "$cmd"
           fi
         done
