@@ -67,7 +67,10 @@ sq() { printf '%s' "${1//\'/\'\\\'\'}"; }
 # Escape special chars and newlines to make a double-quotable string
 dq() { printf '%s' "$1" | sed -e 's/[$!&`"\]/\\&/g'; }
 
-display_error() { printf '\nError: %s\n' "$@" 2>&1; [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)"; }
+display_error() {
+  printf '\nError: %s\n' "$@" 2>&1;
+  [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)";
+}
 
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
 clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
@@ -273,7 +276,7 @@ initial_targets=("$@")
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    # enable no_clear && readonly no_clear
+    enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
@@ -474,19 +477,20 @@ restore_session() {
   pushd "$base_dir" >/dev/null
 }
 
-record_action() {
-  mkdir -p "$(dirname "$recording_file")" && touch "$recording_file"
+record() {
   if [[ -w "$recording_file" ]]; then
     if [[ ${action_recordable[$1]} ]]; then
-      printf "%q\n" "$@" | tr '\n' ' ' >> "$recording_file"
-      printf "\n" >> "$recording_file"
+      printf "%q" $@ >> "$recording_file"
     fi
   else
-    display_error "Could not record actions to '$recording_file'"
+    display_error "Could not record to '$recording_file'"
   fi
 }
 
-input() { clear && read -rep "$1" -i "$3" "$2"; }
+input() {
+  clear && read -rep "$1" -i "$3" "$2"
+  [[ $autorecord ]] && assign last_input "${!2}" || disable last_input
+}
 
 path_error() { display_error "$(cat << EOF
 ${1:-Not a directory.}${2:- Use 'Tab' key for path completion.}
@@ -611,7 +615,7 @@ main() {
     assign action "${key_actions[$command]}"
 
     # Optionally record actions to file
-    [[ $autorecord && $recording_file ]] && record_action "$action" "${targets[@]}"
+    [[ $autorecord && $recording_file ]] && (record "$action"; record "${targets[@]}")
   fi
 
   next_targets=()
@@ -1027,6 +1031,8 @@ main() {
       fi
     ;;
   esac
+
+  [[ $autorecord && -n $recording_file && ${action_recordable[$action]} ]] && record '$'
 
   # Optionally autosave browsing session
   [[ $autosave_session ]] && save_session "$session"
