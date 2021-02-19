@@ -9,7 +9,7 @@ set -e
 
 script_name=$(basename "${BASH_SOURCE[0]}")
 
-if [[ "${BASH_VERSINFO[0]}" -lt 4 || ( "${BASH_VERSINFO[0]}" -eq 4 && "${BASH_VERSINFO[1]}" -lt 2 ) ]]; then
+if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
   echo "Error: $script_name requires a newer version of bash" 1>&2
   exit 1
 fi
@@ -28,7 +28,12 @@ defined() { [[ -n "$1" && -n "${!1+defined}" ]] || return 1; }
 assign() {
   local var="$1"; shift;
   [[ "$var" =~ ^BZB_ ]] && export "$var"
-  declare -g $var="$*"
+  # Avoid polluting export namespace when setting variable if declare supports -g option (bash version 4.2+)
+  if [[ "${BASH_VERSINFO[0]}" -gt 4 || ( "${BASH_VERSINFO[0]}" -eq 4 && "${BASH_VERSINFO[1]}" -ge 2 ) ]]; then
+    declare -g $var="$*"
+  else
+    export $var="$*"
+  fi
 }
 
 # In the variable name provided as first argument, store the default value provided
@@ -36,8 +41,7 @@ assign() {
 init() {
   local var="$1"; shift;
   override="BZB_${var^^}"
-  [[ "$var" =~ ^BZB_ ]] && export "$var"
-  defined "$override" && declare -g "$var"="${!override}" || declare -g "$var"="$*"
+  defined "$override" && assign "$var" "${!override}" || assign "$var" "$*"
 }
 
 # Initialize all variable names provided to true/on,
