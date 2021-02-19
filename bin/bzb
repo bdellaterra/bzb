@@ -81,7 +81,7 @@ clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
 bind '"\C-g":"\C-k\C-u
 "' '"\e\e":"\C-g"' &>/dev/null
 
-# Set fzf keybinds for movement and exit actions (Avoid spaces or quotes for this assignment)
+# Set fzf keybinds for movement and exit actions (Avoid spaces or quotes for these assignments)
 init fzf_bind '--bind=ctrl-g:ignore,esc:cancel'
 init fzf_submenu_bind '--bind=ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
 
