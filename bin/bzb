@@ -9,7 +9,7 @@ set -e
 
 script_name=$(basename "${BASH_SOURCE[0]}")
 
-if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
+if [[ "${BASH_VERSINFO[0]}" -lt 4 || ( "${BASH_VERSINFO[0]}" -eq 4 && "${BASH_VERSINFO[1]}" -lt 2 ) ]]; then
   echo "Error: $script_name requires a newer version of bash" 1>&2
   exit 1
 fi
@@ -24,22 +24,20 @@ has() { command -v "$1" &>/dev/null; }
 defined() { [[ -n "$1" && -n "${!1+defined}" ]] || return 1; }
 
 # Set global variable with name matching first argument to value provided as second argument
+# Variables prefixed with 'BZB_' are always exported
 assign() {
   local var="$1"; shift;
-  # Avoid polluting export namespace when setting variable if declare supports -g option (bash version 4.2+)
-  # Variables prefixed with 'BZB_' are always exported
-  if [[ ! "${!var}" =~ ^BZB_ && "${BASH_VERSINFO[0]}" -ge 4 && "${BASH_VERSINFO[1]}" -ge 2 ]]; then
-    declare -g $var="$*"
-  else
-    export $var="$*"
-  fi
+  [[ "$var" =~ ^BZB_ ]] && export "$var"
+  declare -g $var="$*"
 }
 
 # In the variable name provided as first argument, store the default value provided
 # as second argument. If BZB_ prefixed all-caps variable is defined use its value instead
 init() {
-  override="BZB_${1^^}"
-  defined "$override" && assign "$1" "${!override}" || assign "$1" "$2"
+  local var="$1"; shift;
+  override="BZB_${var^^}"
+  [[ "$var" =~ ^BZB_ ]] && export "$var"
+  defined "$override" && declare -g "$var"="${!override}" || declare -g "$var"="$*"
 }
 
 # Initialize all variable names provided to true/on,
