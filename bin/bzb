@@ -853,7 +853,7 @@ main() {
       clear && read -rep "$create_enter directory: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$target"
-        [[ "$command" = "${action_keys[create-enter-dir]}" ]] && next_targets=("$target")
+        [[ "$action" = "create-enter-dir" ]] && next_targets=("$target")
       fi
     ;;
 
@@ -864,7 +864,7 @@ main() {
       clear && read -rep "$create_edit file: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$(dirname "$target")" && touch "$target"
-        [[ "$command" = "${action_keys[create-edit-file]}" ]] && next_targets=("$target")
+        [[ "$action" = "create-edit-file" ]] && next_targets=("$target")
       fi
     ;;
 
