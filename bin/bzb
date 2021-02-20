@@ -824,7 +824,6 @@ main() {
       for t in "${targets[@]}"; do
         delete_targets+=" '$(sq "$t")'"
       done
-      echo "$rm_interactive $delete_targets"
       clear && bash -c "$rm_interactive $delete_targets"
     ;;
 
