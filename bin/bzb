@@ -851,7 +851,8 @@ main() {
       for t in "${targets[@]}"; do
         delete_targets+=" '$(sq "$t")'"
       done
-      clear && bash -c "$rm_interactive $delete_targets"
+      [[ $autoplay ]] && remove="rm -r" || remove="$rm_interactive"
+      clear && bash -c "$remove $delete_targets"
     ;;
 
     # Use alt-c to copy targets
