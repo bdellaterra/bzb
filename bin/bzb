@@ -288,6 +288,7 @@ else
   exit 1
 fi
 fzf_no_clear="${no_clear:+--no-clear}"
+[[ $color ]] && fzf_color='--color' || fzf_color='--no-color'
 
 # Default behavior is to launch $EDITOR as the enter-action for files. Disabling the option
 # below will instead only log selected targets to a 'selection' file inside 'data_dir'.
@@ -579,8 +580,7 @@ main() {
 
   assign BZB_STATUSLINE "${autorecord:+REC }${autoplay:+PLAY }[${status[@]}]"
 
-  fzf_options="$fzf_no_clear --print-query --multi --layout='reverse' $fzf_bind --expect='$(sq "$fzf_keys")' --query=\"\$BZB_QUERY\" $fzf_prompt"
-  [[ ! $color ]] && fzf_options+=" ${color:---no-color}"
+  fzf_options="$fzf_no_clear $fzf_color --print-query --multi --layout='reverse' $fzf_bind --expect='$(sq "$fzf_keys")' --query=\"\$BZB_QUERY\" $fzf_prompt"
   [[ $grep_mode ]] && fzf_options+=" --nth=2"
   [[ $statusline ]] && fzf_options+=" --header=\"\$BZB_STATUSLINE\""
   [[ $preview ]] && fzf_options+=" --preview='$(sq "$fzf_preview")' --preview-window='right:62%:wrap'"
