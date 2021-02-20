@@ -153,7 +153,7 @@ map 'toggle-playback'         'ctrl-alt-p'  "playback actions from file named at
 map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
 map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at prompt"
 map 'terminal'                'ctrl-alt-t'  "open a new (t)erminal/shell in current directory"              'N'
-map 'execute'                 'ctrl-alt-x'  "e(x)ecute a single shell command in current directory"
+map 'execute'                 'ctrl-alt-x'  "e(x)ecute a single shell command in current directory"         'N'
 
 # Comma-separated list of custom mappings for fzf
 readonly fzf_keys="esc,$(printf ",%s" "${keys[@]}" | cut -c2-)"
@@ -1030,7 +1030,7 @@ main() {
       clear
       set +e
       # Trap each command to log previous command, commented out if exit status indicates failure
-      PS1='>> ' /usr/bin/env bash --init-file <(echo 'trap '\''export BZB_LAST_EXIT_CODE="$?" BZB_LAST_COMMAND="$BZB_THIS_COMMAND" BZB_THIS_COMMAND="$BASH_COMMAND";[[ $autorecord && $recording_file ]] && ([[ $BZB_LAST_EXIT_CODE -ne 0 ]] && printf "# (EXIT_CODE $BZB_LAST_EXIT_CODE) ";[[ $BZB_LAST_COMMAND ]] && printf "execute %q\n" "$BZB_LAST_COMMAND") >> "$recording_file"'"$QUIT"\'' DEBUG')
+      PS1='>> ' /usr/bin/env bash --init-file <(echo 'trap '\''export BZB_LAST_EXIT_CODE="$?" BZB_LAST_COMMAND="$BZB_THIS_COMMAND" BZB_THIS_COMMAND="$BASH_COMMAND";[[ "'${autorecord:+1}'" && "'${recording_file:+1}'" ]] && ([[ $BZB_LAST_EXIT_CODE -ne 0 ]] && printf "# (EXIT_CODE $BZB_LAST_EXIT_CODE) ";[[ $BZB_LAST_COMMAND ]] && printf "execute %q\n" "$BZB_LAST_COMMAND") >> '"$recording_file""$QUIT"\'' DEBUG')
       set -e
     ;;
 
