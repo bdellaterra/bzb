@@ -648,7 +648,7 @@ main() {
     ;;
 
     # Use alt-f to enter grep mode using search pattern specified at prompt
-    # Use again to update search pattern. Enter empty pattern to cancel
+    # Use again to update search pattern. Enter empty pattern to exit grep mode
     grep)
       clear && read -ep "Grep for Pattern: " -ri "$grep_query" next_query
       if [[ $next_query ]]; then
@@ -757,17 +757,25 @@ main() {
 
     # Use alt-y to yank targets to clipboard
     yank-targets)
-      yank_targets=''
-      for t in "${targets[@]}"; do
-        yank_targets+=" '$(sq "$PWD/$t")'"
-      done
-      [[ "$clip" ]] && bash -c "echo -n '$(sq "$yank_targets")' | $clip"
+      if [[ ! "$clip" ]]; then
+        clear && display_error "No clipboard command configured. Cannot copy targets to clipboard"
+      else
+        yank_targets=''
+        for t in "${targets[@]}"; do
+          yank_targets+=" '$(sq "$PWD/$t")'"
+        done
+        bash -c "echo -n '$(sq "$yank_targets")' | $clip"
+      fi
     ;;
 
     # Use ctrl-alt-y to yank current directory to clipboard
     yank-dir)
-      yank_directory=" '$(sq "$PWD")'"
-      [[ "$clip" ]] && bash -c "echo -n '$(sq "$yank_directory")' | $clip"
+      if [[ ! "$clip" ]]; then
+        clear && display_error "No clipboard command configured. Cannot copy current directory to clipboard"
+      else
+        yank_directory=" '$(sq "$PWD")'"
+        bash -c "echo -n '$(sq "$yank_directory")' | $clip"
+      fi
     ;;
 
     # Use alt-q to quick-launch targets in their native client
