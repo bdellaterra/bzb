@@ -90,18 +90,18 @@ bind '"\C-g":"\C-k\C-u
 init fzf_bind '--bind=ctrl-g:ignore,esc:cancel'
 init fzf_submenu_bind '--bind=ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
 
-# Read overrides for action/key bindings to enable alternate keymaps
+# Read overrides for action/key bindings
 eval "declare -A BZB_BIND=( $BZB_BIND )"
 
-declare -A key_definitions key_actions action_keys action_recordable
+declare -A key_definitions key_actions action_keys is_recordable
 map() {
   [[ "${BZB_BIND[$1]}" ]] && key="${BZB_BIND[$1]}" || key="$2"
   keys[${#keys[@]}]="$key"
   key_definitions["$key"]="$3"
   key_actions["$key"]="$1"
   action_keys["$1"]="$key"
-  # 4th field of 'n' or 'no' indicates action is not recordable
-  [[ "$4" =~ ^[nN] ]] && action_recordable["$1"]='' || action_recordable["$1"]=1
+  # 4th field starting with 'n' or 'N' indicates action is not recordable
+  [[ "$4" =~ ^[nN] ]] && is_recordable["$1"]='' || is_recordable["$1"]=1
 }
 
 map 'exit'                    'esc'         "exit file browser"
@@ -482,7 +482,7 @@ restore_session() {
 
 record() {
   if [[ -w "$recording_file" ]]; then
-    if [[ ${action_recordable[$1]} ]]; then
+    if [[ ${is_recordable[$1]} ]]; then
       printf "%q" $@ >> "$recording_file"
     fi
   else
@@ -1035,7 +1035,7 @@ main() {
     ;;
   esac
 
-  [[ $autorecord && -n $recording_file && ${action_recordable[$action]} ]] && record '$'
+  [[ $autorecord && -n $recording_file && ${is_recordable[$action]} ]] && record '$'
 
   # Optionally autosave browsing session
   [[ $autosave_session ]] && save_session "$session"
