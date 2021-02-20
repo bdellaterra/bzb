@@ -345,8 +345,7 @@ if has parallel && test "$parallel_sort"; then
   init sort_nested \
     "LC_ALL=C parallel --pipe --block 64k sort \$([[ \$BZB_SORT_NUMERIC ]] && echo '-g' || echo '-fiu') \${BZB_REVERSE:+-r} 2>/dev/null"
 else
-  disable parallel_sort
-  disable nested_sort
+  disable parallel_sort nested_sort
   init sort_nested "$sort_shallow"
 fi
 readonly parallel_sort
@@ -397,7 +396,7 @@ no_zero_counts="| grep -v ':0$'"
 list_by_grep_count="$no_zero_counts | awk -F ':' '$(dq "$(sq '{ printf( "%s %s\n", $2, $1 ) }')")'"
 escape_grep_results="| sed -e '$(sq 's/\s\|'\''/\\\&/g')'"
 if has rg; then
-  disable grep_cannot_ignore
+  enable grep_can_ignore
   init grep_nested \
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --count --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $no_leading_dots $list_by_grep_count"
   init grep_shallow \
@@ -405,7 +404,7 @@ if has rg; then
   init grep_mode_preview \
     "echo {} $no_grep_counts $escape_grep_results | xargs cat | rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}'"
 else
-  enable grep_cannot_ignore
+  disable grep_can_ignore
   init grep_nested \
     "grep -r -i -s -c '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'}$no_leading_dots $list_by_grep_count"
   init grep_shallow \
@@ -413,7 +412,7 @@ else
   init grep_mode_preview \
     "echo {} $no_grep_counts $escape_grep_results | xargs cat | grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}'"
 fi
-readonly grep_cannot_ignore
+readonly grep_can_ignore
 disable grep_query
 
 # Quick-launch Command: Used to open targets in their native client
@@ -552,7 +551,7 @@ main() {
     fzf_prompt=" --prompt='/$BZB_GREP_QUERY/'"
     fzf_input=$(bash -c "echo \"$grep$sort_pipe\"")
     fzf_preview=$(bash -c "echo \"$grep_mode_preview\"")
-    [[ $grep_cannot_ignore ]] && ignore_disabled='!' || ignore_disabled=''
+    [[ $grep_can_ignore ]] && ignore_disabled='' || ignore_disabled='!'
   else
     [[ $nested ]] && find="$find_nested" || find="$find_shallow"
     fzf_prompt=" --prompt='$(sq "${BZB_DIR#$BZB_BASE_DIR}")>'"   
