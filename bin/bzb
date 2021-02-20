@@ -303,17 +303,15 @@ disable nested reverse autosave_history autoload_query autosave_session autoload
 [[ -d "$initial_target" ]] && init base_dir "$initial_target" || init base_dir "$(dirname "${initial_target:-$PWD/.}")"
 [[ ! "$(dirs -l)" =~ " $base_dir" ]] && pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
 
-# Files for recording and playing back actions not defined by default
+# Alternate directory for quick naviagtion and file-operations (Undefined by default)
+disable alt_dir
+
+# Files for recording and playing back actions (Optional and undefined by default)
 disable recording_file
 disable playback_file
 
-# Alternate directory for quick naviagtion and file-operations not set by default 
-disable alt_dir
-
-# Directory where data for loading/restoring sessions is saved (optional)
+# Directory/files for saving and restoring session data (Optional feature, disabled by default)
 init data_dir "$HOME/.bzb" && readonly data_dir
-
-# Files for storing session data and fzf search history
 init session "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
 [[ $autosave_history ]] && init search_history "${data_dir:+$data_dir/sessions$base_dir/search_history.bzb}"
 
