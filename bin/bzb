@@ -122,15 +122,15 @@ map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
 map 'create-enter-dir'        'ctrl-alt-d'  "create/enter (d)irectory named at prompt"
 map 'toggle-bookmark'         'alt-b'       "toggle (b)ookmark for current directory"
 map 'bookmark-targets'        'ctrl-alt-b'  "(b)ookmark targets"
-map 'unbookmark'              'ctrl-alt-u'  "(u)nbookmark selected directories"
+map 'unbookmark'              'ctrl-alt-u'  "(u)nbookmark selected directories"                              'N'
 map 'prev-bookmark'           'alt-left'    "jump backward through list of bookmarks"
 map 'prev-bookmark2'          'alt-k'       "jump bac(k)ward through list of bookmarks"
 map 'next-bookmark'           'alt-right'   "jump forward through list of bookmarks"
 map 'next-bookmark2'          'alt-j'       "(j)ump forward through list of bookmarks"
-map 'select-bookmark'         'alt-up'      "select and enter bookmarked directory"
-map 'select-bookmark2'        'ctrl-alt-k'  "select and enter bookmarked directory"
-map 'select-nested-bookmark'  'alt-down'    "select and enter bookmarked directory under current directory"
-map 'select-nested-bookmark2' 'ctrl-alt-j'  "select and enter bookmarked directory under current directory"
+map 'select-bookmark'         'alt-up'      "select and enter bookmarked directory"                          'N'
+map 'select-bookmark2'        'ctrl-alt-k'  "select and enter bookmarked directory"                          'N'
+map 'select-nested-bookmark'  'alt-down'    "select and enter bookmarked directory under current directory"  'N'
+map 'select-nested-bookmark2' 'ctrl-alt-j'  "select and enter bookmarked directory under current directory"  'N'
 map 'enter-alt-dir'           'alt-a'       "switch between current and (a)lternate directory"
 map 'set-alt-dir'             'ctrl-alt-a'  "set (a)lternate directory (default for copy/move prompts)"
 map 'up-base-dir'             'alt-u'       "go to base directory, or if at base move it (u)p one level"
@@ -148,12 +148,12 @@ map 'toggle-nested-sort'      'ctrl-alt-n'  "toggle sorting of (n)ested results 
 map 'toggle-sort-order'       'alt-o'       "toggle sort (o)rder ascending/descending"
 map 'initial-settings'        'ctrl-alt-i'  "restore (i)nitial view/sort settings"
 map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane"
-map 'toggle-recording'        'ctrl-alt-r'  "record actions to file named at prompt"                        'N'
-map 'toggle-playback'         'ctrl-alt-p'  "playback actions from file named at prompt"                    'N'
+map 'toggle-recording'        'ctrl-alt-r'  "record actions to file named at prompt"                         'N'
+map 'toggle-playback'         'ctrl-alt-p'  "playback actions from file named at prompt"                     'N'
 map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
 map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at prompt"
-map 'terminal'                'ctrl-alt-t'  "open a new (t)erminal/shell in current directory"              'N'
-map 'execute'                 'ctrl-alt-x'  "e(x)ecute a single shell command in current directory"         'N'
+map 'terminal'                'ctrl-alt-t'  "open a new (t)erminal/shell in current directory"               'N'
+map 'execute'                 'ctrl-alt-x'  "e(x)ecute a single shell command in current directory"          'N'
 
 # Comma-separated list of custom mappings for fzf
 readonly fzf_keys="esc,$(printf ",%s" "${keys[@]}" | cut -c2-)"
