@@ -677,7 +677,7 @@ main() {
     # Use alt-f to enter grep mode using search pattern specified at prompt
     # Use again to update search pattern. Enter empty pattern to exit grep mode
     grep)
-      clear && read -ep "Grep for Pattern: " -ri "$grep_query" next_query
+      input "Grep for Pattern: " next_query "$grep_query"
       if [[ $next_query ]]; then
         enable grep_mode
         grep_query="$next_query"
