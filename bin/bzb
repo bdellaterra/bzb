@@ -492,7 +492,8 @@ input() {
   [[ $autorecord ]] && assign last_input "${!2}" || disable last_input
 }
 
-path_error() { display_error "$(cat << EOF
+path_error() { display_error "$(
+cat << EOF
 ${1:-Not a directory.}${2:- Use 'Tab' key for path completion.}
 Add a backslash '\' before spaces and special characters below:
 \ \$ \` ' "
