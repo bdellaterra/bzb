@@ -279,7 +279,7 @@ initial_targets=("$@")
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    enable no_clear && readonly no_clear
+    # enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
@@ -902,19 +902,18 @@ main() {
       readarray -s 1 -t bookmarks < <(dirs -p -l)
       # base_dir must stay bookmarked and is omitted from selection menu
       readarray -t bookmarks < <(printf '%s\n' "${bookmarks[@]}" | sed -n '/^'"${base_dir//\//\\/}"'$/!p')
-      if [[ "${#bookmarks[@]}" -gt 0 ]]; then
-        unmarks=("$(printf '%s\n' "${bookmarks[@]}" | LC_ALL=C sort -ru | fzf "$fzf_submenu_bind" --multi --prompt='[unbookmark]')")
+      if [[ ! "${#bookmarks[@]}" -gt 0 ]]; then
+        clear && display_error "No bookmarks to delete"
+      else
+        readarray -t unmarks < <(printf '%s\n' "${bookmarks[@]}" | LC_ALL=C sort -ru | fzf "$fzf_submenu_bind" --multi --prompt='[unbookmark]')
         for b in "${unmarks[@]}"; do
           readarray -t bookmarks < <(dirs -p -l)
           for i in "${!bookmarks[@]}"; do
             [[ $i -ge 1 && "${bookmarks[$i]}" = "$b" ]] && popd -n +"$i" >/dev/null
           done
         done
-      else
-        clear && echo "No bookmarks to delete." 2>&1
-        read -s -r -n 1 -p "(Press any key to continue)"
+        cd "$current_dir"
       fi
-      cd "$current_dir"
     ;;
 
     # Use alt-right or alt-j to go to next bookmarked directory
