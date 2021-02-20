@@ -71,7 +71,7 @@ sq() { printf '%s' "${1//\'/\'\\\'\'}"; }
 dq() { printf '%s' "$1" | sed -e 's/[$!&`"\]/\\&/g'; }
 
 display_error() {
-  printf '\nError: %s\n' "$@" 2>&1;
+  echo && last_error=$(printf 'Error: %s' "$@" 2>&1 | tee /dev/tty) && echo;
   [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)";
 }
 
@@ -500,7 +500,8 @@ restore_session() {
 record() {
   if [[ -w "$recording_file" ]]; then
     if [[ "${is_recordable[${1%=*}]}" ]]; then
-      echo $@ >> "$recording_file"
+      [[ $last_error ]] && error="# ($last_error)" || error=''
+      echo $error $@ >> "$recording_file"
     fi
   else
     display_error "Could not record to '$recording_file'"
@@ -1065,7 +1066,7 @@ main() {
   # Optionally record actions to file
   [[ $last_input ]] && last_input="$(printf "=%q" "$last_input")"
   [[ $autorecord && $recording_file ]] && (record "$action$last_input" "${targets[@]}")
-  disable last_input
+  disable last_input last_error
 
   # Optionally autosave browsing session
   [[ $autosave_session ]] && save_session "$session"
