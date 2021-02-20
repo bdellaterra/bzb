@@ -306,17 +306,6 @@ disable nested reverse autosave_history autoload_query autosave_session autoload
 # Alternate directory for quick naviagtion and file-operations (Undefined by default)
 disable alt_dir
 
-# Files for recording and playing back actions (Optional and undefined by default)
-disable recording_file
-disable playback_file
-
-# Directory/files for saving and restoring session data (Optional feature, disabled by default)
-init data_dir "$HOME/.bzb" && readonly data_dir
-init session "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
-[[ $autosave_history ]] && init search_history "${data_dir:+$data_dir/sessions$base_dir/search_history.bzb}"
-
-# Dictionary for mapping directory to its last search query
-declare -A directory_queries
 
 # COMMANDS
 
@@ -432,7 +421,18 @@ rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
 
 # FILE STATE
 
+# Files for recording and playing back actions (Optional and undefined by default)
+disable recording_file
+disable playback_file
+
+# Directory/files for saving and restoring session data (Optional feature, disabled by default)
+init data_dir "$HOME/.bzb" && readonly data_dir
+init session "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
+[[ $autosave_history ]] && init search_history "${data_dir:+$data_dir/sessions$base_dir/search_history.bzb}"
 [[ $search_history ]] && mkdir -p "$(dirname "$search_history")" && touch "$search_history"
+
+# Dictionary for mapping directory to its last search query
+declare -A directory_queries
 
 save_selection() {
   if [[ -d "$data_dir" ]]; then
