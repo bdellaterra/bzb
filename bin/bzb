@@ -341,6 +341,19 @@ else
 fi
 readonly parallel_sort
 
+# Non-adjacent Uniq Command:
+if has nauniq; then
+  init non_adj_uniq \
+    "nauniq"
+elif has perl; then
+  init non_adj_uniq \
+    "perl -ne '$(sq '!$read{$_}++ && print')'"
+else
+  # Fall back to regular uniq
+  init non_adj_uniq \
+    "uniq"
+fi
+
 # Preview Commands:
 init preview_directory \
   "ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh {}"
@@ -431,7 +444,12 @@ disable playback_file
 init data_dir "$HOME/.bzb" && readonly data_dir
 init session "${data_dir:+$data_dir/sessions$base_dir/session.bzb}"
 [[ $autosave_history ]] && init search_history "${data_dir:+$data_dir/sessions$base_dir/search_history.bzb}"
-[[ $search_history ]] && mkdir -p "$(dirname "$search_history")" && touch "$search_history"
+if [[ $search_history ]]; then
+  mkdir -p "$(dirname "$search_history")" && touch "$search_history"
+  fzf_history+="--history='$(sq "$search_history")'"
+  # Eliminate duplicates from history file created by fzf
+  bash -c "rm '$(sq "$search_history")' && $non_adj_uniq > '$(sq "$search_history")'" < "$search_history"
+fi
 
 # Dictionary for mapping directory to its last search query
 declare -A directory_queries
@@ -580,11 +598,10 @@ main() {
 
   assign BZB_STATUSLINE "${autorecord:+REC }${autoplay:+PLAY }[${status[@]}]"
 
-  fzf_options="$fzf_no_clear $fzf_color $fzf_bind $fzf_prompt --expect='$(sq "$fzf_keys")' --query='$(sq "$BZB_QUERY")' --print-query --multi --layout='reverse'"
+  fzf_options="$fzf_no_clear $fzf_color $fzf_bind $fzf_history $fzf_prompt --expect='$(sq "$fzf_keys")' --query='$(sq "$BZB_QUERY")' --print-query --multi --layout='reverse'"
   [[ $grep_mode ]] && fzf_options+=" --nth=2"
   [[ $statusline ]] && fzf_options+=" --header='$(sq "$BZB_STATUSLINE")'"
   [[ $preview ]] && fzf_options+=" --preview='$(sq "$fzf_preview")' --preview-window='right:62%:wrap'"
-  [[ $search_history ]] && fzf_options+=" --history='$(sq "$search_history")'"
   [[ $fzf_extra_options ]] && fzf_options+=" $fzf_extra_options"
 
   # CYCLE INTO FZF
