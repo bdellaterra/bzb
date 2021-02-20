@@ -580,9 +580,9 @@ main() {
 
   assign BZB_STATUSLINE "${autorecord:+REC }${autoplay:+PLAY }[${status[@]}]"
 
-  fzf_options="$fzf_no_clear $fzf_color --print-query --multi --layout='reverse' $fzf_bind --expect='$(sq "$fzf_keys")' --query=\"\$BZB_QUERY\" $fzf_prompt"
+  fzf_options="$fzf_no_clear $fzf_color $fzf_bind $fzf_prompt --expect='$(sq "$fzf_keys")' --query='$(sq "$BZB_QUERY")' --print-query --multi --layout='reverse'"
   [[ $grep_mode ]] && fzf_options+=" --nth=2"
-  [[ $statusline ]] && fzf_options+=" --header=\"\$BZB_STATUSLINE\""
+  [[ $statusline ]] && fzf_options+=" --header='$(sq "$BZB_STATUSLINE")'"
   [[ $preview ]] && fzf_options+=" --preview='$(sq "$fzf_preview")' --preview-window='right:62%:wrap'"
   [[ $search_history ]] && fzf_options+=" --history='$(sq "$search_history")'"
   [[ $fzf_extra_options ]] && fzf_options+=" $fzf_extra_options"
