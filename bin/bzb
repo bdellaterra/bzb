@@ -279,7 +279,7 @@ initial_targets=("$@")
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    # enable no_clear && readonly no_clear
+    enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
@@ -499,8 +499,8 @@ restore_session() {
 
 record() {
   if [[ -w "$recording_file" ]]; then
-    if [[ ${is_recordable[$1]} ]]; then
-      printf "%q" $@ >> "$recording_file"
+    if [[ "${is_recordable[${1%=*}]}" ]]; then
+      echo $@ >> "$recording_file"
     fi
   else
     display_error "Could not record to '$recording_file'"
@@ -508,8 +508,17 @@ record() {
 }
 
 input() {
-  clear && read -rep "$1" -i "$3" "$2"
-  [[ $autorecord ]] && assign last_input "${!2}" || disable last_input
+  if [[ $autoplay ]]; then
+   if [[ $next_input ]]; then
+     $global $2="$next_input"
+   else
+     display_error "Cannot play back action with missing input"
+     toggle autoplay && main
+   fi
+  else
+    clear && read -rep "$1" -i "$3" "$2"
+    [[ $autorecord ]] && $global last_input="${!2}" || $global last_input=''
+  fi
 }
 
 path_error() { display_error "$(
@@ -605,18 +614,22 @@ main() {
   [[ $fzf_extra_options ]] && fzf_options+=" $fzf_extra_options"
 
   # CYCLE INTO FZF
-  if [[ $autoplay && ${#pending_actions} -gt 0 ]]; then
-    read -a next_action <<< "${pending_actions[0]}"
-    pending_actions=("${pending_actions[@]:1}")
-    [[ ${#pending_actions} -eq 0 ]] && toggle autoplay
-    action="${next_action[0]}"
-    targets=("${next_action[@]:1}")
-    # Skip comment lines
-    [[ "$action" =~ ^[[:space:]]*# ]] && echo "...comment" && main
-    echo "NEXT ACTION: $next_action"
-    echo "PENDING ACTIONS: ${pending_actions[@]}"
-    echo "ACTION: ${action}"
-    echo "TARGETS: ${targets[@]}"
+  if [[ $autoplay ]]; then
+    if [[ ! ${#pending_actions} -gt 0 ]]; then
+      toggle autoplay && main
+    else
+      read -a next_action <<< "${pending_actions[0]}"
+      pending_actions=("${pending_actions[@]:1}")
+      disable next_input
+      action="${next_action[0]}"
+      if [[ "$action" =~ = ]]; then
+        next_input="$(bash -c "echo ${action#*=}")"
+        action="${action%=*}"
+      fi
+      targets=("${next_action[@]:1}")
+      # Skip comment lines
+      [[ "$action" =~ ^[[:space:]]*# ]] && main
+    fi
   else
     fzf_command="$fzf_input | fzf $fzf_options"
     [[ $grep_mode ]] && fzf_command+="$no_grep_counts"
@@ -632,9 +645,6 @@ main() {
     [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && command='esc'
 
     assign action "${key_actions[$command]}"
-
-    # Optionally record actions to file
-    [[ $autorecord && $recording_file ]] && (record "$action"; record "${targets[@]}")
   fi
 
   next_targets=()
@@ -1051,7 +1061,10 @@ main() {
     ;;
   esac
 
-  [[ $autorecord && -n $recording_file && ${is_recordable[$action]} ]] && record '$'
+  # Optionally record actions to file
+  [[ $last_input ]] && last_input="$(printf "=%q" "$last_input")"
+  [[ $autorecord && $recording_file ]] && (record "$action$last_input" "${targets[@]}")
+  disable last_input
 
   # Optionally autosave browsing session
   [[ $autosave_session ]] && save_session "$session"
