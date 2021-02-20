@@ -780,7 +780,9 @@ main() {
 
     # Use alt-q to quick-launch targets in their native client
     launch)
-      if [[ "$launch" ]]; then
+      if [[ ! "$launch" ]]; then
+        clear && display_error "No quick-launch command configured. Cannot open targets in exteral program"
+      else
         for t in "${targets[@]}"; do
           bash -c "$launch '$t'"
         done
