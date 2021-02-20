@@ -31,6 +31,10 @@ LONG/SHORT OPTION                  | EFFECT
 --autoload-query,-aq               | Restore last query used in a directory upon entering it
 --autosave-session,-as             | Save bookmarks and view/sort settings continuously
 --autoload-session,-al             | Load bookmarks and view/sort settings on entering base directory
+--autorecord,-ar                   | Enable automatically recording actions to a file at start
+--autoplay,-ap                     | Enable automatically playing actions from a file at start
+--recording-file=FILE,-rf=FILE     | Specify target file for saving recorded actions
+--playback-file=FILE,-pf=FILE      | Specify source file for playing recorded actions
 --grep=PATTERN,-g=PATTERN          | Start in grep mode, searching files for specified pattern
 --base-directory=DIR,-bd=DIR       | Specify base directory instead of deriving it from target argument
 --alternate-directory=DIR,-ad=DIR  | Initialize alternate directory at start
@@ -45,7 +49,7 @@ an equals sign required for options that take values, unless no unescaped spaces
 ### Key mappings:
 
 KEY         | DESCRIPTION                                                          | ACTION
-------------|----------------------------------------------------------------------|------------------------
+------------|----------------------------------------------------------------------|-----------------------------|
 ctrl-c      | exit file browser                                                    | 
 escape      | clear search query / exit file browser if query is blank             | 
 enter       | enter directory or edit file                                         | 
@@ -66,15 +70,15 @@ alt-d       | create (d)irectory named at prompt                                
 ctrl-alt-d  | create/enter (d)irectory named at prompt                             | create-enter-dir
 alt-b       | toggle (b)ookmark for current directory                              | toggle-bookmark
 ctrl-alt-b  | (b)ookmark targets                                                   | bookmark-targets
-ctrl-alt-u  | (u)nbookmark selected directories                                    | unbookmark
+ctrl-alt-u  | (u)nbookmark selected directories¹                                   | unbookmark
 alt-left    | jump backward through list of bookmarks                              | prev-bookmark
 alt-k       | jump bac(k)ward through list of bookmarks                            | prev-bookmark2
 alt-right   | jump forward through list of bookmarks                               | next-bookmark
 alt-j       | (j)ump forward through list of bookmarks                             | next-bookmark2
-alt-up      | select and enter bookmarked directory                                | select-bookmark
-ctrl-alt-k  | select and enter bookmarked directory                                | select-bookmark2
-alt-down    | select and enter bookmarked directory under current directory        | select-nested-bookmark
-ctrl-alt-j  | select and enter bookmarked directory under current directory        | select-nested-bookmark2
+alt-up      | select and enter bookmarked directory¹                               | select-bookmark
+ctrl-alt-k  | select and enter bookmarked directory¹                               | select-bookmark2
+alt-down    | select and enter bookmarked directory under current directory¹       | select-nested-bookmark
+ctrl-alt-j  | select and enter bookmarked directory under current directory¹       | select-nested-bookmark2
 alt-a       | switch between current and (a)lternate directory                     | enter-alt-dir
 ctrl-alt-a  | set (a)lternate directory (default for copy/move prompts)            | set-alt-dir
 alt-u       | go to base directory, or if at base move it (u)p one level           | up-base-dir
@@ -92,10 +96,15 @@ ctrl-alt-n  | toggle sorting of (n)ested results (affects performance)          
 alt-o       | toggle sort (o)rder ascending/descending                             | toggle-sort-order
 ctrl-alt-i  | restore (i)nitial view/sort settings                                 | initial-settings
 alt-v       | toggle visibility of pre(v)iew pane                                  | toggle-preview
+ctrl-alt-r  | (r)ecord actions to file named at prompt¹                            | toggle-recording
+ctrl-alt-p  | (p)layback actions from file named at prompt¹                        | toggle-playback
 ctrl-alt-l  | (l)oad session from file named at prompt                             | load-session
 ctrl-alt-s  | (s)ave session to file named at prompt                               | save-session
-ctrl-alt-t  | open a new (t)erminal/shell in current directory                     | terminal
+ctrl-alt-t  | open a new (t)erminal/shell in current directory¹                    | terminal
+ctrl-alt-x  | e(x)ecute a single shell command in current directory¹               | execute
 
 Overrides for action/key bindings can be set using environment variable BZB_BIND.
 For example, the 'launch' and 'enter' bindings can be swapped by invoking bzb with command:
 > BZB_BIND="[enter]=alt-q [launch]=right" bzb
+
+1. Specified actions are not recordable
