@@ -608,11 +608,11 @@ main() {
     # Optionally preserve query for current directory
     [[ $autoload_query ]] && directory_queries[$BZB_DIR]="$query"
 
-    # Parse empty command and empty target as 'exit' (fzf-native 'ctrl-c' mapping)
-    [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && command='esc'
-
     # Parse empty command as 'enter' action
     [[ -z "$command" ]] && command='right'
+
+    # Parse empty command and empty target as 'exit' (fzf-native 'ctrl-c' mapping)
+    [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && command='esc'
 
     assign action "${key_actions[$command]}"
 
