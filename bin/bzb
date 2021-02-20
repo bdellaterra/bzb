@@ -867,7 +867,7 @@ main() {
     # Use ctrl-alt-d to create directory and enter it
     create-dir|create-enter-dir)
       [[ "$action" = "create-enter-dir" ]] && create_enter="Create/Enter" || create_enter="Create"
-      clear && read -rep "$create_enter directory: " target
+      input "$create_enter directory: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$target"
         [[ "$action" = "create-enter-dir" ]] && next_targets=("$target")
@@ -878,7 +878,7 @@ main() {
     # Use alt-e to create file and edit it immediately
     create-file|create-edit-file)
       [[ "$action" = "create-edit-file" ]] && create_edit="Create/Edit" || create_edit="Create"
-      clear && read -rep "$create_edit file: " target
+      input "$create_edit file: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$(dirname "$target")" && touch "$target"
         [[ "$action" = "create-edit-file" ]] && next_targets=("$target")
@@ -975,7 +975,7 @@ main() {
     # Use ctrl-alt-a to set alternate directory
     set-alt-dir|enter-alt-dir)
       if [[ "$action" = "set-alt-dir" || ! -d "$alt_dir" ]]; then
-        clear && read -rep "Set alternate directory: " -i "$PWD" dir
+        input "Set alternate directory: " dir "$PWD"
         [[ -d "$dir" ]] && alt_dir="${dir%/}" || path_error
       fi
       if [[ "$action" = "enter-alt-dir" && -d "$alt_dir" ]]; then
@@ -985,7 +985,7 @@ main() {
 
     # Use alt-g to go to directory named at prompt
     prompt-dir)
-      clear && read -rep "Go to directory: " -i "$PWD" dir
+      input "Go to directory: " dir "$PWD"
       [[ -d "$dir" ]] && cd "$dir" || path_error
     ;;
 
@@ -996,7 +996,7 @@ main() {
       dir="$PWD"
       next_base=""
       if [[ "$action" = "prompt-base-dir" || ! -d "$base_dir" ]]; then
-        clear && read -rep "Set base directory: " -i "$dir" dir
+        input "Set base directory: " dir "$dir"
         next_base="${dir%/}"
       elif [[ "$action" = "up-base-dir" ]]; then
         [[ "$PWD" = "$base_dir" ]] && next_base="$(dirname "$dir")" || cd "$base_dir"
@@ -1032,7 +1032,7 @@ main() {
     load-session|autoload-session)
       session_file="$session"
       if [[ "$action" = 'load-session' || ! $autoload_session ]]; then
-        clear && read -rep "Load session: " -i "$session_file" session_file
+        input "Load session: " session_file "$session_file"
         [[ $session_file && ! -r "$session_file" ]] && path_error 'Cannot read session file.'
       fi
       if [[ -r "$session_file" ]]; then
@@ -1044,7 +1044,7 @@ main() {
 
     # Use ctrl-alt-s to save session
     save-session)
-      clear && read -rep "Save session: " -i "$session" session_file
+      input "Save session: " session_file "$session"
       if [[ $session_file ]]; then
         [[ -w "$session_file" ]] && save_session "$session_file" || path_error 'Cannot write session file.'
       fi
