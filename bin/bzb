@@ -976,11 +976,7 @@ main() {
     set-alt-dir|enter-alt-dir)
       if [[ "$action" = "set-alt-dir" || ! -d "$alt_dir" ]]; then
         clear && read -rep "Set alternate directory: " -i "$PWD" dir
-        if [[ -d "$dir" ]]; then
-          alt_dir="${dir%/}"
-        else
-          path_error
-        fi
+        [[ -d "$dir" ]] && alt_dir="${dir%/}" || path_error
       fi
       if [[ "$action" = "enter-alt-dir" && -d "$alt_dir" ]]; then
         [[ "$PWD" = "$alt_dir" ]] && cd "$OLDPWD" || cd "$alt_dir"
@@ -990,11 +986,7 @@ main() {
     # Use alt-g to go to directory named at prompt
     prompt-dir)
       clear && read -rep "Go to directory: " -i "$PWD" dir
-      if [[ -d "$dir" ]]; then
-        cd "$dir"
-      else
-        path_error
-      fi
+      [[ -d "$dir" ]] && cd "$dir" || path_error
     ;;
 
     # Use ctrl-alt-g to set/enter new base directory
