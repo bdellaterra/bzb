@@ -311,19 +311,19 @@ disable alt_dir
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
 if has fd; then
-  disable find_cannot_ignore
+  enable find_can_ignore
   init find_nested \
     "fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
   init find_shallow \
     "fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
 else
-  enable find_cannot_ignore
+  disable find_can_ignore
   init find_nested \
     "find . -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
   init find_shallow \
     "find . -maxdepth 1 -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
 fi
-readonly find_cannot_ignore
+readonly find_can_ignore
 
 # Sort Command:
 enable parallel_sort
@@ -534,7 +534,7 @@ main() {
     [[ ! $persist ]] && exit 0
   fi
 
-  # Clear or optionally restore query after changing directory
+  # Clear query when changing directory. Alternatively, restore saved query if setting is enabled
   if [[ "$PWD" != "$BZB_DIR" ]]; then
     [[ $autoload_query ]] && assign BZB_QUERY "${directory_queries[$PWD]}" || disable BZB_QUERY
   fi
@@ -558,7 +558,7 @@ main() {
     fzf_prompt=" --prompt='$(sq "${BZB_DIR#$BZB_BASE_DIR}")>'"   
     fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
     fzf_preview="$find_mode_preview"
-    [[ $find_cannot_ignore ]] && ignore_disabled='!' || ignore_disabled=''
+    [[ $find_can_ignore ]] && ignore_disabled='' || ignore_disabled='!'
   fi
   fzf_input+="$no_leading_dots"
 
