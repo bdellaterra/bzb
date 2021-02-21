@@ -734,7 +734,7 @@ main() {
       toggle statusline
     ;;
 
-    # Use ctrl-alt-r to toggle recording actions to file named at prompt
+    # Use ctrl-alt-r to toggle recording actions to file named at prompt (Not recordable)
     toggle-recording)
       if [[ $autorecord ]]; then
         toggle autorecord
@@ -757,7 +757,7 @@ main() {
       fi
     ;;
 
-    # Use ctrl-alt-p to playback recording from file named at prompt
+    # Use ctrl-alt-p to playback recording from file named at prompt (Not recordable)
     toggle-playback)
       if [[ $autoplay ]]; then
         toggle autoplay
@@ -927,7 +927,7 @@ main() {
       cd "$current_dir"
     ;;
 
-    # Use ctrl-alt-u to select bookmarks to delete
+    # Use ctrl-alt-u to select bookmarks to delete (Not recordable)
     unbookmark)
       current_dir="$PWD"
       readarray -s 1 -t bookmarks < <(dirs -p -l)
@@ -963,7 +963,7 @@ main() {
       fi
     ;;
 
-    # Use alt-up or ctrl-alt-k to select bookmarked directory using fzf
+    # Use alt-up or ctrl-alt-k to select bookmarked directory using fzf (Not recordable)
     select-bookmark|select-bookmark2)
       # Omit current directory from bookmarks then position it as initial selection at bottom of list
       readarray -t dirs < <(dirs -p -l | sed -n '/^'"${PWD//\//\\/}"'$/!p' | LC_ALL=C sort -u)
@@ -972,7 +972,7 @@ main() {
       [[ ! $next_targets ]] && next_targets=("$PWD")
     ;;
 
-    # Use alt-down or ctrl-alt-j to select bookmarked directory under current directory
+    # Use alt-down or ctrl-alt-j to select bookmarked directory under current directory (Not recordable)
     select-nested-bookmark|select-nested-bookmark2)
       readarray -t dirs < <(dirs -p -l | grep "$PWD" | LC_ALL=C sort -u)
       next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf "$fzf_submenu_bind" --prompt='[go to subdirectory]')")
@@ -1027,8 +1027,8 @@ main() {
       fi
     ;;
 
-    # Use ctrl-alt-t to open a new terminal/shell in current directory
-    # Use ctrl-alt-e to execute a single command
+    # Use ctrl-alt-t to open a new terminal/shell in current directory (Not recordable)
+    # Use ctrl-alt-e to execute a single command (Not recordable)
     terminal|execute)
       if [[ $autoplay ]]; then
         /usr/bin/env bash -c "${targets[@]}"
