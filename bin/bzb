@@ -652,6 +652,10 @@ main() {
     [[ -z "$command" && "${#targets[@]}" -eq 0 ]] && command='esc'
 
     assign action "${key_actions[$command]}"
+
+    if [[ $autorecord && ! "${is_recordable[$action]}" ]]; then
+      display_error "Cannot perform action '$action' during recording" && main
+    fi
   fi
 
   next_targets=()
