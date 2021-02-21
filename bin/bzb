@@ -821,12 +821,16 @@ main() {
 
     # Use alt-r to rename targets in current directory
     rename)
-      for t in "${targets[@]}"; do
-        if [[ -r "$t" ]]; then
-          input "Move/Rename File: " cmd "mv '$(sq "$t")' '$(sq "$t")'" 
-          [[ -n "$cmd" ]] && bash -c "$cmd"
-        fi
-      done
+      if [[ $autorecording && "${#targets[@]}" -gt 1 ]]; then
+        declare-error "Cannot rename multiple targets during recording"
+      else
+        for t in "${targets[@]}"; do
+          if [[ -r "$t" ]]; then
+            input "Move/Rename File: " cmd "mv '$(sq "$t")' '$(sq "$t")'" 
+            [[ -n "$cmd" ]] && bash -c "$cmd"
+          fi
+        done
+      fi
     ;;
 
     # Use alt-m to move targets
