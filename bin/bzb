@@ -115,7 +115,7 @@ map 'rename'                  'alt-r'       "(r)ename targets in current directo
 map 'move-rename'             'ctrl-alt-m'  "(m)ove/rename targets into directory named at prompt"           '*'
 map 'delete'                  'alt-x'       "delete targets"
 map 'copy'                    'alt-c'       "(c)opy targets to directory named at prompt"
-map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into directory named at prompt"
+map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into directory named at prompt"           '*'
 map 'create-file'             'alt-t'       "create (a.k.a. \"(t)ouch\") file named at prompt"
 map 'create-edit-file'        'alt-e'       "create and (e)dit file named at prompt"
 map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
@@ -872,7 +872,7 @@ main() {
       [[ -n "$dir" ]] && cp -ir "${targets[@]}" "$dir"
     ;;
 
-    # Use ctrl-alt-c to copy and rename targets
+    # Use ctrl-alt-c to copy and rename targets (Not recordable)
     copy-rename)
       input "Copy/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
       if [[ -n "$dir" ]]; then
