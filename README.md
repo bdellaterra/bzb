@@ -60,7 +60,7 @@ alt-f       | grep/(f)ind pattern specified at prompt ('left' will exit grep mod
 ctrl-g      | cancel submenu or prompt / toggle (g)rep mode preserving pattern     | toggle-grep
 alt-m       | (m)ove targets to directory named at prompt                          | move
 alt-r       | (r)ename targets in current directory                                | rename
-ctrl-alt-m  | (m)ove/rename targets into directory named at prompt                 | move-rename
+ctrl-alt-m  | (m)ove/rename targets into directory named at prompt¹                | move-rename
 alt-x       | delete targets                                                       | delete
 alt-c       | (c)opy targets to directory named at prompt                          | copy
 ctrl-alt-c  | (c)opy/rename targets into directory named at prompt                 | copy-rename

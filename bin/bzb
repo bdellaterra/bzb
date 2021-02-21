@@ -112,7 +112,7 @@ map 'grep'                    'alt-f'       "grep/(f)ind pattern specified at pr
 map 'toggle-grep'             'ctrl-g'      "cancel submenu or prompt / toggle (g)rep mode preserving pattern"
 map 'move'                    'alt-m'       "(m)ove targets to directory named at prompt"
 map 'rename'                  'alt-r'       "(r)ename targets in current directory"
-map 'move-rename'             'ctrl-alt-m'  "(m)ove/rename targets into directory named at prompt"
+map 'move-rename'             'ctrl-alt-m'  "(m)ove/rename targets into directory named at prompt"           '*'
 map 'delete'                  'alt-x'       "delete targets"
 map 'copy'                    'alt-c'       "(c)opy targets to directory named at prompt"
 map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into directory named at prompt"
@@ -835,7 +835,7 @@ main() {
       [[ -n "$dir" ]] && mv -i "${targets[@]}" "$dir"
     ;;
 
-    # Use ctrl-alt-m to move and rename targets
+    # Use ctrl-alt-m to move and rename targets (Not recordable)
     move-rename)
       input "Move/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
       if [[ -n "$dir" ]]; then
