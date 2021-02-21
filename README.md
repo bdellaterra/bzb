@@ -100,11 +100,12 @@ ctrl-alt-r  | (r)ecord actions to file named at prompt¹                        
 ctrl-alt-p  | (p)layback actions from file named at prompt¹                        | toggle-playback
 ctrl-alt-l  | (l)oad session from file named at prompt                             | load-session
 ctrl-alt-s  | (s)ave session to file named at prompt                               | save-session
-ctrl-alt-t  | open a new (t)erminal/shell in current directory¹                    | terminal
-ctrl-alt-x  | e(x)ecute a single shell command in current directory¹               | execute
+ctrl-alt-t  | open a new (t)erminal/shell in current directory²                    | terminal
+ctrl-alt-x  | e(x)ecute a single shell command in current directory²               | execute
 
 Overrides for action/key bindings can be set using environment variable BZB_BIND.
 For example, the 'launch' and 'enter' bindings can be swapped by invoking bzb with command:
 > BZB_BIND="[enter]=alt-q [launch]=right" bzb
 
 1. Specified actions are not recordable
+2. Each terminal command will be recorded as an 'execute' action
