@@ -93,7 +93,7 @@ init fzf_submenu_bind '--bind=ctrl-g:unix-line-discard+print-query,esc:unix-line
 # Read overrides for action/key bindings
 eval "declare -A BZB_BIND=( $BZB_BIND )"
 
-declare -A key_definitions key_actions action_keys is_recordable
+declare -A key_definitions key_actions action_keys is_recordable is_executable
 map() {
   [[ "${BZB_BIND[$1]}" ]] && key="${BZB_BIND[$1]}" || key="$2"
   keys[${#keys[@]}]="$key"
@@ -102,6 +102,7 @@ map() {
   action_keys["$1"]="$key"
   # 4th field of '*' indicates action is not recordable
   [[ "$4" =~ ^\* ]] && is_recordable["$1"]='' || is_recordable["$1"]=1
+  [[ "$4" =~ ^\*\* ]] && is_executable["$1"]=1 || is_executable["$1"]=''
 }
 
 map 'exit'                    'esc'         "exit file browser"
@@ -111,11 +112,11 @@ map 'launch'                  'alt-q'       "(q)uick-launch targets using native
 map 'grep'                    'alt-f'       "grep/(f)ind pattern specified at prompt ('left' will exit grep mode)"
 map 'toggle-grep'             'ctrl-g'      "cancel submenu or prompt / toggle (g)rep mode preserving pattern"
 map 'move'                    'alt-m'       "(m)ove targets to directory named at prompt"
-map 'rename'                  'alt-r'       "(r)ename targets in current directory"
-map 'move-rename'             'ctrl-alt-m'  "(m)ove/rename targets into directory named at prompt"           '*'
+map 'rename'                  'alt-r'       "(r)ename targets in current directory"                          '**'
+map 'move-rename'             'ctrl-alt-m'  "(m)ove/rename targets into directory named at prompt"           '**'
 map 'delete'                  'alt-x'       "delete targets"
 map 'copy'                    'alt-c'       "(c)opy targets to directory named at prompt"
-map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into directory named at prompt"           '*'
+map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into directory named at prompt"           '**'
 map 'create-file'             'alt-t'       "create (a.k.a. \"(t)ouch\") file named at prompt"
 map 'create-edit-file'        'alt-e'       "create and (e)dit file named at prompt"
 map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
@@ -217,8 +218,8 @@ For example, the 'launch' and 'enter' bindings can be swapped by invoking bzb wi
 Some functionality is not available during recording. If errors are detected the action will be
 recorded as a '#' comment including the error. Comments lines are skipped during playback.
 
-*  Designated actions are not recorded.
-** Each terminal command will be recorded as an 'execute' action
+*  Designated actions are not recordable.
+** Each terminal command will be recorded as a separate 'execute' action
 USAGE
 }
 
@@ -653,7 +654,7 @@ main() {
 
     assign action "${key_actions[$command]}"
 
-    if [[ $autorecord && ! "${is_recordable[$action]}" ]]; then
+    if [[ $autorecord && ! ( "$action" = 'toggle-recording' || "${is_recordable[$action]}" || "${is_executable[$action]}" ) ]]; then
       display_error "Cannot perform action '$action' during recording" && main
     fi
   fi
@@ -829,16 +830,15 @@ main() {
 
     # Use alt-r to rename targets in current directory
     rename)
-      if [[ $autorecording && "${#targets[@]}" -gt 1 ]]; then
-        declare-error "Cannot rename multiple targets during recording"
-      else
-        for t in "${targets[@]}"; do
-          if [[ -r "$t" ]]; then
-            input "Move/Rename File: " cmd "mv '$(sq "$t")' '$(sq "$t")'" 
-            [[ -n "$cmd" ]] && bash -c "$cmd"
+      for t in "${targets[@]}"; do
+        if [[ -r "$t" ]]; then
+          input "Move/Rename File: " cmd "mv '$(sq "$t")' '$(sq "$t")'" 
+          if [[ -n "$cmd" ]]; then
+            bash -c "$cmd"
+            [[ $autorecord && $recording_file ]] && (printf "execute %q\n" "$cmd" >> "$recording_file")
           fi
-        done
-      fi
+        fi
+      done
     ;;
 
     # Use alt-m to move targets
@@ -847,14 +847,17 @@ main() {
       [[ -n "$dir" ]] && mv -i "${targets[@]}" "$dir"
     ;;
 
-    # Use ctrl-alt-m to move and rename targets (Not recordable)
+    # Use ctrl-alt-m to move and rename targets
     move-rename)
       input "Move/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
       if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
           if [[ -r "$t" ]]; then
             input "Move/Rename File: " cmd "mv '$(sq "$PWD/$t")' '$(sq "${dir%/}/$t")'" 
-            [[ -n "$cmd" ]] && bash -c "$cmd"
+            if [[ -n "$cmd" ]]; then
+              bash -c "$cmd"
+              [[ $autorecord && $recording_file ]] && (printf "execute %q\n" "$cmd" >> "$recording_file")
+            fi
           fi
         done
       fi
@@ -876,14 +879,17 @@ main() {
       [[ -n "$dir" ]] && cp -ir "${targets[@]}" "$dir"
     ;;
 
-    # Use ctrl-alt-c to copy and rename targets (Not recordable)
+    # Use ctrl-alt-c to copy and rename targets
     copy-rename)
       input "Copy/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
       if [[ -n "$dir" ]]; then
         for t in "${targets[@]}"; do
           if [[ -r "$t" ]]; then
             input "Copy/Rename File: " cmd "cp -ir '$(sq "$PWD/$t")' '$(sq "$dir/$t")'" 
-            [[ -n "$cmd" ]] && bash -c "$cmd"
+            if [[ -n "$cmd" ]]; then
+              bash -c "$cmd"
+              [[ $autorecord && $recording_file ]] && (printf "execute %q\n" "$cmd" >> "$recording_file")
+            fi
           fi
         done
       fi
