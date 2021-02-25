@@ -7,6 +7,7 @@
 #               See the file LICENSE or <http://www.gnu.org/licenses/>.
 set -e
 shopt -s extglob
+shopt -s expand_aliases
 
 script_name=$(basename "${BASH_SOURCE[0]}")
 
@@ -18,7 +19,7 @@ if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
   exit 1
 else
   # Avoid polluting export namespace for global variables if declare supports -g option (bash version 4.2+)
-  [[ "${BASH_VERSINFO[0]}" -eq 4 && "${BASH_VERSINFO[1]}" -lt 2 ]] && global='export' || global='declare -g'
+  [[ "${BASH_VERSINFO[0]}" -eq 4 && "${BASH_VERSINFO[1]}" -lt 2 ]] && alias global='export' || alias global='declare -g'
 fi
 
 
@@ -35,7 +36,7 @@ defined() { [[ -n "$1" && -n "${!1+defined}" ]] || return 1; }
 assign() {
   local var="$1"; shift;
   [[ "$var" =~ ^BZB_ ]] && export "$var"
-  $global $var="$*"
+  global $var="$*"
 }
 
 # In the variable name provided as first argument, store the default value provided
@@ -177,6 +178,7 @@ map 'toggle-nested-sort'      'ctrl-alt-n'  "toggle sorting of (n)ested results 
 map 'toggle-sort-order'       'alt-o'       "toggle sort (o)rder ascending/descending"
 map 'initial-settings'        'ctrl-alt-i'  "restore (i)nitial view/sort settings"
 map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane"
+map 'toggle-relative'         'ctrl-/'      "toggle relative/absolute path names"
 map 'toggle-recording'        'ctrl-alt-r'  "record actions to file named at prompt"                         '*'
 map 'toggle-playback'         'ctrl-alt-p'  "playback actions from file named at prompt"                     '*'
 map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
@@ -210,6 +212,7 @@ Options:
 --no-preview,-V                    Disable preview pane that shows file/directory contents
 --no-persist,-P                    Exit browser after editing a file
 --no-edit,-E                       Log selections to file instead of launching editor
+--relative,-r                      Use relative paths instead of absolute paths
 --autosave-history,-ah             Save queries so Ctrl-p and Ctrl-n will cycle through search history
 --autoload-query,-aq               Restore last query used in a directory upon entering it
 --autosave-session,-as             Save bookmarks and view/sort settings continuously
@@ -279,6 +282,8 @@ for arg in "$@"; do
     -P|--no-persist) disable BZB_PERSIST; shift ;;
     -e|--edit) enable BZB_EDIT; shift ;;
     -E|--no-edit) disable BZB_EDIT; shift ;;
+    -rp|--relative) enable BZB_RELATIVE; shift ;;
+    -RP|--no-relative) disable BZB_RELATIVE; shift ;;
     -ah|--autosave-history) enable BZB_AUTOSAVE_HISTORY; shift ;;
     -AH|--no-autosave-history) disable BZB_AUTOSAVE_HISTORY; shift ;;
     -aq|--autoload-query) enable BZB_AUTOLOAD_QUERY; shift ;;
@@ -334,7 +339,7 @@ enable edit
 # Default enabled/disabled settings
 [[ $edit ]] && enable persist || disable persist
 enable sorted preview statusline hide ignore
-disable nested reverse autosave_history autoload_query autosave_session autoload_session autorecord autoplay grep_mode fzf_extra_options
+disable nested reverse relative autosave_history autoload_query autosave_session autoload_session autorecord autoplay grep_mode fzf_extra_options
 
 # Derive base directory from target, or use current directory if none given
 [[ -d "$initial_target" ]] && init base_dir "$initial_target" || init base_dir "$(dirname "${initial_target:-$PWD/.}")"
@@ -514,7 +519,7 @@ save_session() {
       declare -p PWD > "$session"
       [[ "$base_dir" ]] && declare -p base_dir >> "$session"
       [[ "$alt_dir" ]] && declare -p alt_dir >> "$session"
-      declare -p bookmarks hide ignore nested sorted nested_sort reverse preview statusline >> "$session"
+      declare -p bookmarks hide ignore nested sorted nested_sort reverse preview statusline relative >> "$session"
       [[ "$grep_query" ]] && declare -p grep_query >> "$session"
       [[ ${#directory_queries[@]} ]] && declare -p directory_queries >> "$session"
     else
@@ -546,15 +551,20 @@ record() {
 input() {
   if [[ $autoplay ]]; then
    if [[ $next_input ]]; then
-     $global $2="$next_input"
+     global $2="$next_input"
    else
      display_error "Cannot play back action with missing input"
      toggle autoplay && main
    fi
   else
     clear && read -rep "$1" -i "$3" "$2"
-    [[ $autorecord ]] && $global last_input="${!2}" || $global last_input=''
+    [[ $autorecord ]] && global last_input="${!2}" || global last_input=''
   fi
+}
+
+input_path() {
+  [[ $relative ]] && set -- "$1" "$2" "$(rel "$PWD" "$3")"
+  input "$@"
 }
 
 path_error() { display_error "$(
@@ -569,7 +579,7 @@ EOF
 # MAIN
 
 # Save initial preferences so they can be restored later
-declare -A initial_settings=([sorted]="$sorted" [preview]="$preview" [statusline]="$statusline" [hide]="$hide" [ignore]="$ignore" [nested]="$nested" [reverse]="$reverse" [nested_sort]="$nested_sort")
+declare -A initial_settings=([sorted]="$sorted" [preview]="$preview" [statusline]="$statusline" [hide]="$hide" [ignore]="$ignore" [nested]="$nested" [reverse]="$reverse" [nested_sort]="$nested_sort" [relative]="$relative")
 
 # Optionally autoload browsing session
 [[ $autoload_session && -r "$session" ]] && . -- "$session" && restore_session "$session"
@@ -640,6 +650,7 @@ main() {
   [[ $sorted && $sort_enabled ]] && status+=("${sort_enabled}s${nested_sort_enabled}") || status+=("${sort_disabled}S${nested_sort_enabled}")
   [[ ! $sorted || $sort_disabled ]] && reverse_disabled='!' || reverse_disabled=''
   [[ $reverse ]] && status+=("${reverse_disabled:--}O") || status+=("${reverse_disabled:--}o")
+  [[ $relative ]] && status+=("-r") || status+=("-R")
 
   assign BZB_STATUSLINE "${autorecord:+REC }${autoplay:+PLAY }[${status[@]}]"
 
@@ -771,6 +782,11 @@ main() {
       toggle statusline
     ;;
 
+    # Use ctrl-/ to toggle relative/absolute paths
+    toggle-relative)
+      toggle relative
+    ;;
+
     # Use ctrl-alt-r to toggle recording actions to file named at prompt (This action is not recordable)
     toggle-recording)
       if [[ $autorecord ]]; then
@@ -871,16 +887,14 @@ main() {
 
     # Use alt-m to move targets
     move)
-      input "Move to Directory: " dir "${alt_dir:-$base_dir}" 
+      input_path "Move to Directory: " dir "${alt_dir:-$base_dir}" 
       [[ -n "$dir" ]] && mv -i "${targets[@]}" "$dir"
-      [[ $autorecord ]] && last_input="$(rel "$PWD" "$last_input")"
     ;;
 
     # Use ctrl-alt-m to move and rename targets
     move-rename)
-      input "Move/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
+      input_path "Move/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
       if [[ -n "$dir" ]]; then
-        [[ $autorecord ]] && last_input="$(rel "$PWD" "$last_input")"
         for t in "${targets[@]}"; do
           if [[ -r "$t" ]]; then
             input "Move/Rename File: " cmd "mv '$(sq "$PWD/$t")' '$(sq "${dir%/}/$t")'" 
@@ -905,16 +919,14 @@ main() {
 
     # Use alt-c to copy targets
     copy)
-      input "Copy to Directory: " dir "${alt_dir:-$base_dir}" 
+      input_path "Copy to Directory: " dir "${alt_dir:-$base_dir}" 
       [[ -n "$dir" ]] && cp -ir "${targets[@]}" "$dir"
-      [[ $autorecord ]] && last_input="$(rel "$PWD" "$last_input")"
     ;;
 
     # Use ctrl-alt-c to copy and rename targets
     copy-rename)
-      input "Copy/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
+      input_path "Copy/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
       if [[ -n "$dir" ]]; then
-        [[ $autorecord ]] && last_input="$(rel "$PWD" "$last_input")"
         for t in "${targets[@]}"; do
           if [[ -r "$t" ]]; then
             input "Copy/Rename File: " cmd "cp -ir '$(sq "$PWD/$t")' '$(sq "$dir/$t")'" 
@@ -1039,9 +1051,8 @@ main() {
     # Use ctrl-alt-a to set alternate directory
     set-alt-dir|enter-alt-dir)
       if [[ "$action" = "set-alt-dir" || ! -d "$alt_dir" ]]; then
-        input "Set alternate directory: " dir "$PWD"
+        input_path "Set alternate directory: " dir "$PWD"
         [[ -d "$dir" ]] && alt_dir="${dir%/}" || path_error
-        [[ $autorecord ]] && last_input="$(rel "$PWD" "$last_input")"
       fi
       if [[ "$action" = "enter-alt-dir" && -d "$alt_dir" ]]; then
         [[ "$PWD" = "$alt_dir" ]] && cd "$OLDPWD" || cd "$alt_dir"
@@ -1050,9 +1061,8 @@ main() {
 
     # Use alt-g to go to directory named at prompt
     prompt-dir)
-      input "Go to directory: " dir "$PWD"
+      input_path "Go to directory: " dir "$PWD"
       [[ -d "$dir" ]] && cd "$dir" || path_error
-      [[ $autorecord ]] && last_input="$(rel "$OLDPWD" "$last_input")"
     ;;
 
     # Use ctrl-alt-g to set/enter new base directory
@@ -1062,8 +1072,7 @@ main() {
       dir="$PWD"
       next_base=""
       if [[ "$action" = "prompt-base-dir" || ! -d "$base_dir" ]]; then
-        input "Set base directory: " dir "$dir"
-        [[ $autorecord ]] && last_input="$(rel "$PWD" "$last_input")"
+        input_path "Set base directory: " dir "$dir"
         next_base="${dir%/}"
       elif [[ "$action" = "up-base-dir" ]]; then
         [[ "$PWD" = "$base_dir" ]] && next_base="$(dirname "$dir")" || cd "$base_dir"
