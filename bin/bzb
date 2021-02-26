@@ -74,18 +74,18 @@ dq() { printf '%s' "$1" | sed -e 's/[$!&`"\]/\\&/g'; }
 
 # Get relative path from source file/directory (1st arg) to target file/directory (2nd arg)
 # Can supply non-existant directories (not files) for either arg if using absolute path
-rel() {(
-  _rel_down() {
-    [[ "$1" = '/' && ! "$2" = '/' ]] && local pre='./' || local pre='.'
-    [[ "${2%/}/" =~ ^"${1%/}/" ]] && echo "$pre${2#"$1"}"
-  }
-  _rel_up() {
-    while [[ ! "$(_rel_down "$1" "$2")" ]]; do
-      set -- "$(dirname "$1")" "$2" 
-      local back="../$back" rest="${2#"$1"}"
-    done
-    echo "$back${rest#/}"
-  }
+_rel_down() {
+  [[ "$1" = '/' && ! "$2" = '/' ]] && local pre='./' || local pre='.'
+  [[ "${2%/}/" =~ ^"${1%/}/" ]] && echo "$pre${2#"$1"}"
+}
+_rel_up() {
+  while [[ ! "$(_rel_down "$1" "$2")" ]]; do
+    set -- "$(dirname "$1")" "$2" 
+    local back="../$back" rest="${2#"$1"}"
+  done
+  echo "$back${rest#/}"
+}
+rel() {
   local source=$(printf '%q' "$1") target=$(printf '%q' "$2") source_file='' target_file=''
   [[ ! "$source" =~ \.*\/ ]] && source="./$source"
   [[ ! "$target" =~ \.*\/ ]] && target="./$target"
@@ -97,7 +97,7 @@ rel() {(
   [[ ! $rel ]] && rel="$(_rel_up "$source" "$target")"
   [[ $target_file ]] && rel="${rel%%+(/)}/$target_file"
   echo "$rel"
-)}
+}
 
 display_error() {
   echo && last_error=$(printf 'Error: %s' "$@" 2>&1 | tee /dev/tty) && echo;
@@ -179,8 +179,8 @@ map 'toggle-sort-order'       'alt-o'       "toggle sort (o)rder ascending/desce
 map 'initial-settings'        'ctrl-alt-i'  "restore (i)nitial view/sort settings"
 map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane"
 map 'toggle-relative'         'ctrl-/'      "toggle relative/absolute path names"
-map 'toggle-recording'        'ctrl-alt-r'  "record actions to file named at prompt"                         '*'
-map 'toggle-playback'         'ctrl-alt-p'  "playback actions from file named at prompt"                     '*'
+map 'toggle-recording'        'ctrl-alt-r'  "(r)ecord actions to file named at prompt"                         '*'
+map 'toggle-playback'         'ctrl-alt-p'  "(p)layback actions from file named at prompt"                     '*'
 map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
 map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at prompt"
 map 'terminal'                'ctrl-alt-t'  "open a new (t)erminal/shell in current directory"               '**'
