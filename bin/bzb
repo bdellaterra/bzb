@@ -641,15 +641,17 @@ main() {
   status=()
   [[ $hide ]] && status+=('-h') || status+=('-H')
   [[ $ignore ]] && status+=("${ignore_disabled:--}i") || status+=("${ignore_disabled:--}I")
-  [[ $nested ]] && status+=('-n') || status+=('-N')
-  [[ $nested_sort ]] && nested_sort_enabled="/" || nested_sort_enabled='' 
-  [[ ! $sorted ]] && sort_disabled='-' || sort_disabled=''
-  [[ $sorted ]] && sort_enabled='-' || sort_enabled=''
-  [[ $nested && $sort_enabled && $parallel_sort ]] && sort_enabled="="
-  [[ $nested && ! $nested_sort_enabled ]] && sort_disabled='!' && sort_enabled='!'
-  [[ $sorted && $sort_enabled ]] && status+=("${sort_enabled}s${nested_sort_enabled}") || status+=("${sort_disabled}S${nested_sort_enabled}")
-  [[ ! $sorted || $sort_disabled ]] && reverse_disabled='!' || reverse_disabled=''
-  [[ $reverse ]] && status+=("${reverse_disabled:--}O") || status+=("${reverse_disabled:--}o")
+  if [[ $nested ]]; then
+    status+=('-n')
+    [[ $parallel_sort ]] && sort_symbol="=" || sort_symbol='-'
+    [[ $nested_sort && ! $sorted ]] && sort_symbol='!'
+    [[ $nested_sort ]] && status+=("${sort_symbol}ns") || status+=("${sort_symbol}NS")
+  else
+    status+=('-N')
+    [[ $sorted ]] && status+=("-s") || status+=("-S")
+  fi
+  [[ ! $sorted ]] && reverse_symbol='!' || reverse_symbol='-'
+  [[ $reverse ]] && status+=("${reverse_symbol}O") || status+=("${reverse_symbol}o")
   [[ $relative ]] && status+=("-r") || status+=("-R")
 
   assign BZB_STATUSLINE "${autorecord:+REC }${autoplay:+PLAY }[${status[@]}]"
