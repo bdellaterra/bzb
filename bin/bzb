@@ -229,7 +229,7 @@ Options:
 Most options can be inverted by reversing uppercase/lowercase for the short form or adding/removing
 the 'no-' prefix for the long form. Additional options will be passed on to fzf, with the long form using
 an equals sign required for options that take values, unless no unescaped spaces are used in the assignment.
-(e.g. '--query=STR' or '-qSTR', not '-q STR')
+example: '--query=STR' or '-qSTR', not '-q STR'
 
 Key mappings:
 
@@ -247,7 +247,7 @@ For example, the 'launch' and 'enter' bindings can be swapped by invoking bzb wi
 > BZB_BIND="[enter]=alt-q [launch]=right" bzb
 
 Some functionality is not available during recording. If errors are detected the action will be
-recorded as a '#' comment including the error. Comments lines are skipped during playback.
+recorded as a '#' comment including the error. Comment lines are skipped during playback.
 
 *  Designated actions are not recordable.
 ** Each terminal command will be recorded as a separate 'execute' action
