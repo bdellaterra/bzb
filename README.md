@@ -86,8 +86,8 @@ alt-u       | go to base directory, or if at base move it (u)p one level        
 alt-p       | switch between current and (p)revious directory                      | enter-prev-dir
 alt-g       | (g)o to directory named at prompt                                    | prompt-dir
 ctrl-alt-g  | set new base directory at prompt and (g)o to it                      | prompt-base-dir
-alt-y       | copy (a.k.a. (y)ank) targets to clipboard                            | yank-targets
-ctrl-alt-y  | copy (a.k.a. (y)ank) current directory to clipboard                  | yank-dir
+alt-y       | copy (a.k.a. (y)ank) current directory to clipboard                  | yank-dir
+ctrl-alt-y  | copy (a.k.a. (y)ank) targets to clipboard                            | yank-targets
 alt-l       | toggle visibility of the status(l)ine                                | toggle-statusline
 alt-h       | toggle visibility of (h)idden files                                  | toggle-hide
 alt-i       | toggle visibility of (i)gnored files (if supported)                  | toggle-ignore

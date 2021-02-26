@@ -165,8 +165,8 @@ map 'up-base-dir'             'alt-u'       "go to base directory, or if at base
 map 'enter-prev-dir'          'alt-p'       "switch between current and (p)revious directory"
 map 'prompt-dir'              'alt-g'       "(g)o to directory named at prompt"
 map 'prompt-base-dir'         'ctrl-alt-g'  "set new base directory at prompt and (g)o to it"
-map 'yank-targets'            'alt-y'       "copy (a.k.a. (y)ank) targets to clipboard"
-map 'yank-dir'                'ctrl-alt-y'  "copy (a.k.a. (y)ank) current directory to clipboard"
+map 'yank-dir'                'alt-y'       "copy (a.k.a. (y)ank) current directory to clipboard"
+map 'yank-targets'            'ctrl-alt-y'  "copy (a.k.a. (y)ank) targets to clipboard"
 map 'toggle-statusline'       'alt-l'       "toggle visibility of the status(l)ine"
 map 'toggle-hide'             'alt-h'       "toggle visibility of (h)idden files"
 map 'toggle-ignore'           'alt-i'       "toggle visibility of (i)gnored files (if supported)"
@@ -317,7 +317,7 @@ initial_targets=("$@")
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    # enable no_clear && readonly no_clear
+    enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
@@ -838,7 +838,17 @@ main() {
       done
     ;;
 
-    # Use alt-y to yank targets to clipboard
+    # Use alt-y to yank current directory to clipboard
+    yank-dir)
+      if [[ ! "$clip" ]]; then
+        clear && display_error "No clipboard command configured. Cannot copy current directory to clipboard"
+      else
+        yank_directory=" '$(sq "$PWD")'"
+        bash -c "echo -n '$(sq "$yank_directory")' | $clip"
+      fi
+    ;;
+
+    # Use ctrl-alt-y to yank targets to clipboard
     yank-targets)
       if [[ ! "$clip" ]]; then
         clear && display_error "No clipboard command configured. Cannot copy targets to clipboard"
@@ -848,16 +858,6 @@ main() {
           yank_targets+=" '$(sq "$(dot)/$t")'"
         done
         bash -c "echo -n '$(sq "$yank_targets")' | $clip"
-      fi
-    ;;
-
-    # Use ctrl-alt-y to yank current directory to clipboard
-    yank-dir)
-      if [[ ! "$clip" ]]; then
-        clear && display_error "No clipboard command configured. Cannot copy current directory to clipboard"
-      else
-        yank_directory=" '$(sq "$PWD")'"
-        bash -c "echo -n '$(sq "$yank_directory")' | $clip"
       fi
     ;;
 
