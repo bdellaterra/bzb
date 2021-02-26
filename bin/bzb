@@ -683,7 +683,9 @@ main() {
     { read -r query; read -r command; readarray -t targets; } < <(bash -c "$fzf_command")
 
     # Optionally preserve query for current directory
-    [[ $autoload_query ]] && directory_queries[$BZB_DIR]="$query"
+    if [[ $autoload_query ]]; then
+      [[ $query || ( ! $query && ${directory_queries[$BZB_DIR]} ) ]] && directory_queries[$BZB_DIR]="$query"
+    fi
 
     # Parse empty command as 'enter' action
     [[ -z "$command" ]] && command='right'
