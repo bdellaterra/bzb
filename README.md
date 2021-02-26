@@ -36,10 +36,10 @@ LONG/SHORT OPTION                  | EFFECT
 --autoplay,-ap                     | Enable automatically playing actions from a file at start
 --recording-file=FILE,-rf=FILE     | Specify target file for saving recorded actions
 --playback-file=FILE,-pf=FILE      | Specify source file for playing recorded actions
---grep=PATTERN,-g=PATTERN          | Start in grep mode, searching files for specified pattern
 --base-directory=DIR,-bd=DIR       | Specify base directory instead of deriving it from target argument
 --alternate-directory=DIR,-ad=DIR  | Initialize alternate directory at start
 --data-directory=DIR,-dd=DIR       | Specify directory for storing sessions and other data
+--grep=PATTERN,-g=PATTERN          | Start in grep mode, searching files for specified pattern
 
 Most options can be inverted by reversing uppercase/lowercase for the short form or adding/removing
 the 'no-' prefix for the long form. Additional options will be passed on to fzf, with the long form using
