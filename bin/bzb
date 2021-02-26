@@ -127,8 +127,8 @@ map() {
   key_definitions["$key"]="$3$4"
   key_actions["$key"]="$1"
   action_keys["$1"]="$key"
-  # 4th field of '*' indicates action is not recordable
-  [[ "$4" =~ ^\* ]] && is_recordable["$1"]='' || is_recordable["$1"]=1
+  # 4th field of '*' indicates action is not recordable. Double '**' means it's recorded as 'execute' action(s)
+  [[ "$4" =~ ^\* ]] && is_recordable["$1"]='' || is_recrdable["$1"]=1
   [[ "$4" =~ ^\*\* ]] && is_executable["$1"]=1 || is_executable["$1"]=''
 }
 
