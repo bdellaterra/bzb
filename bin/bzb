@@ -317,7 +317,7 @@ initial_targets=("$@")
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    enable no_clear && readonly no_clear
+    # enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
@@ -888,22 +888,26 @@ main() {
     # Use alt-m to move targets
     move)
       input_path "Move to Directory: " dir "${alt_dir:-$base_dir}" 
-      [[ -n "$dir" ]] && mv -i "${targets[@]}" "$dir"
+      [[ $dir ]] && ( [[ -d "$dir" ]] && mv -i "${targets[@]}" "$dir" || path_error )
     ;;
 
     # Use ctrl-alt-m to move and rename targets
     move-rename)
       input_path "Move/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
-      if [[ -n "$dir" ]]; then
-        for t in "${targets[@]}"; do
-          if [[ -r "$t" ]]; then
-            input "Move/Rename File: " cmd "mv '$(sq "$(dot)/$t")' '$(sq "${dir%/}/$t")'" 
-            if [[ -n "$cmd" ]]; then
-              bash -c "$cmd"
-              [[ $autorecord && $recording_file ]] && (printf "execute %q\n" "$cmd" >> "$recording_file")
+      if [[ $dir ]]; then
+        if [[ ! -d "$dir" ]]; then
+          path_error
+        else
+          for t in "${targets[@]}"; do
+            if [[ -r "$t" ]]; then
+              input "Move/Rename File: " cmd "mv '$(sq "$(dot)/$t")' '$(sq "${dir%/}/$t")'" 
+              if [[ -n "$cmd" ]]; then
+                bash -c "$cmd"
+                [[ $autorecord && $recording_file ]] && (printf "execute %q\n" "$cmd" >> "$recording_file")
+              fi
             fi
-          fi
-        done
+          done
+        fi
       fi
     ;;
 
@@ -914,28 +918,30 @@ main() {
         delete_targets+=" '$(sq "$t")'"
       done
       [[ $autoplay ]] && remove="rm -r" || remove="$rm_interactive"
-      clear && bash -c "$remove $delete_targets"
+      [[ $delete_targets ]] && clear && bash -c "$remove $delete_targets"
     ;;
 
     # Use alt-c to copy targets
     copy)
       input_path "Copy to Directory: " dir "${alt_dir:-$base_dir}" 
-      [[ -n "$dir" ]] && cp -ir "${targets[@]}" "$dir"
+      [[ $dir ]] && ( [[ -d "$dir" ]] && cp -ir "${targets[@]}" "$dir" || path_error )
     ;;
 
     # Use ctrl-alt-c to copy and rename targets
     copy-rename)
       input_path "Copy/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
-      if [[ -n "$dir" ]]; then
-        for t in "${targets[@]}"; do
-          if [[ -r "$t" ]]; then
-            input "Copy/Rename File: " cmd "cp -ir '$(sq "$(dot)/$t")' '$(sq "$dir/$t")'" 
-            if [[ -n "$cmd" ]]; then
-              bash -c "$cmd"
-              [[ $autorecord && $recording_file ]] && (printf "execute %q\n" "$cmd" >> "$recording_file")
+      if [[ $dir ]]; then
+        if [[ ! -d "$dir" ]]; then path_error; else
+          for t in "${targets[@]}"; do
+            if [[ -r "$t" ]]; then
+              input "Copy/Rename File: " cmd "cp -ir '$(sq "$(dot)/$t")' '$(sq "$dir/$t")'" 
+              if [[ -n "$cmd" ]]; then
+                bash -c "$cmd"
+                [[ $autorecord && $recording_file ]] && (printf "execute %q\n" "$cmd" >> "$recording_file")
+              fi
             fi
-          fi
-        done
+          done
+        fi
       fi
     ;;
 
@@ -1052,7 +1058,7 @@ main() {
     set-alt-dir|enter-alt-dir)
       if [[ "$action" = "set-alt-dir" || ! -d "$alt_dir" ]]; then
         input_path "Set alternate directory: " dir "$(dot)"
-        [[ -d "$dir" ]] && alt_dir="$(readlink -f "$dir")" || path_error
+        [[ $dir ]] && ( [[ -d "$dir" ]] && alt_dir="$(readlink -f "$dir")" || path_error )
       fi
       if [[ "$action" = "enter-alt-dir" && -d "$alt_dir" ]]; then
         [[ "$PWD" = "$alt_dir" ]] && cd "$OLDPWD" || cd "$alt_dir"
@@ -1062,22 +1068,22 @@ main() {
     # Use alt-g to go to directory named at prompt
     prompt-dir)
       input_path "Go to directory: " dir "$(dot)"
-      [[ -d "$dir" ]] && cd "$dir" || path_error
+      [[ $dir ]] && ( [[ -d "$dir" ]] && cd "$dir" || path_error )
     ;;
 
     # Use ctrl-alt-g to set/enter new base directory
     # Use alt-u to go "up" to base directory,
     # shifting up to parent directory if already at base
     prompt-base-dir|up-base-dir)
-      dir="$PWD"
-      next_base=""
+      dir="$PWD" next_base=''
       if [[ "$action" = "prompt-base-dir" || ! -d "$base_dir" ]]; then
         input_path "Set base directory: " dir "$(dot)"
-        next_base="$(readlink -f "$dir")"
+        [[ -d "$dir" ]] && next_base="$(readlink -f "$dir")"
       elif [[ "$action" = "up-base-dir" ]]; then
+        # 'dirname' stops at root directory, returning '/'
         [[ "$PWD" = "$base_dir" ]] && next_base="$(dirname "$dir")" || cd "$base_dir"
       fi
-      if [[ -n "$next_base" ]]; then
+      if [[ $next_base ]]; then
         if [[ ! -d "$next_base" ]]; then
           path_error
         elif [[ "$next_base" != "$base_dir" ]]; then
