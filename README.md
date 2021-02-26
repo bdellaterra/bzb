@@ -43,8 +43,8 @@ LONG/SHORT OPTION                  | EFFECT
 
 Most options can be inverted by reversing uppercase/lowercase for the short form or adding/removing
 the 'no-' prefix for the long form. Additional options will be passed on to fzf, with the long form using
-an equals sign required for options that take values, unless no unescaped spaces are used in the assignment.
-(e.g. '--query=STR' or '-qSTR', not '-q STR')
+an equals sign required for options that take values, unless no unescaped spaces are used in the assignment:
+> example: '--query=STR' or '-qSTR', not '-q STR'
 
 
 ### Key mappings:
