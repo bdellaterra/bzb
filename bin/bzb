@@ -665,7 +665,6 @@ main() {
   [[ $preview ]] && fzf_options+=" --preview='$(sq "$fzf_preview")' --preview-window='right:62%:wrap'"
   [[ $fzf_extra_options ]] && fzf_options+=" $fzf_extra_options"
 
-  # CYCLE INTO FZF
   if [[ $autoplay ]]; then
     if [[ ! ${#pending_actions} -gt 0 ]]; then
       toggle autoplay && main
@@ -683,6 +682,7 @@ main() {
       [[ "$action" =~ ^[[:space:]]*# ]] && main
     fi
   else
+    # CYCLE INTO FZF
     fzf_command="$fzf_input | fzf $fzf_options"
     [[ $grep_mode ]] && fzf_command+="$no_grep_counts"
     { read -r query; read -r command; readarray -t targets; } < <(bash -c "$fzf_command")
@@ -1003,6 +1003,7 @@ main() {
     ;;
 
     # Use ctrl-alt-u to select bookmarks to delete (This action is not recordable)
+    # TODO: Make this action recordable and support relative paths
     unbookmark)
       current_dir="$PWD"
       readarray -s 1 -t bookmarks < <(dirs -p -l)
@@ -1039,6 +1040,7 @@ main() {
     ;;
 
     # Use alt-up or ctrl-alt-k to select bookmarked directory using fzf (This action is not recordable)
+    # TODO: Make this action recordable and support relative paths
     select-bookmark|select-bookmark2)
       # Omit current directory from bookmarks then position it as initial selection at bottom of list
       readarray -t dirs < <(dirs -p -l | sed -n '/^'"${PWD//\//\\/}"'$/!p' | LC_ALL=C sort -u)
@@ -1048,6 +1050,7 @@ main() {
     ;;
 
     # Use alt-down or ctrl-alt-j to select bookmarked directory under current directory (This action is not recordable)
+    # TODO: Make this action recordable and support relative paths
     select-nested-bookmark|select-nested-bookmark2)
       readarray -t dirs < <(dirs -p -l | grep "$PWD" | LC_ALL=C sort -u)
       next_targets=("$(printf '%s\n' "${dirs[@]}" | fzf "$fzf_submenu_bind" --prompt='[go to subdirectory]')")
@@ -1102,8 +1105,8 @@ main() {
       fi
     ;;
 
-    # Use ctrl-alt-t to open a new terminal/shell in current directory (This action is not recordable)
-    # Use ctrl-alt-e to execute a single command (Not recordable)
+    # Use ctrl-alt-t to open a new terminal/shell in current directory
+    # Use ctrl-alt-e to execute a single command
     terminal|execute)
       if [[ $autoplay ]]; then
         /usr/bin/env bash -c "${targets[@]}"
