@@ -1105,7 +1105,12 @@ main() {
         clear
         set +e
         # Trap each command to log previous command, commented out if exit status indicates failure
-        PS1='>> ' /usr/bin/env bash --init-file <(echo 'trap '\''export BZB_LAST_EXIT_CODE="$?" BZB_LAST_COMMAND="$BZB_THIS_COMMAND" BZB_THIS_COMMAND="$BASH_COMMAND";[[ "'${autorecord:+1}'" && "'${recording_file:+1}'" ]] && ([[ $BZB_LAST_EXIT_CODE -ne 0 ]] && printf "# (EXIT_CODE $BZB_LAST_EXIT_CODE) ";[[ $BZB_LAST_COMMAND ]] && printf "execute %q\n" "$BZB_LAST_COMMAND") >> '"$recording_file""$QUIT"\'' DEBUG')
+        rec_trap='export BZB_LAST_EXIT_CODE="$?" BZB_LAST_COMMAND="$BZB_THIS_COMMAND" BZB_THIS_COMMAND="$BASH_COMMAND"'
+        rec_trap+=';[[ "'${autorecord:+1}'" && "'${recording_file:+1}'" ]] && ( '
+        rec_trap+='[[ $BZB_LAST_EXIT_CODE -ne 0 ]] && printf "# (EXIT_CODE $BZB_LAST_EXIT_CODE) "'
+        rec_trap+=';[[ $BZB_LAST_COMMAND ]] && printf "execute %q\n" "$BZB_LAST_COMMAND"'
+        rec_trap+=' ) >> '"$(printf '%q' "$recording_file")$QUIT"
+        PS1='>> ' /usr/bin/env bash --init-file <(echo trap\ "'$(sq "$rec_trap")'"\ DEBUG)
         set -e
       fi
     ;;
