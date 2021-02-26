@@ -5,9 +5,7 @@
 # License:      Copyright 2020-2021 Brian Dellaterra.
 #               Distributed under the terms of the GNU Lesser General Public License Version 2.1.
 #               See the file LICENSE or <http://www.gnu.org/licenses/>.
-set -e
-shopt -s extglob
-shopt -s expand_aliases
+set -e; shopt -s extglob expand_aliases
 
 script_name=$(basename "${BASH_SOURCE[0]}")
 
