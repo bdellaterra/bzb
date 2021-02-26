@@ -122,11 +122,13 @@ eval "declare -A BZB_BIND=( $BZB_BIND )"
 
 declare -A key_definitions key_actions action_keys is_recordable is_executable
 map() {
-  [[ "${BZB_BIND[$1]}" ]] && key="${BZB_BIND[$1]}" || key="$2"
-  keys[${#keys[@]}]="$key"
-  key_definitions["$key"]="$3$4"
-  key_actions["$key"]="$1"
-  action_keys["$1"]="$key"
+  [[ "${BZB_BIND[$1]+defined}" ]] && key="${BZB_BIND[$1]}" || key="$2"
+  if [[ $key ]]; then
+    keys[${#keys[@]}]="$key"
+    key_definitions["$key"]="$3$4"
+    key_actions["$key"]="$1"
+    action_keys["$1"]="$key"
+  fi
   # 4th field of '*' indicates action is not recordable. Double '**' means it's recorded as 'execute' action(s)
   [[ "$4" =~ ^\* ]] && is_recordable["$1"]='' || is_recordable["$1"]=1
   [[ "$4" =~ ^\*\* ]] && is_executable["$1"]=1 || is_executable["$1"]=''
@@ -317,7 +319,7 @@ initial_targets=("$@")
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    enable no_clear && readonly no_clear
+    # enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
