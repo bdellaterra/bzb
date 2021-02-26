@@ -179,8 +179,8 @@ map 'toggle-sort-order'       'alt-o'       "toggle sort (o)rder ascending/desce
 map 'initial-settings'        'ctrl-alt-i'  "restore (i)nitial view/sort settings"
 map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane"
 map 'toggle-relative'         'ctrl-/'      "toggle relative/absolute path names"
-map 'toggle-recording'        'ctrl-alt-r'  "(r)ecord actions to file named at prompt"                         '*'
-map 'toggle-playback'         'ctrl-alt-p'  "(p)layback actions from file named at prompt"                     '*'
+map 'toggle-recording'        'ctrl-alt-r'  "(r)ecord actions to file named at prompt"                       '*'
+map 'toggle-playback'         'ctrl-alt-p'  "(p)layback actions from file named at prompt"                   '*'
 map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
 map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at prompt"
 map 'terminal'                'ctrl-alt-t'  "open a new (t)erminal/shell in current directory"               '**'
