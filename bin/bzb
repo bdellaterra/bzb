@@ -886,7 +886,7 @@ main() {
           input "Move/Rename File: " cmd "mv '$(sq "$t")' '$(sq "$t")'" 
           if [[ -n "$cmd" ]]; then
             bash -c "$cmd"
-            [[ $autorecord && $recording_file ]] && (printf "execute %q\n" "$cmd" >> "$recording_file")
+            [[ $autorecord && $recording_file ]] && printf "execute %q\n" "$cmd" >> "$recording_file"
           fi
         fi
       done
@@ -895,7 +895,9 @@ main() {
     # Use alt-m to move targets
     move)
       input_path "Move to Directory: " dir "${alt_dir:-$base_dir}" 
-      [[ $dir ]] && ( [[ -d "$dir" ]] && mv -i "${targets[@]}" "$dir" || path_error )
+      if [[ $dir ]]; then
+        [[ -d "$dir" ]] && mv -i "${targets[@]}" "$dir" || path_error
+      fi
     ;;
 
     # Use ctrl-alt-m to move and rename targets
@@ -910,7 +912,7 @@ main() {
               input "Move/Rename File: " cmd "mv '$(sq "$(dot)/$t")' '$(sq "${dir%/}/$t")'" 
               if [[ -n "$cmd" ]]; then
                 bash -c "$cmd"
-                [[ $autorecord && $recording_file ]] && (printf "execute %q\n" "$cmd" >> "$recording_file")
+                [[ $autorecord && $recording_file ]] && printf "execute %q\n" "$cmd" >> "$recording_file"
               fi
             fi
           done
@@ -931,7 +933,9 @@ main() {
     # Use alt-c to copy targets
     copy)
       input_path "Copy to Directory: " dir "${alt_dir:-$base_dir}" 
-      [[ $dir ]] && ( [[ -d "$dir" ]] && cp -ir "${targets[@]}" "$dir" || path_error )
+      if [[ $dir ]]; then
+        [[ -d "$dir" ]] && cp -ir "${targets[@]}" "$dir" || path_error
+      fi
     ;;
 
     # Use ctrl-alt-c to copy and rename targets
@@ -944,7 +948,7 @@ main() {
               input "Copy/Rename File: " cmd "cp -ir '$(sq "$(dot)/$t")' '$(sq "$dir/$t")'" 
               if [[ -n "$cmd" ]]; then
                 bash -c "$cmd"
-                [[ $autorecord && $recording_file ]] && (printf "execute %q\n" "$cmd" >> "$recording_file")
+                [[ $autorecord && $recording_file ]] && printf "execute %q\n" "$cmd" >> "$recording_file"
               fi
             fi
           done
@@ -1068,7 +1072,9 @@ main() {
     set-alt-dir|enter-alt-dir)
       if [[ "$action" = "set-alt-dir" || ! -d "$alt_dir" ]]; then
         input_path "Set alternate directory: " dir "$(dot)"
-        [[ $dir ]] && ( [[ -d "$dir" ]] && alt_dir="$(readlink -f "$dir")" || path_error )
+        if [[ $dir ]]; then
+          [[ -d "$dir" ]] && alt_dir="$(readlink -f "$dir")" || path_error
+        fi
       fi
       if [[ "$action" = "enter-alt-dir" && -d "$alt_dir" ]]; then
         [[ "$PWD" = "$alt_dir" ]] && cd "$OLDPWD" || cd "$alt_dir"
@@ -1078,7 +1084,9 @@ main() {
     # Use alt-g to go to directory named at prompt
     prompt-dir)
       input_path "Go to directory: " dir "$(dot)"
-      [[ $dir ]] && ( [[ -d "$dir" ]] && cd "$dir" || path_error )
+      if [[ $dir ]]; then
+        [[ -d "$dir" ]] && cd "$dir" || path_error
+      fi
     ;;
 
     # Use ctrl-alt-g to set/enter new base directory
@@ -1116,10 +1124,10 @@ main() {
         set +e
         # Trap each command to log previous command, commented out if exit status indicates failure
         rec_trap='export BZB_LAST_EXIT_CODE="$?" BZB_LAST_COMMAND="$BZB_THIS_COMMAND" BZB_THIS_COMMAND="$BASH_COMMAND"'
-        rec_trap+=';[[ "'${autorecord:+1}'" && "'${recording_file:+1}'" ]] && ( '
+        rec_trap+=';[[ "'${autorecord:+1}'" && "'${recording_file:+1}'" ]] && ('
         rec_trap+='[[ $BZB_LAST_EXIT_CODE -ne 0 ]] && printf "# (EXIT_CODE $BZB_LAST_EXIT_CODE) "'
         rec_trap+=';[[ $BZB_LAST_COMMAND ]] && printf "execute %q\n" "$BZB_LAST_COMMAND"'
-        rec_trap+=' ) >> '"$(printf '%q' "$recording_file")$QUIT"
+        rec_trap+=') >> '"$(printf '%q' "$recording_file")$QUIT"
         PS1='>> ' /usr/bin/env bash --init-file <(echo trap\ "'$(sq "$rec_trap")'"\ DEBUG)
         set -e
       fi
@@ -1154,7 +1162,7 @@ main() {
 
   # Optionally record actions to file
   [[ $last_input ]] && last_input="$(printf "=%q" "$last_input")"
-  [[ $autorecord && $recording_file ]] && (record "$action$last_input" "${targets[@]}")
+  [[ $autorecord && $recording_file ]] && record "$action$last_input" "${targets[@]}"
   disable last_input last_error
 
   # Optionally autosave browsing session
