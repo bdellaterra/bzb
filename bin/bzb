@@ -1074,6 +1074,9 @@ main() {
         input_path "Set alternate directory: " dir "$(dot)"
         if [[ $dir ]]; then
           [[ -d "$dir" ]] && alt_dir="$(readlink -f "$dir")" || path_error
+        elif [[ $alt_dir ]]; then
+          read -s -r -n 1 -p "(Press Enter again to clear alternate directory, any other key to cancel)" dir
+          [[ ! $dir ]] && alt_dir=""
         fi
       fi
       if [[ "$action" = "enter-alt-dir" && -d "$alt_dir" ]]; then
