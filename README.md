@@ -40,6 +40,7 @@ LONG/SHORT OPTION                  | EFFECT
 --alternate-directory=DIR,-ad=DIR  | Initialize alternate directory at start
 --data-directory=DIR,-dd=DIR       | Specify directory for storing sessions and other data
 --grep=PATTERN,-g=PATTERN          | Start in grep mode, searching files for specified pattern
+--no-nested-grep,-NG               | Disable searching of nested files/directories in grep mode
 
 Most options can be inverted by reversing uppercase/lowercase for the short form or adding/removing
 the 'no-' prefix for the long form. Additional options will be passed on to fzf, with the long form using
