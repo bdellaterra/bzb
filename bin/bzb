@@ -305,6 +305,7 @@ for arg in "$@"; do
     -g=*|--grep=*) enable BZB_GREP_MODE; assign BZB_GREP_QUERY "${arg#*=}"; shift ;;
     -ng|--nested-grep) enable BZB_NESTED_GREP; shift ;;
     -NG|--no-nested-grep) disable BZB_NESTED_GREP; shift ;;
+    --debug) enable BZB_DEBUG; shift ;;
     # Save remaining options for fzf with quoting preserved
     -*) [[ "$arg" == *=* ]] && BZB_FZF_EXTRA_OPTIONS+=" ${arg%%=*}=\"${arg#*=}\"" || BZB_FZF_EXTRA_OPTIONS+=" \"$arg\""; shift ;;
   esac
@@ -322,7 +323,7 @@ initial_targets=("$@")
 # Detect terminal/color-support and exit if not interactive
 if [[ -t 0 || -p /dev/stdin ]]; then
   if has tput; then
-    # enable no_clear && readonly no_clear
+    [[ ! $BZB_DEBUG ]] && enable no_clear && readonly no_clear
     trap clear_fzf EXIT
     test $(tput colors) -ge 8 && enable color || disable color
   fi
