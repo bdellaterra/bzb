@@ -15,7 +15,6 @@ If no target specified start in the current directory.
 
 LONG/SHORT OPTION                  | EFFECT
 -----------------------------------|-------------------------------------------------------------------
---help                             | Show this help text
 --color,-c                         | Show colorized output
 --nested,-n                        | List nested files/directories at start
 --no-hide,-H                       | Show hidden files/directories at start
@@ -41,6 +40,9 @@ LONG/SHORT OPTION                  | EFFECT
 --data-directory=DIR,-dd=DIR       | Specify directory for storing sessions and other data
 --grep=PATTERN,-g=PATTERN          | Start in grep mode, searching files for specified pattern
 --no-nested-grep,-NG               | Disable searching of nested files/directories in grep mode
+--debug                            | Show additional messages and error output
+--help                             | Show this help text
+--version                          | Display version number
 
 Most options can be inverted by reversing uppercase/lowercase for the short form or adding/removing
 the 'no-' prefix for the long form. Additional options will be passed on to fzf, with the long form using

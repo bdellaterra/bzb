@@ -7,6 +7,7 @@
 #               See the file LICENSE or <http://www.gnu.org/licenses/>.
 set -e; shopt -s extglob expand_aliases
 
+script_version='0.0.1'
 script_name=$(basename "${BASH_SOURCE[0]}")
 
 
@@ -190,7 +191,11 @@ map 'execute'                 'ctrl-alt-x'  "e(x)ecute a single shell command in
 readonly fzf_keys="esc,$(printf ",%s" "${keys[@]}" | cut -c2-)"
 
 
-# USAGE
+# ABOUT
+
+version() {
+  echo "$script_name $script_version"
+}
 
 usage() {
 cat <<USAGE
@@ -200,7 +205,6 @@ Browse files using fzf. If no target is specified start in the current directory
 
 Options:
 
---help                             Show this help text
 --color,-c                         Show colorized output
 --nested,-n                        List nested files/directories at start
 --no-hide,-H                       Show hidden files/directories at start
@@ -226,6 +230,9 @@ Options:
 --data-directory=DIR,-dd=DIR       Specify directory for storing sessions and other data
 --grep=PATTERN,-g=PATTERN          Start in grep mode, searching files for specified pattern
 --no-nested-grep,-NG               Disable searching of nested files/directories in grep mode
+--debug                            Show additional messages and error output
+--help                             Show this help text
+--version                          Display version number
 
 Most options can be inverted by reversing uppercase/lowercase for the short form or adding/removing
 the 'no-' prefix for the long form. Additional options will be passed on to fzf, with the long form using
@@ -236,7 +243,7 @@ Key mappings:
 
 $(awk -F ':' '{ printf("%-12s %-69s %s\n", $1, $2, $3) }' <(
 cat <<KEY_USAGE
-KEYMAP:DESCRIPTION:ACTION
+KEY:DESCRIPTION:ACTION
 ctrl-c:exit file browser
 enter:enter directory or edit file
 $(for k in "${keys[@]}"; do echo "$k:${key_definitions[$k]}:${key_actions[$k]}"; done)
@@ -260,7 +267,9 @@ USAGE
 
 for arg in "$@"; do
   case $arg in
+    --debug) enable BZB_DEBUG; shift ;;
     --help) usage; exit 0 ;;
+    --version) version; exit 0 ;;
     -c|--color) enable BZB_COLOR; shift ;;
     -C|--no-color) disable BZB_COLOR; shift ;;
     -n|--nested) enable BZB_NESTED; shift ;;
@@ -305,7 +314,6 @@ for arg in "$@"; do
     -g=*|--grep=*) enable BZB_GREP_MODE; assign BZB_GREP_QUERY "${arg#*=}"; shift ;;
     -ng|--nested-grep) enable BZB_NESTED_GREP; shift ;;
     -NG|--no-nested-grep) disable BZB_NESTED_GREP; shift ;;
-    --debug) enable BZB_DEBUG; shift ;;
     # Save remaining options for fzf with quoting preserved
     -*) [[ "$arg" == *=* ]] && BZB_FZF_EXTRA_OPTIONS+=" ${arg%%=*}=\"${arg#*=}\"" || BZB_FZF_EXTRA_OPTIONS+=" \"$arg\""; shift ;;
   esac
