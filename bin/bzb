@@ -482,7 +482,7 @@ has xclip && init clip 'xclip'
 has clip && init clip 'clip'
 
 # Prefer -I option to -i for removing files, if available
-rm -I '' 2>&1 | grep '\(unrecognized\|invalid\) option' &>/dev/null && \
+rm -I '' 2>&1 | grep '\(unrecognized\|invalid\|illegal\) option' &>/dev/null && \
   init rm_interactive 'rm -ri' || init rm_interactive 'rm -rI'
 
 
