@@ -179,7 +179,7 @@ map 'toggle-nested-sort'      'ctrl-alt-n'  "toggle sorting of (n)ested results 
 map 'toggle-sort-order'       'alt-o'       "toggle sort (o)rder ascending/descending"
 map 'initial-settings'        'ctrl-alt-i'  "restore (i)nitial view/sort settings"
 map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane"
-map 'toggle-relative'         'ctrl-/'      "toggle relative/absolute path names"
+map 'toggle-full-path'        'ctrl-alt-f'  "toggle (f)ull/relative path for files and directories"
 map 'toggle-recording'        'ctrl-alt-r'  "(r)ecord actions to file named at prompt"                       '*'
 map 'toggle-playback'         'ctrl-alt-p'  "(p)layback actions from file named at prompt"                   '*'
 map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
@@ -216,7 +216,7 @@ Options:
 --no-preview,-V                    Disable preview pane that shows file/directory contents
 --no-persist,-P                    Exit browser after editing a file
 --no-edit,-E                       Log selections to file instead of launching editor
---relative,-r                      Use relative paths instead of absolute paths
+--no-full-path,-F                  Use relative paths instead of full/absolute paths
 --autosave-history,-ah             Save queries so Ctrl-p and Ctrl-n will cycle through search history
 --autoload-query,-aq               Restore last query used in a directory upon entering it
 --autosave-session,-as             Save bookmarks and view/sort settings continuously
@@ -292,8 +292,8 @@ for arg in "$@"; do
     -P|--no-persist) disable BZB_PERSIST; shift ;;
     -e|--edit) enable BZB_EDIT; shift ;;
     -E|--no-edit) disable BZB_EDIT; shift ;;
-    -rp|--relative) enable BZB_RELATIVE; shift ;;
-    -RP|--no-relative) disable BZB_RELATIVE; shift ;;
+    -f|--full-path) enable BZB_FULL_PATH; shift ;;
+    -F|--no-full-path) disable BZB_FULL_PATH; shift ;;
     -ah|--autosave-history) enable BZB_AUTOSAVE_HISTORY; shift ;;
     -AH|--no-autosave-history) disable BZB_AUTOSAVE_HISTORY; shift ;;
     -aq|--autoload-query) enable BZB_AUTOLOAD_QUERY; shift ;;
@@ -350,8 +350,8 @@ enable edit
 
 # Default enabled/disabled settings
 [[ $edit ]] && enable persist || disable persist
-enable sorted preview statusline hide ignore nested_grep
-disable nested reverse relative autosave_history autoload_query autosave_session autoload_session autorecord autoplay grep_mode fzf_extra_options
+enable sorted preview statusline hide ignore nested_grep full_path
+disable nested reverse autosave_history autoload_query autosave_session autoload_session autorecord autoplay grep_mode fzf_extra_options
 
 # Derive base directory from target, or use current directory if none given
 [[ -d "$initial_target" ]] && init base_dir "$initial_target" || init base_dir "$(dirname "${initial_target:-$PWD/.}")"
@@ -531,7 +531,7 @@ save_session() {
       declare -p PWD > "$session"
       [[ "$base_dir" ]] && declare -p base_dir >> "$session"
       [[ "$alt_dir" ]] && declare -p alt_dir >> "$session"
-      declare -p bookmarks hide ignore nested nested_grep sorted nested_sort reverse preview statusline relative >> "$session"
+      declare -p bookmarks hide ignore nested nested_grep sorted nested_sort reverse preview statusline full_path >> "$session"
       [[ "$grep_query" ]] && declare -p grep_query >> "$session"
       [[ ${#directory_queries[@]} ]] && declare -p directory_queries >> "$session"
     else
@@ -575,7 +575,7 @@ input() {
 }
 
 input_path() {
-  [[ $relative ]] && set -- "$1" "$2" "$(rel "$PWD" "$3")"
+  [[ ! $full_path ]] && set -- "$1" "$2" "$(rel "$PWD" "$3")"
   input "$@"
 }
 
@@ -587,13 +587,13 @@ Add a backslash '\' before spaces and special characters below:
 EOF
 )"; }
 
-dot() { [[ $relative ]] && echo '.' || echo "$PWD"; }
+dot() { [[ $full_path ]] && echo "$PWD" || echo '.'; }
 
 
 # MAIN
 
 # Save initial preferences so they can be restored later
-declare -A initial_settings=([sorted]="$sorted" [preview]="$preview" [statusline]="$statusline" [hide]="$hide" [ignore]="$ignore" [nested]="$nested" [nested_grep]="$nested_grep" [reverse]="$reverse" [nested_sort]="$nested_sort" [relative]="$relative")
+declare -A initial_settings=([sorted]="$sorted" [preview]="$preview" [statusline]="$statusline" [hide]="$hide" [ignore]="$ignore" [nested]="$nested" [nested_grep]="$nested_grep" [reverse]="$reverse" [nested_sort]="$nested_sort" [full_path]="$full_path")
 
 # Optionally autoload browsing session
 [[ $autoload_session && -r "$session" ]] && . -- "$session" && restore_session "$session"
@@ -667,7 +667,7 @@ main() {
   fi
   [[ ! $sorted ]] && reverse_prefix='!' || reverse_prefix='-'
   [[ $reverse ]] && status+=("${reverse_prefix}O") || status+=("${reverse_prefix}o")
-  [[ $relative ]] && status+=("-r") || status+=("-R")
+  [[ $full_path ]] && status+=("-f") || status+=("-F")
 
   assign BZB_STATUSLINE "${autorecord:+REC }${autoplay:+PLAY }[${status[@]}]"
 
@@ -801,9 +801,9 @@ main() {
       toggle statusline
     ;;
 
-    # Use ctrl-/ to toggle relative/absolute paths
-    toggle-relative)
-      toggle relative
+    # Use ctrl-alt-f to toggle full/relative paths
+    toggle-full-path)
+      toggle full_path
     ;;
 
     # Use ctrl-alt-r to toggle recording actions to file named at prompt (This action is not recordable)
