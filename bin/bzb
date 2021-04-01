@@ -576,7 +576,10 @@ input() {
 
 input_path() {
   [[ ! $full_path ]] && set -- "$1" "$2" "$(rel "$PWD" "$3")"
-  input "$@"
+  input "$1" "$2" "$(printf "%q\n" "$3")"
+  if [[ ${!2} ]]; then
+    assign "$2" $(bash -c echo\ "${!2}")
+  fi
 }
 
 path_error() { display_error "$(
