@@ -26,7 +26,7 @@ LONG/SHORT OPTION                  | EFFECT
 --no-preview,-V                    | Disable preview pane that shows file/directory contents
 --no-persist,-P                    | Exit browser after editing a file
 --no-edit,-E                       | Log selections to file instead of launching editor
---relative,-r                      | Use relative paths instead of absolute paths
+--no-full-path,-F                  | Use relative paths instead of full/absolute paths
 --autosave-history,-ah             | Save queries so Ctrl-p and Ctrl-n will cycle through search history
 --autoload-query,-aq               | Restore last query used in a directory upon entering it
 --autosave-session,-as             | Save bookmarks and view/sort settings continuously
@@ -100,7 +100,7 @@ ctrl-alt-n  | toggle sorting of (n)ested results (affects performance)          
 alt-o       | toggle sort (o)rder ascending/descending                             | toggle-sort-order
 ctrl-alt-i  | restore (i)nitial view/sort settings                                 | initial-settings
 alt-v       | toggle visibility of pre(v)iew pane                                  | toggle-preview
-ctrl-/      | toggle relative/absolute path names                                  | toggle-relative
+ctrl-alt-f  | toggle (f)ull/relative path for files and directories                | toggle-full-path
 ctrl-alt-r  | (r)ecord actions to file named at prompt¹                            | toggle-recording
 ctrl-alt-p  | (p)layback actions from file named at prompt¹                        | toggle-playback
 ctrl-alt-l  | (l)oad session from file named at prompt                             | load-session
