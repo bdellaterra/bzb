@@ -170,6 +170,8 @@ map 'prompt-dir'              'alt-g'       "(g)o to directory named at prompt"
 map 'prompt-base-dir'         'ctrl-alt-g'  "set new base directory at prompt and (g)o to it"
 map 'yank-dir'                'alt-y'       "copy (a.k.a. (y)ank) current directory to clipboard"
 map 'yank-targets'            'ctrl-alt-y'  "copy (a.k.a. (y)ank) targets to clipboard"
+map 'zip'                     'alt-z'       "compress (a.k.a. (z)ip) targets"
+map 'unzip'                   'ctrl-alt-z'  "decompress (a.k.a. un(z)ip) targets"
 map 'toggle-statusline'       'alt-l'       "toggle visibility of the status(l)ine"
 map 'toggle-hide'             'alt-h'       "toggle visibility of (h)idden files"
 map 'toggle-ignore'           'alt-i'       "toggle visibility of (i)gnored files (if supported)"
@@ -933,6 +935,33 @@ main() {
           done
         fi
       fi
+    ;;
+
+    # Use alt-z to zip targets
+    # Use ctrl-alt-z to unzip targets
+    zip|unzip)
+      [[ $autoplay || ! $CONFIRM_ZIP_IN_PLACE ]] && remove="rm -r" || remove="$rm_interactive"
+      for t in "${targets[@]}"; do
+        if [[ "$action" = 'zip' && -d "$t" ]]; then
+          # echo "ZIP DIR"
+          zip_dir_cmd="tar -czpvf '$(sq "$t")'.tar.gz '$(sq "$t")' >/dev/null && $remove '$(sq "$t")'"
+          bash -c "$zip_dir_cmd"
+        elif [[ "$action" = 'unzip' ]] && tar -tzf "$t" >/dev/null; then
+          # echo "UNZIP DIR"
+          unzip_dir_cmd="tar -xzpvf '$(sq "$t")' >/dev/null && $remove '$(sq "$t")'"
+          bash -c "$unzip_dir_cmd"
+        else
+          if [[ "$action" = 'zip' ]]; then
+            # echo "ZIP FILE"
+            zip_cmd="gzip '$(sq "$t")'"
+            [[ -r "$t" && -w "$t" ]] && bash -c "$zip_cmd"
+          else
+            # echo "UNZIP FILE"
+            unzip_cmd="gunzip '$(sq "$t")'"
+            [[ -r "$t" ]] && bash -c "$unzip_cmd"
+          fi
+        fi
+      done
     ;;
 
     # Use alt-x to delete targets
