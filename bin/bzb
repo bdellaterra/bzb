@@ -940,28 +940,26 @@ main() {
     # Use alt-z to zip targets
     # Use ctrl-alt-z to unzip targets
     zip|unzip)
-      [[ $autoplay || ! $CONFIRM_ZIP_IN_PLACE ]] && remove="rm -r" || remove="$rm_interactive"
+      [[ $autoplay || ! $CONFIRM_TAR_RM ]] && remove="rm -r" || remove="$rm_interactive"
+      remove_targets=''
       for t in "${targets[@]}"; do
         if [[ "$action" = 'zip' && -d "$t" ]]; then
-          # echo "ZIP DIR"
-          zip_dir_cmd="tar -czpvf '$(sq "$t")'.tar.gz '$(sq "$t")' >/dev/null && $remove '$(sq "$t")'"
-          bash -c "$zip_dir_cmd"
+          zip_dir_cmd="tar -czpvf '$(sq "$t")'.tar.gz '$(sq "$t")' >/dev/null"
+          bash -c "$zip_dir_cmd" && remove_targets+=" '$(sq "$t")'"
         elif [[ "$action" = 'unzip' ]] && tar -tzf "$t" >/dev/null; then
-          # echo "UNZIP DIR"
-          unzip_dir_cmd="tar -xzpvf '$(sq "$t")' >/dev/null && $remove '$(sq "$t")'"
-          bash -c "$unzip_dir_cmd"
+          unzip_dir_cmd="tar -xzpvf '$(sq "$t")' >/dev/null"
+          bash -c "$unzip_dir_cmd" && remove_targets+=" '$(sq "$t")'"
         else
           if [[ "$action" = 'zip' ]]; then
-            # echo "ZIP FILE"
             zip_cmd="gzip '$(sq "$t")'"
             [[ -r "$t" && -w "$t" ]] && bash -c "$zip_cmd"
           else
-            # echo "UNZIP FILE"
             unzip_cmd="gunzip '$(sq "$t")'"
             [[ -r "$t" ]] && bash -c "$unzip_cmd"
           fi
         fi
       done
+      [[ $remove_targets ]] && bash -c "$remove $remove_targets"
     ;;
 
     # Use alt-x to delete targets
