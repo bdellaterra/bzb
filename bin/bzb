@@ -504,7 +504,7 @@ if has tar; then
     [[ $zip_keep ]] && zip+=" -$zip_keep"
     init unzip "$zip -d$zip_keep"
     init zip_dir 'tar -${zip_tar_flag}${zip_keep}cpvf'
-    init unzip_dir 'tar -${zip_tar_flag}xpvf'
+    init unzip_dir 'tar -xpvf'
     init zip_dir_check 'tar -tf'
   fi
 fi
