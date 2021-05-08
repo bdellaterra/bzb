@@ -14,7 +14,7 @@ If no target specified start in the current directory.
 ### Options:
 
 LONG/SHORT OPTION                  | EFFECT
------------------------------------|-------------------------------------------------------------------
+-----------------------------------|---------------------------------------------------------------------
 --color,-c                         | Show colorized output
 --nested,-n                        | List nested files/directories at start
 --no-hide,-H                       | Show hidden files/directories at start
@@ -53,7 +53,7 @@ an equals sign required for options that take values, unless no unescaped spaces
 ### Key mappings:
 
 KEY         | DESCRIPTION                                                          | ACTION
-------------|----------------------------------------------------------------------|-----------------------------|
+------------|----------------------------------------------------------------------|---------------------
 ctrl-c      | exit file browser                                                    | 
 escape      | clear search query / exit file browser if query is blank             | 
 enter       | enter directory or edit file                                         | 
@@ -91,6 +91,8 @@ alt-g       | (g)o to directory named at prompt                                 
 ctrl-alt-g  | set new base directory at prompt and (g)o to it                      | prompt-base-dir
 alt-y       | copy (a.k.a. (y)ank) current directory to clipboard                  | yank-dir
 ctrl-alt-y  | copy (a.k.a. (y)ank) targets to clipboard                            | yank-targets
+alt-z       | compress (a.k.a. (z)ip) targets                                      | zip
+ctrl-alt-z  | decompress (a.k.a. un(z)ip) targets                                  | unzip
 alt-l       | toggle visibility of the status(l)ine                                | toggle-statusline
 alt-h       | toggle visibility of (h)idden files                                  | toggle-hide
 alt-i       | toggle visibility of (i)gnored files (if supported)                  | toggle-ignore
@@ -111,6 +113,10 @@ ctrl-alt-x  | e(x)ecute a single shell command in current directory²           
 Overrides for action/key bindings can be set using environment variable BZB_BIND.
 For example, the 'launch' and 'enter' bindings can be swapped by invoking bzb with command:
 > BZB_BIND="[enter]=alt-q [launch]=right" bzb
+
+Some functionality may be limited during recording. Recordings are not guaranteed to be portable
+and some bzb settings may affect the playback of recorded actions. If errors are detected the action
+will be recorded as a '#' comment to document the error. Comment lines are skipped during playback.
 
 1. Specified actions are not recordable
 2. Each terminal command will be recorded as an 'execute' action

@@ -256,8 +256,9 @@ Overrides for action/key bindings can be set using environment variable BZB_BIND
 For example, the 'launch' and 'enter' bindings can be swapped by invoking bzb with command:
 > BZB_BIND="[enter]=alt-q [launch]=right" bzb
 
-Some functionality is not available during recording. If errors are detected the action will be
-recorded as a '#' comment including the error. Comment lines are skipped during playback.
+Some functionality may be limited during recording. Recordings are not guaranteed to be portable
+and some bzb settings may affect the playback of recorded actions. If errors are detected the action
+will be recorded as a '#' comment to document the error. Comment lines are skipped during playback.
 
 *  Designated actions are not recordable.
 ** Each terminal command will be recorded as a separate 'execute' action
