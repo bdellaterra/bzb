@@ -483,6 +483,32 @@ init clip ''
 has xclip && init clip 'xclip'
 has clip && init clip 'clip'
 
+# Zip Commands: Used to compress/decompress files
+init zip ''
+init unzip ''
+init zip_dir ''
+init unzip_dir ''
+init zip_ext ''
+if has xz; then
+  init zip 'xz'
+  init unzip 'xz -d'
+  init zip_dir 'tar -Jcpvf'
+  init unzip_dir 'tar -Jxpvf'
+  init zip_ext '.xz'
+elif has bzip2; then
+  init zip 'bzip2'
+  init unzip 'bzip2 -d'
+  init zip_dir 'tar -jcpvf'
+  init unzip_dir 'tar -jxpvf'
+  init zip_ext '.bz2'
+elif has gzip; then
+  init zip 'gzip'
+  init unzip 'gzip -d'
+  init zip_dir 'tar -zcpvf'
+  init unzip_dir 'tar -zxpvf'
+  init zip_ext '.gz'
+fi
+
 # Prefer -I option to -i for removing files, if available
 rm -I '' 2>&1 | grep '\(unrecognized\|invalid\|illegal\) option' &>/dev/null && \
   init rm_interactive 'rm -ri' || init rm_interactive 'rm -rI'
@@ -944,19 +970,17 @@ main() {
       remove_targets=''
       for t in "${targets[@]}"; do
         if [[ "$action" = 'zip' && -d "$t" ]]; then
-          zip_dir_cmd="tar -czpvf '$(sq "$t")'.tar.gz '$(sq "$t")' >/dev/null"
+          zip_dir_cmd="$zip_dir '$(sq "$t")'.tar.$zip_ext '$(sq "$t")' >/dev/null"
           bash -c "$zip_dir_cmd" && remove_targets+=" '$(sq "$t")'"
         elif [[ "$action" = 'unzip' ]] && tar -tzf "$t" >/dev/null; then
-          unzip_dir_cmd="tar -xzpvf '$(sq "$t")' >/dev/null"
+          unzip_dir_cmd="$unzip_dir '$(sq "$t")' >/dev/null"
           bash -c "$unzip_dir_cmd" && remove_targets+=" '$(sq "$t")'"
-        else
-          if [[ "$action" = 'zip' ]]; then
-            zip_cmd="gzip '$(sq "$t")'"
-            [[ -r "$t" && -w "$t" ]] && bash -c "$zip_cmd"
-          else
-            unzip_cmd="gunzip '$(sq "$t")'"
-            [[ -r "$t" ]] && bash -c "$unzip_cmd"
-          fi
+        elif [[ "$action" = 'unzip' && "$t" =~ "$zip_ext"$ ]]; then
+          unzip_cmd="$unzip '$(sq "$t")'"
+          [[ -r "$t" ]] && bash -c "$unzip_cmd"
+        elif [[ "$action" = 'zip' ]]; then
+          zip_cmd="$zip '$(sq "$t")'"
+          [[ -r "$t" && -w "$t" ]] && bash -c "$zip_cmd"
         fi
       done
       [[ $remove_targets ]] && bash -c "$remove $remove_targets"
