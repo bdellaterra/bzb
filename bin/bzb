@@ -484,22 +484,28 @@ has xclip && init clip 'xclip'
 has clip && init clip 'clip'
 
 # Zip Commands: Used to compress/decompress files
+disable zip_keep # set to 'k' or appropriate flag to keep uncompressed files after zip
 if has tar; then
   if has xz; then
-    init zip 'xz'
+    init zip "xz"
     init tar_zip_flag 'J'
-    init zip_ext '.xz'
+    init zip_ext 'xz'
   elif has bzip2; then
-    init zip 'bzip2'
+    init zip "bzip2"
     init tar_zip_flag 'j'
     init zip_ext 'bz2'
   elif has gzip; then
-    init zip 'gzip'
+    init zip "gzip"
     init tar_zip_flag = 'z'
     init zip_ext 'gz'
   fi
-  [[ $zip ]] && init unzip "$zip -d"
-  [[ $tar_zip_flag ]] && init zip_dir 'tar -${tar_zip_flag}cpvf' && init unzip_dir 'tar -${tar_zip_flag}xpvf'
+  if [[ $zip && $tar_zip_flag ]]; then
+    [[ $zip_keep ]] && zip+=" -$zip_keep"
+    init unzip "$zip -d$zip_keep"
+    init zip_dir 'tar -${tar_zip_flag}${zip_keep}cpvf'
+    init unzip_dir 'tar -${tar_zip_flag}xpvf'
+    init zip_dir_check 'tar -tf'
+  fi
 fi
 
 # Prefer -I option to -i for removing files, if available
@@ -966,7 +972,7 @@ main() {
           if [[ "$action" = 'zip' && -d "$t" ]]; then
             zip_dir_cmd="$zip_dir '$(sq "$t")'.tar.$zip_ext '$(sq "$t")' >/dev/null"
             bash -c "$zip_dir_cmd" && remove_targets+=" '$(sq "$t")'"
-          elif [[ "$action" = 'unzip' ]] && tar -tzf "$t" >/dev/null; then
+          elif [[ "$action" = 'unzip' ]] && $zip_dir_check "$t" >/dev/null; then
             unzip_dir_cmd="$unzip_dir '$(sq "$t")' >/dev/null"
             bash -c "$unzip_dir_cmd" && remove_targets+=" '$(sq "$t")'"
           elif [[ "$action" = 'unzip' && "$t" =~ "$zip_ext"$ ]]; then
@@ -977,7 +983,7 @@ main() {
             [[ -r "$t" && -w "$t" ]] && bash -c "$zip_cmd"
           fi
         done
-        [[ $remove_targets ]] && bash -c "$remove $remove_targets"
+        [[ $remove_targets && ! $zip_keep ]] && bash -c "$remove $remove_targets"
       fi
     ;;
 
