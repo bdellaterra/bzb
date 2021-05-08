@@ -559,6 +559,7 @@ save_session() {
       [[ "$base_dir" ]] && declare -p base_dir >> "$session"
       [[ "$alt_dir" ]] && declare -p alt_dir >> "$session"
       declare -p bookmarks hide ignore nested nested_grep sorted nested_sort reverse preview statusline full_path >> "$session"
+      [[ "$zip_keep" ]] && declare -p zip_keep >> "$session"
       [[ "$grep_query" ]] && declare -p grep_query >> "$session"
       [[ ${#directory_queries[@]} ]] && declare -p directory_queries >> "$session"
     else
