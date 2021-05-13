@@ -54,20 +54,20 @@ an equals sign required for options that take values, unless no unescaped spaces
 
 KEY         | DESCRIPTION                                                          | ACTION
 ------------|----------------------------------------------------------------------|---------------------
-ctrl-c      | exit file browser                                                    | 
-escape      | clear search query / exit file browser if query is blank             | 
-enter       | enter directory or edit file                                         | 
+ctrl-c      | exit file browser                                                    | (fzf keymap)
+enter       | enter directory or edit file                                         | (fzf keymap)
+escape      | exit file browser                                                    | exit
 right       | enter directory or edit file                                         | enter
 left        | go to parent directory (not moving past base directory)              | back
 alt-q       | (q)uick-launch targets using default program                         | launch
 alt-f       | grep/(f)ind pattern specified at prompt ('left' will exit grep mode) | grep
 ctrl-g      | cancel submenu or prompt / toggle (g)rep mode preserving pattern     | toggle-grep
 alt-m       | (m)ove targets to directory named at prompt                          | move
-alt-r       | (r)ename targets in current directory                                | rename
-ctrl-alt-m  | (m)ove/rename targets into directory named at prompt¹                | move-rename
+alt-r       | (r)ename targets in current directory²                               | rename
+ctrl-alt-m  | (m)ove/rename targets into directory named at prompt²                | move-rename
 alt-x       | delete targets                                                       | delete
 alt-c       | (c)opy targets to directory named at prompt                          | copy
-ctrl-alt-c  | (c)opy/rename targets into directory named at prompt                 | copy-rename
+ctrl-alt-c  | (c)opy/rename targets into directory named at prompt²                | copy-rename
 alt-t       | create (a.k.a. "(t)ouch") file named at prompt                       | create-file
 alt-e       | create and (e)dit file named at prompt                               | create-edit-file
 alt-d       | create (d)irectory named at prompt                                   | create-dir

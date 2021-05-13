@@ -246,8 +246,8 @@ Key mappings:
 $(awk -F ':' '{ printf("%-12s %-69s %s\n", $1, $2, $3) }' <(
 cat <<KEY_USAGE
 KEY:DESCRIPTION:ACTION
-ctrl-c:exit file browser
-enter:enter directory or edit file
+ctrl-c:exit file browser:(fzf keymap)
+enter:enter directory or edit file:(fzf keymap)
 $(for k in "${keys[@]}"; do echo "$k:${key_definitions[$k]}:${key_actions[$k]}"; done)
 KEY_USAGE
 ))
