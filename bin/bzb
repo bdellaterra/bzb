@@ -437,7 +437,7 @@ else
   disable is_previewable_binary_content preview_binary_content
 fi
 
-init preview_text_file '$preview_text'
+init preview_text_file "$preview_text"
 # Markdown Preview: Prefer 'mdv' if availble for better highlighting
 if has mdv; then
   init is_markdown \
