@@ -69,7 +69,7 @@ toggle() { [[ ${!1} ]] && disable "$1" || enable "$1"; }
 sq() { printf '%s' "${1//\'/\'\\\'\'}"; }
 
 # Escape special chars and newlines to make a double-quotable string
-dq() { printf '%s' "$1" | sed -e 's/[$!&`"\]/\\&/g'; }
+dq() { printf '%s' "$1" | sed -E 's/[$!&`"\]/\\&/g'; }
 
 # Get relative path from source file/directory (1st arg) to target file/directory (2nd arg)
 # Can supply non-existant directories (not files) for either arg if using absolute path
@@ -459,12 +459,12 @@ init find_mode_preview \
 no_leading_dots="| sed 's:^\./::'"
 
 # Clear numeric count from beginning of grep results
-no_grep_counts="| sed -e 's/^[0-9]\+ //g'"
+no_grep_counts="| sed -E 's/^[0-9]+ //g'"
 
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed. (Uses '-c' for number of matches per file)
 no_zero_counts="| grep -v ':0$'"
 list_by_grep_count="$no_zero_counts | awk -F ':' '$(dq "$(sq '{ printf( "%s %s\n", $2, $1 ) }')")'"
-escape_grep_results="| sed -e '$(sq 's/\s\|'\''/\\\&/g')'"
+escape_grep_results="| sed -E '$(sq 's/\s|'\''/\\&/g')'"
 if has rg; then
   enable grep_can_ignore
   init grep_nested \
