@@ -719,8 +719,12 @@ main() {
   [[ $preview ]] && fzf_options+=" --preview='$(sq "$fzf_preview")' --preview-window='right:62%:wrap'"
   [[ $fzf_extra_options ]] && fzf_options+=" $fzf_extra_options"
 
-  if [[ $autoplay ]]; then
-    if [[ ! $fzf_command && ! $action ]]; then
+  if [[ $autorecord && $autoplay ]]; then
+    display_error "Cannot record and playback at the same time"
+  elif [[ $autorecord && ! $fzf_command && ! "$action" = "initial-recording" ]]; then
+    assign action 'initial-recording'
+  elif [[ $autoplay ]]; then
+    if [[ ! $fzf_command && ! "$action" ]]; then
       assign action 'initial-playback'
     elif [[ ! ${#pending_actions} -gt 0 ]]; then
       toggle autoplay && main
@@ -851,12 +855,12 @@ main() {
     ;;
 
     # Use ctrl-alt-r to toggle recording actions to file named at prompt (This action is not recordable)
-    toggle-recording)
-      if [[ $autorecord ]]; then
+    toggle-recording|initial-recording)
+      if [[ $autorecord && "$action" = "toggle-recording" ]]; then
         toggle autorecord
       else
         [[ -w "$playback_file" && ! $recording_file ]] && file="$playback_file" || file="$recording_file"
-        input "Record actions to file: " file "$file" 
+        [[ "$action" = "toggle-recording" ]] && input "Record actions to file: " file "$file" 
         file=$(readlink -f "$file")
         # use rm command to confirm before clearing logfile, overriding default prompt
         [[ -f "$file" ]] && printf "Clear existing file? [Y/n] " && bash -c "$rm_interactive $file 2>/dev/null"
@@ -867,7 +871,8 @@ main() {
           elif [[ $autoplay && "$playback_file" -ef "$file" ]]; then
             display_error "Cannot record to a file that is currently playing back"
           else
-            assign recording_file "$file" && toggle autorecord
+            assign recording_file "$file"
+            [[ "$action" = "toggle-recording" ]] && toggle autorecord
           fi
         fi
       fi
@@ -1246,7 +1251,7 @@ main() {
 
   # Optionally record actions to file
   [[ $last_input ]] && last_input="$(printf "=%q" "$last_input")"
-  [[ $autorecord && $recording_file ]] && record "$action$last_input" "${targets[@]}"
+  [[ $autorecord && $recording_file && ! "$action" = "initial-recording" ]] && record "$action$last_input" "${targets[@]}"
   disable last_input last_error
 
   # Optionally autosave browsing session
