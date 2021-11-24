@@ -464,7 +464,6 @@ no_grep_counts="| sed -E 's/^[0-9]+ //g'"
 # Grep Commands: Prefer 'rg' over 'grep' so ignored files are not listed. (Uses '-c' for number of matches per file)
 no_zero_counts="| grep -v ':0$'"
 list_by_grep_count="$no_zero_counts | awk -F ':' '$(dq "$(sq '{ printf( "%s %s\n", $2, $1 ) }')")'"
-escape_grep_results="| sed -E '$(sq 's/[[:space:]]|'\''/\\&/g')'"
 if has rg; then
   enable grep_can_ignore
   init grep_nested \
@@ -472,7 +471,7 @@ if has rg; then
   init grep_shallow \
     "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --count --maxdepth 1 --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $no_leading_dots $list_by_grep_count "
   init grep_mode_preview \
-    "echo {} $no_grep_counts $escape_grep_results | xargs cat | rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}'"
+    "printf '%s' {} $no_grep_counts | xargs -0 cat | rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}'"
 else
   disable grep_can_ignore
   init grep_nested \
@@ -480,7 +479,7 @@ else
   init grep_shallow \
     "grep -i -s -c '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'"$no_leading_dots $list_by_grep_count"
   init grep_mode_preview \
-    "echo {} $no_grep_counts $escape_grep_results | xargs cat | grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}'"
+    "printf '%s' {} $no_grep_counts | xargs -0 cat | xargs cat | grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}'"
 fi
 readonly grep_can_ignore
 disable grep_query
