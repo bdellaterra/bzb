@@ -720,7 +720,9 @@ main() {
   [[ $fzf_extra_options ]] && fzf_options+=" $fzf_extra_options"
 
   if [[ $autoplay ]]; then
-    if [[ ! ${#pending_actions} -gt 0 ]]; then
+    if [[ ! $fzf_command && ! $action ]]; then
+      assign action 'initial-playback'
+    elif [[ ! ${#pending_actions} -gt 0 ]]; then
       toggle autoplay && main
     else
       read -a next_action <<< "${pending_actions[0]}"
@@ -872,12 +874,12 @@ main() {
     ;;
 
     # Use ctrl-alt-p to playback recording from file named at prompt (This action is not recordable)
-    toggle-playback)
-      if [[ $autoplay ]]; then
+    toggle-playback|initial-playback)
+      if [[ $autoplay && "$action" = "toggle-playback" ]]; then
         toggle autoplay
       else
         [[ -r "$recording_file" && ! $playback_file ]] && file="$recording_file" || file="$playback_file"
-        input "Playback actions from file: " file "$file" 
+        [[ "$action" = "toggle-playback" ]] && input "Playback actions from file: " file "$file" 
         if [[ $file ]]; then
           if [[ ! -r "$file" ]]; then
             display_error "Cannot playback. File does not exist or read permission not granted"
@@ -886,7 +888,7 @@ main() {
           else
             assign playback_file "$file"
             readarray -t pending_actions < "$playback_file"
-            toggle autoplay
+            [[ "$action" = "toggle-playback" ]] && toggle autoplay
           fi
         fi
       fi
