@@ -343,7 +343,7 @@ else
   exit 1
 fi
 fzf_no_clear="${no_clear:+--no-clear}"
-[[ $color ]] && fzf_color='--color' || fzf_color='--no-color'
+[[ $color ]] && fzf_color='--ansi' || fzf_color='--no-ansi'
 
 # Default behavior is to launch $EDITOR as the enter-action for files. Disabling the option
 # below will instead only log selected targets to a 'selection' file inside 'data_dir'.
