@@ -491,6 +491,7 @@ has open && init launch 'open'
 
 # Clip Command: Used to copy text to clipboard
 init clip ''
+has pbcopy && init clip 'pbcopy'
 has xclip && init clip 'xclip'
 has clip && init clip 'clip'
 
