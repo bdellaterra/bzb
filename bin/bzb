@@ -90,8 +90,8 @@ rel() {
   [[ ! "$target" =~ \.*\/ ]] && target="./$target"
   [[ -f "$source" ]] && source_file="$(basename "$source")" source="$(dirname "$source")"
   [[ -f "$target" ]] && target_file="$(basename "$target")" target="$(dirname "$target")"
-  [[ -d "$source" && ! "$source" = '/' ]] && source="$(readlink -f "${source%/}")" || source="${source/%%+(/)}"
-  [[ -d "$target" && ! "$target" = '/' ]] && target="$(readlink -f "${target%/}")" || target="${target/%%+(/)}"
+  [[ -d "$source" && ! "$source" = '/' ]] && source="$($readlink_canonical "${source%/}")" || source="${source/%%+(/)}"
+  [[ -d "$target" && ! "$target" = '/' ]] && target="$($readlink_canonical "${target%/}")" || target="${target/%%+(/)}"
   local rel="$(_rel_down "$source" "$target")"; 
   [[ ! $rel ]] && rel="$(_rel_up "$source" "$target")"
   [[ $target_file ]] && rel="${rel%%+(/)}/$target_file"
@@ -105,6 +105,24 @@ display_error() {
 
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
 clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
+
+
+# NORMALIZE COMMANDS
+
+# Prefer -I option to -i for removing files, if available
+rm -I '' 2>&1 | grep '\(unrecognized\|invalid\|illegal\) option' &>/dev/null && \
+    init rm_interactive 'rm -ri' || init rm_interactive 'rm -rI'
+
+# Canonicalize symlinks if support is available
+if readlink --canonicalize '' 2>&1 | grep '\(unrecognized\|invalid\|illegal\) option' &>/dev/null; then
+  if has realpath; then
+    init readlink_canonical 'realpath'
+  else
+    init readlink_canonical ''
+  fi
+else
+  init readlink_canonical 'readlink -f'
+fi
 
 
 # BINDINGS
@@ -520,10 +538,6 @@ if has tar; then
   fi
 fi
 
-# Prefer -I option to -i for removing files, if available
-rm -I '' 2>&1 | grep '\(unrecognized\|invalid\|illegal\) option' &>/dev/null && \
-  init rm_interactive 'rm -ri' || init rm_interactive 'rm -rI'
-
 
 # FILE STATE
 
@@ -862,7 +876,7 @@ main() {
       else
         [[ -w "$playback_file" && ! $recording_file ]] && file="$playback_file" || file="$recording_file"
         [[ "$action" = "toggle-recording" ]] && input "Record actions to file: " file "$file" 
-        file=$(readlink -f "$file")
+        file=$($readlink_canonical "$file")
         # use rm command to confirm before clearing logfile, overriding default prompt
         [[ -f "$file" ]] && printf "Clear existing file? [Y/n] " && bash -c "$rm_interactive $file 2>/dev/null"
         if [[ $file ]]; then
@@ -1160,7 +1174,7 @@ main() {
       if [[ "$action" = "set-alt-dir" || ! -d "$alt_dir" ]]; then
         input_path "Set alternate directory: " dir "$(dot)"
         if [[ $dir ]]; then
-          [[ -d "$dir" ]] && alt_dir="$(readlink -f "$dir")" || path_error
+          [[ -d "$dir" ]] && alt_dir="$($readlink_canonical "$dir")" || path_error
         elif [[ $alt_dir ]]; then
           read -s -r -n 1 -p "(Press Enter again to clear alternate directory, any other key to cancel)" dir
           [[ ! $dir ]] && alt_dir=""
@@ -1186,7 +1200,7 @@ main() {
       dir="$PWD" next_base=''
       if [[ "$action" = "prompt-base-dir" || ! -d "$base_dir" ]]; then
         input_path "Set base directory: " dir "$(dot)"
-        [[ -d "$dir" ]] && next_base="$(readlink -f "$dir")"
+        [[ -d "$dir" ]] && next_base="$($readlink_canonical "$dir")"
       elif [[ "$action" = "up-base-dir" ]]; then
         # 'dirname' stops at root directory, returning '/'
         [[ "$PWD" = "$base_dir" ]] && next_base="$(dirname "$dir")" || cd "$base_dir"
