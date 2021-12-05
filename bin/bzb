@@ -1033,7 +1033,7 @@ main() {
           set +e
           if [[ "$action" = 'zip' && -d "$t" ]]; then
             zip_dir_cmd="$zip_dir '$(sq "$t")'.tar.$zip_ext '$(sq "$t")' >/dev/null"
-            zip_dir_output=$({ bash -c "$zip_dir_cmd" && remove_targets+=" '$(sq "$t")'"; } 2>&1)
+            zip_dir_output=$({ bash -c "$zip_dir_cmd"; } 2>&1) && remove_targets+=" '$(sq "$t")'"
             [[ ! $? -eq 0 ]] && clear && display_error "$zip_dir_output"
           elif [[ "$action" = 'zip' ]]; then
             zip_cmd="$zip '$(sq "$t")'"
@@ -1045,7 +1045,7 @@ main() {
             fi
           elif [[ "$action" = 'unzip' && "$($zip_dir_check "$t" 2>/dev/null)" ]]; then
             unzip_dir_cmd="$unzip_dir '$(sq "$t")' >/dev/null"
-            unzip_dir_output=$({ bash -c "$unzip_dir_cmd" && remove_targets+=" '$(sq "$t")'"; } 2>&1)
+            unzip_dir_output=$({ bash -c "$unzip_dir_cmd"; } 2>&1) && remove_targets+=" '$(sq "$t")'"
             [[ ! $? -eq 0 ]] && clear && display_error "$unzip_dir_output"
           elif [[ "$action" = 'unzip' && "$t" =~ "$zip_ext"$ ]]; then
             unzip_cmd="$unzip '$(sq "$t")'"
