@@ -1033,15 +1033,15 @@ main() {
           if [[ "$action" = 'zip' && -d "$t" ]]; then
             zip_dir_cmd="$zip_dir '$(sq "$t")'.tar.$zip_ext '$(sq "$t")' >/dev/null"
             bash -c "$zip_dir_cmd" && remove_targets+=" '$(sq "$t")'"
-          elif [[ "$action" = 'unzip' ]] && $zip_dir_check "$t" >/dev/null; then
+          elif [[ "$action" = 'zip' ]]; then
+            zip_cmd="$zip '$(sq "$t")'"
+            [[ -r "$t" && -w "$t" ]] && bash -c "$zip_cmd"
+          elif [[ "$action" = 'unzip' && "$($zip_dir_check "$t" 2>/dev/null)" ]]; then
             unzip_dir_cmd="$unzip_dir '$(sq "$t")' >/dev/null"
             bash -c "$unzip_dir_cmd" && remove_targets+=" '$(sq "$t")'"
           elif [[ "$action" = 'unzip' && "$t" =~ "$zip_ext"$ ]]; then
             unzip_cmd="$unzip '$(sq "$t")'"
             [[ -r "$t" ]] && bash -c "$unzip_cmd"
-          elif [[ "$action" = 'zip' ]]; then
-            zip_cmd="$zip '$(sq "$t")'"
-            [[ -r "$t" && -w "$t" ]] && bash -c "$zip_cmd"
           fi
         done
         [[ $remove_targets && ! $zip_keep ]] && bash -c "$remove $remove_targets"
