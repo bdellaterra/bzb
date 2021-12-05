@@ -1030,19 +1030,33 @@ main() {
         [[ $autoplay || ! $CONFIRM_TAR_RM ]] && remove="rm -r" || remove="$rm_interactive"
         remove_targets=''
         for t in "${targets[@]}"; do
+          set +e
           if [[ "$action" = 'zip' && -d "$t" ]]; then
             zip_dir_cmd="$zip_dir '$(sq "$t")'.tar.$zip_ext '$(sq "$t")' >/dev/null"
-            bash -c "$zip_dir_cmd" && remove_targets+=" '$(sq "$t")'"
+            zip_dir_output=$({ bash -c "$zip_dir_cmd" && remove_targets+=" '$(sq "$t")'"; } 2>&1)
+            [[ ! $? -eq 0 ]] && clear && display_error "$zip_dir_output"
           elif [[ "$action" = 'zip' ]]; then
             zip_cmd="$zip '$(sq "$t")'"
-            [[ -r "$t" && -w "$t" ]] && bash -c "$zip_cmd"
+            if [[ -r "$t" && -w "$t" ]]; then
+              zip_output=$({ bash -c "$zip_cmd"; } 2>&1)
+              [[ ! $? -eq 0 ]] && clear && display_error "$zip_output"
+            else
+              clear && display_error "Zip action requires file to be readable and writeable"
+            fi
           elif [[ "$action" = 'unzip' && "$($zip_dir_check "$t" 2>/dev/null)" ]]; then
             unzip_dir_cmd="$unzip_dir '$(sq "$t")' >/dev/null"
-            bash -c "$unzip_dir_cmd" && remove_targets+=" '$(sq "$t")'"
+            unzip_dir_output=$({ bash -c "$unzip_dir_cmd" && remove_targets+=" '$(sq "$t")'"; } 2>&1)
+            [[ ! $? -eq 0 ]] && clear && display_error "$unzip_dir_output"
           elif [[ "$action" = 'unzip' && "$t" =~ "$zip_ext"$ ]]; then
             unzip_cmd="$unzip '$(sq "$t")'"
-            [[ -r "$t" ]] && bash -c "$unzip_cmd"
+            if [[ -r "$t" ]]; then
+              unzip_output=$({ bash -c "$unzip_cmd"; } 2>&1)
+              [[ ! $? -eq 0 ]] && clear && display_error "$unzip_output"
+            else
+              display_error "Unzip action requires file to be readable"
+            fi
           fi
+          set -e
         done
         [[ $remove_targets && ! $zip_keep ]] && bash -c "$remove $remove_targets"
       fi
