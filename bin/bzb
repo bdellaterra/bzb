@@ -109,6 +109,37 @@ clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
 
 # NORMALIZE COMMANDS
 
+# Prefer GNU core utilities
+enable prefer_gnu_coreutils
+if [[ $prefer_gnu_coreutils ]]; then
+  has gbasename && alias basename='gbasename'
+  has gcat && alias cat='gcat'
+  has gcp && alias cp='gcp'
+  has gcut && alias cut='gcut'
+  has gdirname && alias dirname='gdirname'
+  has genv && alias env='genv'
+  has ghead && alias head='ghead'
+  has gls && alias ls='gls'
+  has gmkdir && alias mkdir='gmkdir'
+  has gmv && alias mv='gmv'
+  has gpwd && alias pwd='gpwd'
+  has greadlink && alias readlink='greadlink'
+  has grealpath && alias realpath='grealpath'
+  has grm && alias rm='grm'
+  has grmdir && alias rmdir='grmdir'
+  has gsed && alias sed='gsed'
+  has gsort && alias sort='gsort'
+  has gstat && alias stat='gstat'
+  has gtac && alias tac='gtac'
+  has gtail && alias tail='gtail'
+  has gtee && alias tee='gtee'
+  has gtest && alias test='gtest'
+  has gtouch && alias touch='gtouch'
+  has gtr && alias tr='gtr'
+  has guniq && alias uniq='guniq'
+  has gwc && alias uwc='gwc'
+fi
+
 # Prefer -I option to -i for removing files, if available
 rm -I '' 2>&1 | grep '\(unrecognized\|invalid\|illegal\) option' &>/dev/null && \
     init rm_interactive 'rm -ri' || init rm_interactive 'rm -rI'
