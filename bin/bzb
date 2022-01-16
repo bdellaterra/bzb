@@ -148,7 +148,7 @@ rm -I '' 2>&1 | grep '\(unrecognized\|invalid\|illegal\) option' &>/dev/null && 
 if readlink --canonicalize '' 2>&1 | grep '\(unrecognized\|invalid\|illegal\) option' &>/dev/null; then
   has realpath && init readlink_canonical 'realpath' || init readlink_canonical 'echo'
 else
-  init readlink_canonical 'readlink -f'
+  init readlink_canonical 'readlink --canonicalize'
 fi
 
 
