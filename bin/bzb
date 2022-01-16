@@ -501,7 +501,7 @@ init find_mode_preview \
   "[[ -d {} ]] && $preview_directory || $preview_file"
 
 # Clear leading dots from paths
-no_leading_dots="| sed 's:^\./::'"
+no_leading_dots="| sed -E 's:\b\./::'"
 
 # Clear numeric count from beginning of grep results
 no_grep_counts="| sed -E 's/^[0-9]+ //g'"
@@ -728,7 +728,7 @@ main() {
   else
     [[ $nested ]] && find="$find_nested" || find="$find_shallow"
     fzf_prompt=" --prompt='$(sq "${BZB_DIR#$BZB_BASE_DIR}")>'"   
-    fzf_input=$(bash -c "echo \"$find$sort_pipe\"")
+    fzf_input=$(bash -c "echo \"$find$no_leading_dots$sort_pipe\"")
     fzf_preview="$find_mode_preview"
   fi
   fzf_input+="$no_leading_dots"
