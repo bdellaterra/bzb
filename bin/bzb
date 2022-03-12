@@ -112,7 +112,7 @@ clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
 # Prefer GNU core utilities
 enable prefer_gnu_coreutils
 if [[ $prefer_gnu_coreutils ]]; then
-  for util in basename cat cp cut dirname env head ls mkdir mv pwd readlink realpath rm rmdir sed sort stat tac tail tee test touch tr uniq wc
+for util in basename cat cp cut dirname env head ls mkdir mv pwd readlink realpath rm rmdir sed sort stat tac tail tee test touch tr uniq wc
   do
     has "g$util" && alias "$util"="g$util"
   done
