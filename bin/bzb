@@ -304,8 +304,8 @@ for arg in "$@"; do
     -H|--no-hide) disable BZB_HIDE; shift ;;
     -i|--ignore) enable BZB_IGNORE; shift ;;
     -I|--no-ignore) disable BZB_IGNORE; shift ;;
-    -o|--forward) disable BZB_REVERSE; shift ;;
-    -O|--reverse) enable BZB_REVERSE; shift ;;
+    -o|--forward|--no-reverse) disable BZB_REVERSE; shift ;;
+    -O|--reverse|--no-forward) enable BZB_REVERSE; shift ;;
     -s|--sort) enable BZB_SORTED; shift ;;
     -S|--no-sort) disable BZB_SORTED; shift ;;
     -ns|--nested-sort) enable BZB_NESTED_SORT; shift ;;
