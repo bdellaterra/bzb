@@ -120,7 +120,7 @@ fi
 
 # Prefer -I option to -i for removing files, if available
 rm -I '' 2>&1 | grep '\(unrecognized\|invalid\|illegal\) option' &>/dev/null && \
-    init rm_interactive 'rm -ri' || init rm_interactive 'rm -rI'
+    init rm_interactive 'rm -ri --' || init rm_interactive 'rm -rI --'
 
 # Canonicalize symlinks if support is available
 if readlink --canonicalize '' 2>&1 | grep '\(unrecognized\|invalid\|illegal\) option' &>/dev/null; then
@@ -1093,7 +1093,7 @@ main() {
       [[ "$action" = "create-edit-file" ]] && create_edit="Create/Edit" || create_edit="Create"
       input "$create_edit file: " target
       if [[ -n "$target" ]]; then
-        mkdir -p "$(dirname "$target")" && touch "$target"
+        mkdir -p "$(dirname -- "$target")" && touch -- "$target"
         [[ "$action" = "create-edit-file" ]] && next_targets=("$target")
       fi
     ;;
