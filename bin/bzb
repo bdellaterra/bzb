@@ -393,15 +393,15 @@ disable alt_dir
 if has fd; then
   enable find_can_ignore
   init find_nested \
-    "fd \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
+    "fd \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
   init find_shallow \
-    "fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
+    "fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_NO_IGNORE:+--no-ignore}"
 else
   disable find_can_ignore
   init find_nested \
-    "find . -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
+    "find . -not -name '.' \${BZB_HIDE/?*/-not -path '*/.*'}"
   init find_shallow \
-    "find . -maxdepth 1 -not -name '.' \${BZB_HIDDEN:+-not -path '*/.*'}"
+    "find . -maxdepth 1 -not -name '.' \${BZB_HIDE/?*/-not -path '*/.*'}"
 fi
 readonly find_can_ignore
 
@@ -434,7 +434,7 @@ fi
 
 # Preview Commands:
 init preview_directory \
-  "ls \${BZB_COLOR:+--color=always} \${BZB_HIDDEN:+-a} -lh {}"
+  "ls \${BZB_COLOR:+--color=always} \${BZB_HIDE/?*/-a} -lh {}"
 init preview_text \
   "cat {}"
 # Consider file to be binary if more than a tiny fraction is non-printable characters
@@ -490,17 +490,17 @@ list_by_grep_count="$no_zero_counts | awk -F ':' '$(dq "$(sq '{ printf( "%s %s\n
 if has rg; then
   enable grep_can_ignore
   init grep_nested \
-    "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --count --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $no_leading_dots $list_by_grep_count"
+    "rg \${BZB_HIDE/?*/--hidden} \${BZB_NO_IGNORE:+--no-ignore} --count --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $no_leading_dots $list_by_grep_count"
   init grep_shallow \
-    "rg \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --count --maxdepth 1 --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $no_leading_dots $list_by_grep_count "
+    "rg \${BZB_HIDE/?*/--hidden} \${BZB_NO_IGNORE:+--no-ignore} --count --maxdepth 1 --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $no_leading_dots $list_by_grep_count "
   init grep_mode_preview \
-    "printf '%s' {} $no_grep_counts | xargs -0 cat | rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDDEN:+--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}'"
+    "printf '%s' {} $no_grep_counts | xargs -0 cat | rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDE/?*/--hidden} \${BZB_NO_IGNORE:+--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}'"
 else
   disable grep_can_ignore
   init grep_nested \
-    "grep -r -i -s -c '\${BZB_GREP_QUERY}' .\${BZB_HIDDEN+ | grep -v '.*\/\..*'}$no_leading_dots $list_by_grep_count"
+    "grep -r -i -s -c '\${BZB_GREP_QUERY}' .\${BZB_HIDE/?*/ | grep -v '.*\/\..*'}$no_leading_dots $list_by_grep_count"
   init grep_shallow \
-    "grep -i -s -c '\${BZB_GREP_QUERY}' "'$([[ $BZB_HIDDEN ]] && echo "*" || echo "{*,.*}")'"$no_leading_dots $list_by_grep_count"
+    "grep -i -s -c '\${BZB_GREP_QUERY}' "'$([[ ! $BZB_HIDE ]] && echo "*" || echo "{*,.*}")'"$no_leading_dots $list_by_grep_count"
   init grep_mode_preview \
     "printf '%s' {} $no_grep_counts | xargs -0 cat | xargs cat | grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}'"
 fi
@@ -669,7 +669,6 @@ main() {
   assign BZB_IGNORE "$ignore"
   assign BZB_HIDE "$hide"
   # Inverted env vars can be easier to use with bash parameter expansion
-  [[ $hide ]] && enable BZB_HIDDEN || disable BZB_HIDDEN
   [[ $ignore ]] && disable BZB_NO_IGNORE || enable BZB_NO_IGNORE
   disable BZB_SORT_NUMERIC
   assign BZB_GREP_QUERY "$(sq "$grep_query")" # escaped for single-quoting here
