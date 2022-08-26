@@ -664,9 +664,13 @@ main() {
   assign BZB_BASE_DIR "$base_dir"
   assign BZB_QUERY "$query"
   assign BZB_COLOR "$color"
+  assign BZB_REVERSE "$reverse"
+  assign BZB_NESTED "$nested"
+  assign BZB_IGNORE "$ignore"
+  assign BZB_HIDE "$hide"
+  # Inverted env vars can be easier to use with bash parameter expansion
   [[ $hide ]] && enable BZB_HIDDEN || disable BZB_HIDDEN
   [[ $ignore ]] && disable BZB_NO_IGNORE || enable BZB_NO_IGNORE
-  assign BZB_REVERSE "$reverse"
   disable BZB_SORT_NUMERIC
   assign BZB_GREP_QUERY "$(sq "$grep_query")" # escaped for single-quoting here
 
