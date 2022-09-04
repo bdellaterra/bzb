@@ -975,25 +975,22 @@ main() {
     ;;
 
     # Use alt-m to move targets
-    move)
-      input_path "Move to Directory: " dir "${alt_dir:-$base_dir}" 
-      if [[ $dir ]]; then
-        [[ -d "$dir" ]] && mv -i "${targets[@]}" "$dir" || path_error
-      fi
-    ;;
-
     # Use ctrl-alt-m to move and rename targets
-    move-rename)
-      input_path "Move/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
+    move|move-rename)
+      [[ "$action" = "move-rename" ]] && move_rename="Move/Rename" || move_rename="Move"
+      input_path "$move_rename to Directory: " dir "${alt_dir:-$base_dir}" 
       if [[ $dir ]]; then
-        if [[ ! -d "$dir" ]]; then
-          path_error
-        else
+        if [[ ! -d "$dir" ]]; then path_error; else
           for t in "${targets[@]}"; do
             if [[ -r "$t" ]]; then
-              input "Move/Rename File: " cmd "mv '$(sq "$(dot)/$t")' '$(sq "${dir%/}/$t")'" 
+              move_cmd="mv '$(sq "$(dot)/$t")' '$(sq "${dir%/}/$t")'"
+              if [[ "$action" = "move-rename" || -e "$dir/$t" ]]; then
+                input "Move/Rename File: " cmd "$move_cmd"
+              else
+                cmd="$move_cmd"
+              fi
               if [[ -n "$cmd" ]]; then
-                bash -c "$cmd"
+                display_error "$(bash -c "$cmd" 2>&1)"
                 [[ $autorecord && $recording_file ]] && printf "execute %q\n" "$cmd" >> "$recording_file"
               fi
             fi
@@ -1060,10 +1057,11 @@ main() {
         if [[ ! -d "$dir" ]]; then path_error; else
           for t in "${targets[@]}"; do
             if [[ -r "$t" ]]; then
+              copy_cmd="cp -ir '$(sq "$(dot)/$t")' '$(sq "$dir/$t")'"
               if [[ "$action" = "copy-rename" || -e "$dir/$t" ]]; then
-                input "Copy/Rename File: " cmd "cp -ir '$(sq "$(dot)/$t")' '$(sq "$dir/$t")'"
+                input "Copy/Rename File: " cmd "$copy_cmd"
               else
-                cmd="cp -ir '$(sq "$(dot)/$t")' '$(sq "$dir/$t")'"
+                cmd="$copy_cmd"
               fi
               if [[ -n "$cmd" ]]; then
                 display_error "$(bash -c "$cmd" 2>&1)"
