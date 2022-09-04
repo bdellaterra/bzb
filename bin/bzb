@@ -1052,23 +1052,21 @@ main() {
     ;;
 
     # Use alt-c to copy targets
-    copy)
-      input_path "Copy to Directory: " dir "${alt_dir:-$base_dir}" 
-      if [[ $dir ]]; then
-        [[ -d "$dir" ]] && cp -ir "${targets[@]}" "$dir" || path_error
-      fi
-    ;;
-
     # Use ctrl-alt-c to copy and rename targets
-    copy-rename)
-      input_path "Copy/Rename to Directory: " dir "${alt_dir:-$base_dir}" 
+    copy|copy-rename)
+      [[ "$action" = "copy-rename" ]] && copy_rename="Copy/Rename" || copy_rename="Copy"
+      input_path "$copy_rename to Directory: " dir "${alt_dir:-$base_dir}" 
       if [[ $dir ]]; then
         if [[ ! -d "$dir" ]]; then path_error; else
           for t in "${targets[@]}"; do
             if [[ -r "$t" ]]; then
-              input "Copy/Rename File: " cmd "cp -ir '$(sq "$(dot)/$t")' '$(sq "$dir/$t")'" 
+              if [[ "$action" = "copy-rename" || -e "$dir/$t" ]]; then
+                input "Copy/Rename File: " cmd "cp -ir '$(sq "$(dot)/$t")' '$(sq "$dir/$t")'"
+              else
+                cmd="cp -ir '$(sq "$(dot)/$t")' '$(sq "$dir/$t")'"
+              fi
               if [[ -n "$cmd" ]]; then
-                bash -c "$cmd"
+                display_error "$(bash -c "$cmd" 2>&1)"
                 [[ $autorecord && $recording_file ]] && printf "execute %q\n" "$cmd" >> "$recording_file"
               fi
             fi
