@@ -103,7 +103,7 @@ display_error() {
   [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)";
 }
 
-capture_error() { 
+catch_commmand() { 
   error_message="$(bash -c "$@" 2>&1)" || display_error "$error_message"
 }
 
@@ -971,7 +971,7 @@ main() {
         if [[ -r "$t" ]]; then
           input "Move/Rename File: " cmd "mv '$(sq "$t")' '$(sq "$t")'" 
           if [[ -n "$cmd" ]]; then
-            capture_error "$cmd"
+            catch_commmand "$cmd"
             [[ $autorecord && $recording_file ]] && printf "execute %q\n" "$cmd" >> "$recording_file"
           fi
         fi
@@ -994,7 +994,7 @@ main() {
                 cmd="$move_cmd"
               fi
               if [[ -n "$cmd" ]]; then
-                capture_error "$cmd"
+                catch_commmand "$cmd"
                 [[ $autorecord && $recording_file ]] && printf "execute %q\n" "$cmd" >> "$recording_file"
               fi
             fi
@@ -1068,7 +1068,7 @@ main() {
                 cmd="$copy_cmd"
               fi
               if [[ -n "$cmd" ]]; then
-                capture_error "$cmd"
+                catch_commmand "$cmd"
                 [[ $autorecord && $recording_file ]] && printf "execute %q\n" "$cmd" >> "$recording_file"
               fi
             fi
