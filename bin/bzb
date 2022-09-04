@@ -103,6 +103,10 @@ display_error() {
   [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)";
 }
 
+capture_error() { 
+  error_message="$(bash -c "$@" 2>&1)" || display_error "$error_message"
+}
+
 # Leave alternate screen manually on exit after using fzf '--no-clear' option
 clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
 
@@ -967,7 +971,7 @@ main() {
         if [[ -r "$t" ]]; then
           input "Move/Rename File: " cmd "mv '$(sq "$t")' '$(sq "$t")'" 
           if [[ -n "$cmd" ]]; then
-            bash -c "$cmd"
+            capture_error "$cmd"
             [[ $autorecord && $recording_file ]] && printf "execute %q\n" "$cmd" >> "$recording_file"
           fi
         fi
@@ -990,7 +994,7 @@ main() {
                 cmd="$move_cmd"
               fi
               if [[ -n "$cmd" ]]; then
-                display_error "$(bash -c "$cmd" 2>&1)"
+                capture_error "$cmd"
                 [[ $autorecord && $recording_file ]] && printf "execute %q\n" "$cmd" >> "$recording_file"
               fi
             fi
@@ -1064,7 +1068,7 @@ main() {
                 cmd="$copy_cmd"
               fi
               if [[ -n "$cmd" ]]; then
-                display_error "$(bash -c "$cmd" 2>&1)"
+                capture_error "$cmd"
                 [[ $autorecord && $recording_file ]] && printf "execute %q\n" "$cmd" >> "$recording_file"
               fi
             fi
