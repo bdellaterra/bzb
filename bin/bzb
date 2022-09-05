@@ -42,7 +42,7 @@ assign() {
 # as second argument. If BZB_ prefixed all-caps variable is defined use its value instead
 init() {
   local var="$1"; shift;
-  override="BZB_${var^^}"
+  local override="BZB_${var^^}"
   defined "$override" && assign "$var" "${!override}" || assign "$var" "$*"
 }
 
