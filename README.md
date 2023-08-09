@@ -72,6 +72,8 @@ alt-t       | create (a.k.a. "(t)ouch") file named at prompt                    
 alt-e       | create and (e)dit file named at prompt                               | create-edit-file
 alt-d       | create (d)irectory named at prompt                                   | create-dir
 ctrl-alt-d  | create/enter (d)irectory named at prompt                             | create-enter-dir
+alt-l       | sym(l)ink path named at prompt into current directory                | create-link
+alt-s       | (s)ymlink targets into directory named at prompt                     | symlink
 alt-b       | toggle (b)ookmark for current directory                              | toggle-bookmark
 ctrl-alt-b  | (b)ookmark targets                                                   | bookmark-targets
 ctrl-alt-u  | (u)nbookmark selected directories¹                                   | unbookmark
@@ -93,20 +95,18 @@ alt-y       | copy (a.k.a. (y)ank) current directory to clipboard               
 ctrl-alt-y  | copy (a.k.a. (y)ank) targets to clipboard                            | yank-targets
 alt-z       | compress (a.k.a. (z)ip) targets                                      | zip
 ctrl-alt-z  | decompress (a.k.a. un(z)ip) targets                                  | unzip
-alt-l       | toggle visibility of the status(l)ine                                | toggle-statusline
 alt-h       | toggle visibility of (h)idden files                                  | toggle-hide
 alt-i       | toggle visibility of (i)gnored files (if supported)                  | toggle-ignore
 alt-n       | toggle listing (n)ested vs. only top-level files                     | toggle-nested
-alt-s       | toggle (s)orting of results (affects performance)                    | toggle-sort
 ctrl-alt-n  | toggle sorting of (n)ested results (affects performance)             | toggle-nested-sort
 alt-o       | toggle sort (o)rder ascending/descending                             | toggle-sort-order
+ctrl-alt-o  | toggle (s)orting of results (affects performance)                    | toggle-sort
 ctrl-alt-i  | restore (i)nitial view/sort settings                                 | initial-settings
 alt-v       | toggle visibility of pre(v)iew pane                                  | toggle-preview
+ctrl-alt-v  | toggle visibility of the status(l)ine                                | toggle-statusline
 ctrl-alt-f  | toggle (f)ull/relative path for files and directories                | toggle-full-path
 ctrl-alt-r  | (r)ecord actions to file named at prompt¹                            | toggle-recording
 ctrl-alt-p  | (p)layback actions from file named at prompt¹                        | toggle-playback
-ctrl-alt-l  | (l)oad session from file named at prompt                             | load-session
-ctrl-alt-s  | (s)ave session to file named at prompt                               | save-session
 ctrl-alt-t  | open a new (t)erminal/shell in current directory²                    | terminal
 ctrl-alt-x  | e(x)ecute a single shell command in current directory²               | execute
 
