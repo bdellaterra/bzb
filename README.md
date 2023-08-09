@@ -1,5 +1,5 @@
 
-## BZB: Browse files using fzf.
+## BZB: Browse files using [fzf](https://github.com/junegunn/fzf).
  
 
 ### usage:
