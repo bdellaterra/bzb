@@ -212,7 +212,7 @@ map 'toggle-full-path'        'ctrl-alt-f'  "toggle (f)ull/relative path for fil
 map 'toggle-recording'        'ctrl-alt-r'  "(r)ecord actions to file named at prompt"                       '*'
 map 'toggle-playback'         'ctrl-alt-p'  "(p)layback actions from file named at prompt"                   '*'
 map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
-map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at prompt"
+map 'write-session'           'ctrl-alt-w'  "(w)rite/save session to file named at prompt"
 map 'terminal'                'ctrl-alt-t'  "open a new (t)erminal/shell in current directory"               '**'
 map 'execute'                 'ctrl-alt-x'  "e(x)ecute a single shell command in current directory"          '**'
 
@@ -1275,9 +1275,9 @@ main() {
       fi
     ;;
 
-    # Use ctrl-alt-s to save session
-    save-session)
-      input "Save session: " session_file "$session"
+    # Use ctrl-alt-w to write/save session
+    write-session)
+      input "Write session: " session_file "$session"
       if [[ $session_file ]]; then
         [[ -w "$session_file" ]] && save_session "$session_file" || path_error 'Cannot write session file.'
       fi
