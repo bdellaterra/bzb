@@ -1110,7 +1110,7 @@ main() {
       input_path "Link Path: " path "${alt_dir:-$base_dir}"
       if [[ $path ]]; then
         link_cmd="$ln '$(sq "$path")'"
-        input "Link: " cmd "$link_cmd $(basename "$path")"
+        input "Link: " cmd "$link_cmd '$(sq "$(basename "$path")")'"
         if [[ -n "$cmd" ]]; then
           catch_commmand "$cmd"
           [[ $autorecord && $recording_file ]] && printf "execute %q\n" "$cmd" >> "$recording_file"
@@ -1125,7 +1125,7 @@ main() {
         if [[ ! -d "$dir" ]]; then path_error; else
           for t in "${targets[@]}"; do
             if [[ -r "$t" ]]; then
-              link_cmd="$ln '$(sq "$(dot)/$t")' '$(sq "$dir/$t")'"
+              link_cmd="$ln '$(sq "$(dot)/${t%/}")' '$(sq "${dir%/}/${t%/}")'"
               input "Link File: " cmd "$link_cmd"
               if [[ -n "$cmd" ]]; then
                 catch_commmand "$cmd"
