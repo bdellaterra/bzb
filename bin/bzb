@@ -178,6 +178,8 @@ map 'create-file'             'alt-t'       "create (a.k.a. \"(t)ouch\") file na
 map 'create-edit-file'        'alt-e'       "create and (e)dit file named at prompt"
 map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
 map 'create-enter-dir'        'ctrl-alt-d'  "create/enter (d)irectory named at prompt"
+map 'prompt-link'             'alt-l'       "sym(l)ink path named at prompt into current directory"
+map 'symlink'                 'alt-s'       "(s)ymlink targets into directory named at prompt"
 map 'toggle-bookmark'         'alt-b'       "toggle (b)ookmark for current directory"
 map 'bookmark-targets'        'ctrl-alt-b'  "(b)ookmark targets"
 map 'unbookmark'              'ctrl-alt-u'  "(u)nbookmark selected directories"                              '*'
@@ -199,20 +201,18 @@ map 'yank-dir'                'alt-y'       "copy (a.k.a. (y)ank) current direct
 map 'yank-targets'            'ctrl-alt-y'  "copy (a.k.a. (y)ank) targets to clipboard"
 map 'zip'                     'alt-z'       "compress (a.k.a. (z)ip) targets"
 map 'unzip'                   'ctrl-alt-z'  "decompress (a.k.a. un(z)ip) targets"
-map 'prompt-link'             'alt-l'       "sym(l)ink path named at prompt into current directory"
-map 'symlink'                 'alt-s'       "(s)ymlink targets into directory named at prompt"
 map 'toggle-hide'             'alt-h'       "toggle visibility of (h)idden files"
 map 'toggle-ignore'           'alt-i'       "toggle visibility of (i)gnored files (if supported)"
 map 'toggle-nested'           'alt-n'       "toggle listing (n)ested vs. only top-level files"
 map 'toggle-nested-sort'      'ctrl-alt-n'  "toggle sorting of (n)ested results (affects performance)"
 map 'toggle-sort-order'       'alt-o'       "toggle sort (o)rder ascending/descending"
+map 'toggle-sort'             'ctrl-alt-o'  "toggle (s)orting of results (affects performance)"
 map 'initial-settings'        'ctrl-alt-i'  "restore (i)nitial view/sort settings"
 map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane"
+map 'toggle-statusline'       'ctrl-alt-v'  "toggle visibility of the status(l)ine"
 map 'toggle-full-path'        'ctrl-alt-f'  "toggle (f)ull/relative path for files and directories"
 map 'toggle-recording'        'ctrl-alt-r'  "(r)ecord actions to file named at prompt"                       '*'
 map 'toggle-playback'         'ctrl-alt-p'  "(p)layback actions from file named at prompt"                   '*'
-map 'toggle-statusline'       'ctrl-alt-v'  "toggle visibility of the status(l)ine"
-map 'toggle-sort'             'ctrl-alt-o'  "toggle (s)orting of results (affects performance)"
 # DISABLED
 #map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
 #map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at prompt"
