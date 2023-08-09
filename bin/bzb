@@ -178,7 +178,7 @@ map 'create-file'             'alt-t'       "create (a.k.a. \"(t)ouch\") file na
 map 'create-edit-file'        'alt-e'       "create and (e)dit file named at prompt"
 map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
 map 'create-enter-dir'        'ctrl-alt-d'  "create/enter (d)irectory named at prompt"
-map 'prompt-link'             'alt-l'       "sym(l)ink path named at prompt into current directory"
+map 'create-link'             'alt-l'       "sym(l)ink path named at prompt into current directory"
 map 'symlink'                 'alt-s'       "(s)ymlink targets into directory named at prompt"
 map 'toggle-bookmark'         'alt-b'       "toggle (b)ookmark for current directory"
 map 'bookmark-targets'        'ctrl-alt-b'  "(b)ookmark targets"
@@ -1106,7 +1106,7 @@ main() {
     ;;
 
     # Use alt-l to link path named at prompt into current directory
-    prompt-link)
+    create-link)
       input_path "Link Path: " path "${alt_dir:-$base_dir}"
       if [[ $path ]]; then
         link_cmd="$ln '$(sq "$path")'"
