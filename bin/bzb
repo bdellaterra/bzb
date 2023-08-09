@@ -547,7 +547,7 @@ if has tar; then
   if [[ $zip && $zip_tar_flag ]]; then
     [[ $zip_keep ]] && zip+=" -$zip_keep"
     init unzip "$zip -d$zip_keep"
-    init zip_dir 'tar -${zip_tar_flag}${zip_keep}cpvf'
+    init zip_dir "tar -${zip_tar_flag}${zip_keep}cpvf"
     init unzip_dir 'tar -xpvf'
     init zip_dir_check 'tar -tf'
   fi
@@ -1018,7 +1018,7 @@ main() {
         for t in "${targets[@]}"; do
           set +e
           if [[ "$action" = 'zip' && -d "$t" ]]; then
-            zip_dir_cmd="$zip_dir '$(sq "$t")'.tar.$zip_ext '$(sq "$t")' >/dev/null"
+            zip_dir_cmd="$zip_dir '$(sq "${t%/}.tar.$zip_ext")' '$(sq "$t")' >/dev/null"
             zip_dir_output=$({ bash -c "$zip_dir_cmd"; } 2>&1) && remove_targets+=" '$(sq "$t")'"
             [[ ! $? -eq 0 ]] && clear && display_error "$zip_dir_output"
           elif [[ "$action" = 'zip' ]]; then
