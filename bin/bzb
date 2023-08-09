@@ -855,11 +855,6 @@ main() {
       toggle hide
     ;;
 
-    # Use alt-s to enable/disable sorting
-    toggle-sort)
-      toggle sorted
-    ;;
-
     # Use ctrl-alt-n to enable/disable nested sorting
     toggle-nested-sort)
       toggle nested_sort
@@ -870,12 +865,17 @@ main() {
       toggle reverse
     ;;
 
+    # Use ctrl-alt-o to enable/disable sorting
+    toggle-sort)
+      toggle sorted
+    ;;
+
     # Use alt-v to toggle visibility of preview pane
     toggle-preview)
       toggle preview
     ;;
 
-    # Use alt-l to toggle visibility of statusline
+    # Use ctrl-alt-v to toggle visibility of statusline
     toggle-statusline)
       toggle statusline
     ;;
@@ -1298,7 +1298,7 @@ main() {
   # Fall through to remaining cases
   esac; case $action in
 
-    # Use ctrl-alt-l to load session. May be triggered automatically by other actions,
+    # Use <DISABLED> to load session. May be triggered automatically by other actions,
     # in which case prompt will still appear if autoload_session setting is disabled
     load-session|autoload-session)
       session_file="$session"
@@ -1313,7 +1313,7 @@ main() {
       fi
     ;;
 
-    # Use ctrl-alt-s to save session
+    # Use <DISABLED> to save session
     save-session)
       input "Save session: " session_file "$session"
       if [[ $session_file ]]; then
