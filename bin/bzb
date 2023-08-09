@@ -529,7 +529,7 @@ has xclip && init clip 'xclip'
 has clip && init clip 'clip'
 
 # Zip Commands: Used to compress/decompress files
-disable zip_keep # set to 'k' or appropriate flag to keep uncompressed files after zip
+init zip_keep 'k' # set to 'k' or appropriate flag to keep uncompressed files after zip
 if has tar; then
   if has xz; then
     init zip "xz"

@@ -7,4 +7,7 @@
 command -v bat &>/dev/null && export BZB_PREVIEW_TEXT="bat --style changes,header,grid \${BZB_COLOR:+--color} \${BZB_COLOR:+always} {}"
 command -v exa &>/dev/null && export BZB_PREVIEW_DIRECTORY="exa  --long --header --group-directories-first --git \${BZB_COLOR:+--color=always} \${BZB_NESTED:+--tree} \${BZB_IGNORE:+--git-ignore} \${BZB_HIDE/?*/--all} {}"
 
+# Don't keep files after zip operations (potentially dangerous)
+export BZB_ZIP_KEEP=''
+
 bzb -ah -aq -as -al "$@"
