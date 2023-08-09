@@ -174,7 +174,7 @@ map 'move-rename'             'ctrl-alt-m'  "(m)ove/rename targets into director
 map 'delete'                  'alt-x'       "delete targets"
 map 'copy'                    'alt-c'       "(c)opy targets to directory named at prompt"
 map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into directory named at prompt"           '**'
-map 'create-file'             'alt-t'       "create (a.k.a. \"(t)ouch\") file named at prompt"
+map 'create-file'             'ctrl-alt-t'  "create (a.k.a. \"(t)ouch\") file named at prompt"
 map 'create-edit-file'        'alt-e'       "create and (e)dit file named at prompt"
 map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
 map 'create-enter-dir'        'ctrl-alt-d'  "create/enter (d)irectory named at prompt"
@@ -216,8 +216,8 @@ map 'toggle-playback'         'ctrl-alt-p'  "(p)layback actions from file named 
 # DISABLED
 #map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
 #map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at prompt"
-map 'terminal'                'ctrl-alt-t'  "open a new (t)erminal/shell in current directory"               '**'
-map 'execute'                 'ctrl-alt-x'  "e(x)ecute a single shell command in current directory"          '**'
+map 'terminal'                'alt-t'       "open a new (t)erminal/shell in current directory"               '**'
+map 'execute'                 'ctrl-alt-e'  "(e)xecute a single shell command in current directory"          '**'
 
 # Comma-separated list of custom mappings for fzf
 readonly fzf_keys="esc,$(printf ",%s" "${keys[@]}" | cut -c2-)"
@@ -1094,7 +1094,7 @@ main() {
       fi
     ;;
 
-    # Use alt-t to "touch" or create file named at prompt
+    # Use ctrl-alt-t to "touch" or create file named at prompt
     # Use alt-e to create file and edit it immediately
     create-file|create-edit-file)
       [[ "$action" = "create-edit-file" ]] && create_edit="Create/Edit" || create_edit="Create"
@@ -1275,7 +1275,7 @@ main() {
       fi
     ;;
 
-    # Use ctrl-alt-t to open a new terminal/shell in current directory
+    # Use alt-t to open a new terminal/shell in current directory
     # Use ctrl-alt-e to execute a single command
     terminal|execute)
       if [[ $autoplay ]]; then

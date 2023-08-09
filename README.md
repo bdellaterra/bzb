@@ -68,7 +68,7 @@ ctrl-alt-m  | (m)ove/rename targets into directory named at prompt²            
 alt-x       | delete targets                                                       | delete
 alt-c       | (c)opy targets to directory named at prompt                          | copy
 ctrl-alt-c  | (c)opy/rename targets into directory named at prompt²                | copy-rename
-alt-t       | create (a.k.a. "(t)ouch") file named at prompt                       | create-file
+ctrl-alt-t  | create (a.k.a. "(t)ouch") file named at prompt                       | create-file
 alt-e       | create and (e)dit file named at prompt                               | create-edit-file
 alt-d       | create (d)irectory named at prompt                                   | create-dir
 ctrl-alt-d  | create/enter (d)irectory named at prompt                             | create-enter-dir
@@ -107,8 +107,8 @@ ctrl-alt-v  | toggle visibility of the status(l)ine                             
 ctrl-alt-f  | toggle (f)ull/relative path for files and directories                | toggle-full-path
 ctrl-alt-r  | (r)ecord actions to file named at prompt¹                            | toggle-recording
 ctrl-alt-p  | (p)layback actions from file named at prompt¹                        | toggle-playback
-ctrl-alt-t  | open a new (t)erminal/shell in current directory²                    | terminal
-ctrl-alt-x  | e(x)ecute a single shell command in current directory²               | execute
+alt-t       | open a new (t)erminal/shell in current directory²                    | terminal
+ctrl-alt-e  | e(x)ecute a single shell command in current directory²               | execute
 
 Overrides for action/key bindings can be set using environment variable BZB_BIND.
 For example, the 'launch' and 'enter' bindings can be swapped by invoking bzb with command:
