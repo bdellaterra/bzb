@@ -176,8 +176,8 @@ map 'copy'                    'alt-c'       "(c)opy targets to directory named a
 map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into directory named at prompt"           '**'
 map 'create-file'             'ctrl-alt-t'  "create (a.k.a. \"(t)ouch\") file named at prompt"
 map 'create-edit-file'        'alt-e'       "create and (e)dit file named at prompt"
-map 'create-dir'              'alt-d'       "create (d)irectory named at prompt"
-map 'create-enter-dir'        'ctrl-alt-d'  "create/enter (d)irectory named at prompt"
+map 'create-dir'              'alt-d'       "create (d)irectory named at prompt (trailing slash to enter)"
+map 'yank-dir'                'ctrl-alt-d'  "copy (a.k.a. (y)ank) current directory to clipboard"
 map 'create-link'             'alt-l'       "sym(l)ink path named at prompt into current directory"
 map 'symlink'                 'alt-s'       "(s)ymlink targets into directory named at prompt"
 map 'toggle-bookmark'         'alt-b'       "toggle (b)ookmark for current directory"
@@ -197,8 +197,7 @@ map 'up-base-dir'             'alt-u'       "go to base directory, or if at base
 map 'enter-prev-dir'          'alt-p'       "switch between current and (p)revious directory"
 map 'prompt-dir'              'alt-g'       "(g)o to directory named at prompt"
 map 'prompt-base-dir'         'ctrl-alt-g'  "set new base directory at prompt and (g)o to it"
-map 'yank-dir'                'alt-y'       "copy (a.k.a. (y)ank) current directory to clipboard"
-map 'yank-targets'            'ctrl-alt-y'  "copy (a.k.a. (y)ank) targets to clipboard"
+map 'yank-targets'            'alt-y'       "copy (a.k.a. (y)ank) targets to clipboard"
 map 'zip'                     'alt-z'       "compress (a.k.a. (z)ip) targets"
 map 'unzip'                   'ctrl-alt-z'  "decompress (a.k.a. un(z)ip) targets"
 map 'toggle-hide'             'alt-h'       "toggle visibility of (h)idden files"
@@ -937,7 +936,7 @@ main() {
       done
     ;;
 
-    # Use alt-y to yank current directory to clipboard
+    # Use ctrl-alt-d to yank current directory to clipboard
     yank-dir)
       if [[ ! "$clip" ]]; then
         clear && display_error "No clipboard command configured. Cannot copy current directory to clipboard"
@@ -947,7 +946,7 @@ main() {
       fi
     ;;
 
-    # Use ctrl-alt-y to yank targets to clipboard
+    # Use alt-y to yank targets to clipboard
     yank-targets)
       if [[ ! "$clip" ]]; then
         clear && display_error "No clipboard command configured. Cannot copy targets to clipboard"
@@ -1084,13 +1083,12 @@ main() {
     ;;
 
     # Use alt-d to create directory named at prompt
-    # Use ctrl-alt-d to create directory and enter it
-    create-dir|create-enter-dir)
-      [[ "$action" = "create-enter-dir" ]] && create_enter="Create/Enter" || create_enter="Create"
-      input "$create_enter directory: " target
+    # If path ends with a slash then enter directory
+    create-dir)
+      input "Create/Enter directory: " target
       if [[ -n "$target" ]]; then
         mkdir -p "$target"
-        [[ "$action" = "create-enter-dir" ]] && next_targets=("$target")
+        [[ "$target" != "${target%/}" ]] && next_targets=("$target")
       fi
     ;;
 

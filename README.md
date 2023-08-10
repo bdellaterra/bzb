@@ -70,8 +70,8 @@ alt-c       | (c)opy targets to directory named at prompt                       
 ctrl-alt-c  | (c)opy/rename targets into directory named at prompt²                | copy-rename
 ctrl-alt-t  | create (a.k.a. "(t)ouch") file named at prompt                       | create-file
 alt-e       | create and (e)dit file named at prompt                               | create-edit-file
-alt-d       | create (d)irectory named at prompt                                   | create-dir
-ctrl-alt-d  | create/enter (d)irectory named at prompt                             | create-enter-dir
+alt-d       | create (d)irectory named at prompt (trailing slash to enter)         | create-dir
+ctrl-alt-d  | copy (a.k.a. (y)ank) current directory to clipboard                  | yank-dir
 alt-l       | sym(l)ink path named at prompt into current directory                | create-link
 alt-s       | (s)ymlink targets into directory named at prompt                     | symlink
 alt-b       | toggle (b)ookmark for current directory                              | toggle-bookmark
@@ -91,8 +91,7 @@ alt-u       | go to base directory, or if at base move it (u)p one level        
 alt-p       | switch between current and (p)revious directory                      | enter-prev-dir
 alt-g       | (g)o to directory named at prompt                                    | prompt-dir
 ctrl-alt-g  | set new base directory at prompt and (g)o to it                      | prompt-base-dir
-alt-y       | copy (a.k.a. (y)ank) current directory to clipboard                  | yank-dir
-ctrl-alt-y  | copy (a.k.a. (y)ank) targets to clipboard                            | yank-targets
+alt-y       | copy (a.k.a. (y)ank) targets to clipboard                            | yank-targets
 alt-z       | compress (a.k.a. (z)ip) targets                                      | zip
 ctrl-alt-z  | decompress (a.k.a. un(z)ip) targets                                  | unzip
 alt-h       | toggle visibility of (h)idden files                                  | toggle-hide
