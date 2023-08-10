@@ -1279,7 +1279,8 @@ main() {
       if [[ $autoplay ]]; then
         /usr/bin/env bash -c "${targets[@]}"
       else
-        [[ "$action" = "execute" ]] && QUIT=';PROMPT_COMMAND="exit"' || QUIT=''
+        [[ $autoplay ]] && EXIT='echo;read -s -r -n 1 -p "(Press any key to continue)";exit' || EXIT='exit'
+        [[ "$action" = "execute" ]] && QUIT=";PROMPT_COMMAND='$EXIT'" || QUIT=''
         clear
         set +e
         # Trap each command to log previous command, commented out if exit status indicates failure
