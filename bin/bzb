@@ -179,7 +179,6 @@ map 'copy-rename'             'ctrl-alt-c'  "(c)opy/rename targets into director
 map 'create-file'             'ctrl-alt-t'  "create (a.k.a. \"(t)ouch\") file named at prompt"
 map 'create-edit-file'        'alt-e'       "create and (e)dit file named at prompt"
 map 'create-dir'              'alt-d'       "create (d)irectory named at prompt (trailing slash to enter)"
-map 'yank-dir'                'ctrl-alt-d'  "copy (a.k.a. (y)ank) current directory to clipboard"
 map 'create-link'             'alt-l'       "sym(l)ink path named at prompt into current directory"
 map 'symlink'                 'alt-s'       "(s)ymlink targets into directory named at prompt"
 map 'toggle-bookmark'         'alt-b'       "toggle (b)ookmark for current directory"
@@ -200,6 +199,7 @@ map 'enter-prev-dir'          'alt-p'       "switch between current and (p)revio
 map 'prompt-dir'              'alt-g'       "(g)o to directory named at prompt"
 map 'prompt-base-dir'         'ctrl-alt-g'  "set new base directory at prompt and (g)o to it"
 map 'yank-targets'            'alt-y'       "copy (a.k.a. (y)ank) targets to clipboard"
+map 'yank-dir'                'ctrl-alt-y'  "copy (a.k.a. (y)ank) current directory to clipboard"
 map 'zip'                     'alt-z'       "compress (a.k.a. (z)ip) targets"
 map 'unzip'                   'ctrl-alt-z'  "decompress (a.k.a. un(z)ip) targets"
 map 'toggle-hide'             'alt-h'       "toggle visibility of (h)idden files"
@@ -210,14 +210,14 @@ map 'toggle-sort-order'       'alt-o'       "toggle sort (o)rder ascending/desce
 map 'toggle-sort'             'ctrl-alt-o'  "toggle (s)orting of results (affects performance)"
 map 'initial-settings'        'ctrl-alt-i'  "restore (i)nitial view/sort settings"
 map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane"
-map 'toggle-statusline'       'ctrl-alt-v'  "toggle visibility of the status(l)ine"
+map 'toggle-statusline'       'ctrl-alt-v'  "toggle (v)isibility of the statusline"
 map 'toggle-full-path'        'ctrl-alt-f'  "toggle (f)ull/relative path for files and directories"
 map 'toggle-recording'        'ctrl-alt-r'  "(r)ecord actions to file named at prompt"                       '*'
 map 'toggle-playback'         'ctrl-alt-p'  "(p)layback actions from file named at prompt"                   '*'
-map 'list-from-command'       'ctrl-alt-s'  "poplate (l)ist from command at prompt (blank to clear)"
-map 'send-to-command'         'ctrl-alt-x'  "(s)end selected targets to command at prompt (blank to clear)"
 map 'terminal'                'alt-t'       "open a new (t)erminal/shell in current directory"               '**'
 map 'execute'                 'ctrl-alt-e'  "(e)xecute a single shell command in current directory"          '**'
+map 'source-command'          'ctrl-alt-s'  "(s)ource listing from command at prompt (blank to clear)"
+map 'default-command'         'ctrl-alt-d'  "set command to execute as (d)efault 'enter' action (blank to clear)"
 
 # Comma-separated list of custom mappings for fzf
 readonly fzf_keys="esc,$(printf ",%s" "${keys[@]}" | cut -c2-)"
@@ -261,8 +261,8 @@ Options:
 --alternate-directory=DIR,-ad=DIR  Initialize alternate directory at start
 --data-directory=DIR,-dd=DIR       Specify directory for storing sessions and other data
 --grep=PATTERN,-g=PATTERN          Start in grep mode, searching files for specified pattern
---list-from-command,-lf            Populate listing from specified command
---send-to-command,-st              Process targets using specified command (Sets "enter" action)
+--source-command,-sc               Source listing from specified command
+--default-command,-xc              Execute specifed command as default action ('enter' action)
 --no-nested-grep,-NG               Disable searching of nested files/directories in grep mode
 --debug                            Show additional messages and error output
 --help                             Show this help text
@@ -347,8 +347,8 @@ for arg in "$@"; do
     -ad=*|--alt-dir=*|--alternate-directory=*) assign BZB_ALT_DIR "${arg#*=}"; shift ;;
     -dd=*|--data-dir=*|--data-directory=*) assign BZB_DATA_DIR "${arg#*=}"; shift ;;
     -g=*|--grep=*) enable BZB_GREP_MODE; assign BZB_GREP_QUERY "${arg#*=}"; shift ;;
-    -lf=*|--list-from=*=*) assign BZB_LIST_FROM_COMMAND "${arg#*=}"; shift ;;
-    -st=*|--send-to=*=*) assign BZB_LIST_FROM_COMMAND "${arg#*=}"; shift ;;
+    -sc=*|--source-command=*=*) assign BZB_SOURCE_COMMAND "${arg#*=}"; shift ;;
+    -dc=*|--default-command=*=*) assign BZB_DEFAULT_COMMAND "${arg#*=}"; shift ;;
     -ng|--nested-grep) enable BZB_NESTED_GREP; shift ;;
     -NG|--no-nested-grep) disable BZB_NESTED_GREP; shift ;;
     # Save remaining options for fzf with quoting preserved
@@ -558,10 +558,10 @@ if has tar; then
 fi
 
 # List-from Command: Populates listing with stdout from command
-disable list_from_command
+disable source_command
 
 # Send-to Command: Enter will run command with targets as arguments
-disable send_to_command
+disable default_command
 
 
 # FILE STATE
@@ -612,8 +612,8 @@ save_session() {
       declare -p bookmarks hide ignore nested nested_grep sorted nested_sort reverse preview statusline full_path >> "$session"
       [[ "$zip_keep" ]] && declare -p zip_keep >> "$session"
       [[ "$grep_query" ]] && declare -p grep_query >> "$session"
-      [[ "$list_from_command" ]] && declare -p list_from_command >> "$session"
-      [[ "$send_to_command" ]] && declare -p send_to_command >> "$session"
+      [[ "$source_command" ]] && declare -p source_command >> "$session"
+      [[ "$default_command" ]] && declare -p default_command >> "$session"
       [[ ${#directory_queries[@]} ]] && declare -p directory_queries >> "$session"
     else
       display_error "Could not save session to '$1'"
@@ -718,8 +718,8 @@ main() {
   assign BZB_DIR "$PWD"
 
   # Setup list/sort/preview commands
-  if [[ $list_from_command ]]; then
-    fzf_input="$list_from_command"
+  if [[ $source_command ]]; then
+    fzf_input="$source_command"
   else
     [[ $nested ]] && sort="$sort_nested" || sort="$sort_shallow"
     [[ ! $nested || $nested_sort ]] && sort_pipe="${sorted:+ | $sort}" || sort_pipe=''
@@ -833,7 +833,7 @@ main() {
     # Use left arrow to move up a directory, but not above base directory
     # If in grep mode, exit and resume browsing current directory
     back)
-      if [[ ! $list_from_command ]]; then
+      if [[ ! $source_command ]]; then
         if [[ $grep_mode ]]; then
           next_targets=('.')
           disable grep_mode
@@ -845,7 +845,7 @@ main() {
 
     # Use enter or right arrow to edit file or enter directory
     enter)
-      if [[ $send_to_command ]]; then
+      if [[ $default_command ]]; then
         assign action 'execute'
       else
         next_targets=("${targets[@]}")
@@ -866,16 +866,16 @@ main() {
 
     # Use ctrl-alt-l to populate list with output command specified at prompt
     # A blank value will cancel this behavior
-    list-from-command)
-      input "List from command: " next_list_from_command "$list_from_command"
-      assign list_from_command "$next_list_from_command"
+    source-command)
+      input "Source command: " next_source_command "$source_command"
+      assign source_command "$next_source_command"
     ;;
 
     # Use ctrl-alt-s to send targets with command specified at prompt
     # as the "enter" action. A blank value will cancel this behavior
-    send-to-command)
-      input "Send to command: " next_send_to_command "$send_to_command"
-      assign send_to_command "$next_send_to_command"
+    default-command)
+      input "Default command: " next_default_command "$default_command"
+      assign default_command "$next_default_command"
     ;;
 
     # Use ctrl-g to toggle in/out of grep mode (not changing search pattern)
@@ -1335,8 +1335,8 @@ main() {
         rec_trap+='[[ $BZB_LAST_EXIT_CODE -ne 0 ]] && printf "# (EXIT_CODE $BZB_LAST_EXIT_CODE) "'
         rec_trap+=';[[ $BZB_LAST_COMMAND ]] && printf "execute %q\n" "$BZB_LAST_COMMAND"'
         rec_trap+=') >> '"$(printf '%q' "$recording_file")$QUIT"
-        if [[ $send_to_command ]]; then
-          bash -c "$send_to_command"
+        if [[ $default_command ]]; then
+          bash -c "$default_command"
         else    
           PS1='>> ' /usr/bin/env bash --init-file <(echo trap\ "'$(sq "$rec_trap")'"\ DEBUG)
         fi

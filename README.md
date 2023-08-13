@@ -71,7 +71,6 @@ ctrl-alt-c  | (c)opy/rename targets into directory named at prompt²            
 ctrl-alt-t  | create (a.k.a. "(t)ouch") file named at prompt                       | create-file
 alt-e       | create and (e)dit file named at prompt                               | create-edit-file
 alt-d       | create (d)irectory named at prompt (trailing slash to enter)         | create-dir
-ctrl-alt-d  | copy (a.k.a. (y)ank) current directory to clipboard                  | yank-dir
 alt-l       | sym(l)ink path named at prompt into current directory                | create-link
 alt-s       | (s)ymlink targets into directory named at prompt                     | symlink
 alt-b       | toggle (b)ookmark for current directory                              | toggle-bookmark
@@ -92,6 +91,7 @@ alt-p       | switch between current and (p)revious directory                   
 alt-g       | (g)o to directory named at prompt                                    | prompt-dir
 ctrl-alt-g  | set new base directory at prompt and (g)o to it                      | prompt-base-dir
 alt-y       | copy (a.k.a. (y)ank) targets to clipboard                            | yank-targets
+ctrl-alt-y  | copy (a.k.a. (y)ank) current directory to clipboard                  | yank-dir
 alt-z       | compress (a.k.a. (z)ip) targets                                      | zip
 ctrl-alt-z  | decompress (a.k.a. un(z)ip) targets                                  | unzip
 alt-h       | toggle visibility of (h)idden files                                  | toggle-hide
@@ -108,6 +108,8 @@ ctrl-alt-r  | (r)ecord actions to file named at prompt¹                        
 ctrl-alt-p  | (p)layback actions from file named at prompt¹                        | toggle-playback
 alt-t       | open a new (t)erminal/shell in current directory²                    | terminal
 ctrl-alt-e  | e(x)ecute a single shell command in current directory²               | execute
+ctrl-alt-s  | (s)ource listing from command at prompt (blank to clear)             | source-command
+ctrl-alt-d  | set command to execute as (d)efault 'enter' action (blank to clear)  | default-command
 
 Overrides for action/key bindings can be set using environment variable BZB_BIND.
 For example, the 'launch' and 'enter' bindings can be swapped by invoking bzb with command:
