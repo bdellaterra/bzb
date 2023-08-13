@@ -108,8 +108,9 @@ ctrl-alt-r  | (r)ecord actions to file named at prompt¹                        
 ctrl-alt-p  | (p)layback actions from file named at prompt¹                        | toggle-playback
 alt-t       | open a new (t)erminal/shell in current directory²                    | terminal
 ctrl-alt-e  | e(x)ecute a single shell command in current directory²               | execute
-ctrl-alt-s  | (s)ource listing from command at prompt (blank to clear)             | source-command
 ctrl-alt-d  | set command to execute as (d)efault 'enter' action (blank to clear)  | default-command
+ctrl-alt-s  | (s)ource listing from command at prompt (blank to clear)             | source-command
+ctrl-alt-v  | set command to generate pre(v)iew (blank to clear)                   | preview-command
 
 Overrides for action/key bindings can be set using environment variable BZB_BIND.
 For example, the 'launch' and 'enter' bindings can be swapped by invoking bzb with command:
