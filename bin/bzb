@@ -395,14 +395,11 @@ enable edit
 # Default enabled/disabled settings
 [[ $edit ]] && enable persist || disable persist
 enable sorted preview statusline hide ignore nested_grep full_path
-disable nested reverse autosave_history autoload_query autosave_session autoload_session autorecord autoplay watch_interval grep_mode fzf_extra_options default_command source_command preview_command
+disable alt_dir nested reverse autosave_history autoload_query autosave_session autoload_session autorecord autoplay watch_interval grep_mode fzf_extra_options default_command source_command preview_command
 
 # Derive base directory from target, or use current directory if none given
 [[ -d "$initial_target" ]] && init base_dir "$initial_target" || init base_dir "$(dirname "${initial_target:-$PWD/.}")"
 [[ ! "$(dirs -l)" =~ " $base_dir" ]] && pushd "$base_dir" >/dev/null && pushd +1 >/dev/null
-
-# Alternate directory for quick naviagtion and file-operations (Undefined by default)
-disable alt_dir
 
 
 # COMMANDS
