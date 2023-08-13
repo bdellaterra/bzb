@@ -861,8 +861,7 @@ main() {
     # interval in seconds. A blank or zero value will cancel this behavior
     watch)
       disable watch_interval
-      input "Watch interval: " next_watch_interval "$watch_interval"
-      assign watch_interval "$next_watch_interval"
+      input "Watch interval: " watch_interval "$watch_interval"
     ;;
 
     # Use alt-f to enter grep mode using search pattern specified at prompt
@@ -880,22 +879,19 @@ main() {
     # Use ctrl-alt-d to set command for default 'enter' action
     # A blank value will cancel this behavior
     default-command)
-      input "Default command: " next_default_command "$default_command"
-      assign default_command "$next_default_command"
+      input "Default command: " default_command "$default_command"
     ;;
 
     # Use ctrl-alt-s to source listing from output command specified at prompt
     # A blank value will cancel this behavior
     source-command)
-      input "Source command: " next_source_command "$source_command"
-      assign source_command "$next_source_command"
+      input "Source command: " source_command "$source_command"
     ;;
 
     # Use ctrl-alt-v to use custom command for generating previews
     # A blank value will cancel this behavior
     preview-command)
-      input "Preview command: " next_preview_command "$preview_command"
-      assign preview_command "$next_preview_command"
+      input "Preview command: " preview_command "$preview_command"
     ;;
 
     # Use ctrl-g to toggle in/out of grep mode (not changing search pattern)
