@@ -182,6 +182,7 @@ map 'create-edit-file'        'alt-e'       "create and (e)dit file named at pro
 map 'create-dir'              'alt-d'       "create (d)irectory named at prompt (trailing slash to enter)"
 map 'create-link'             'alt-l'       "sym(l)ink path named at prompt into current directory"
 map 'symlink'                 'alt-s'       "(s)ymlink targets into directory named at prompt"
+map 'watch'                   'alt-w'       "(w)atch for activity and refresh afer specified number of seconds"
 map 'toggle-bookmark'         'alt-b'       "toggle (b)ookmark for current directory"
 map 'bookmark-targets'        'ctrl-alt-b'  "(b)ookmark targets"
 map 'unbookmark'              'ctrl-alt-u'  "(u)nbookmark selected directories"                              '*'
@@ -263,6 +264,7 @@ Options:
 --alternate-directory=DIR,-ad=DIR  Initialize alternate directory at start
 --data-directory=DIR,-dd=DIR       Specify directory for storing sessions and other data
 --grep=PATTERN,-g=PATTERN          Start in grep mode, searching files for specified pattern
+--watch=NUMBER,-w=NUMBER           Watch for activity and refresh afer specified number of seconds
 --default-command,-xc              Execute specifed command as default action ('enter' action)
 --source-command,-sc               Source listing from specified command
 --prview-command,-vc               Execute specifed command to generate preview
@@ -349,6 +351,7 @@ for arg in "$@"; do
     -bd=*|--base-dir=*|--base_directory=*) assign BZB_BASE_DIR "${arg#*=}"; shift ;;
     -ad=*|--alt-dir=*|--alternate-directory=*) assign BZB_ALT_DIR "${arg#*=}"; shift ;;
     -dd=*|--data-dir=*|--data-directory=*) assign BZB_DATA_DIR "${arg#*=}"; shift ;;
+    -w=*|--watch=*) assign BZB_WATCH_INTERVAL "${arg#*=}"; shift ;;
     -g=*|--grep=*) enable BZB_GREP_MODE; assign BZB_GREP_QUERY "${arg#*=}"; shift ;;
     -dc=*|--default-command=*=*) assign BZB_DEFAULT_COMMAND "${arg#*=}"; shift ;;
     -sc=*|--source-command=*=*) assign BZB_SOURCE_COMMAND "${arg#*=}"; shift ;;
@@ -392,7 +395,7 @@ enable edit
 # Default enabled/disabled settings
 [[ $edit ]] && enable persist || disable persist
 enable sorted preview statusline hide ignore nested_grep full_path
-disable nested reverse autosave_history autoload_query autosave_session autoload_session autorecord autoplay grep_mode fzf_extra_options
+disable nested reverse autosave_history autoload_query autosave_session autoload_session autorecord autoplay watch_interval grep_mode fzf_extra_options default_command source_command preview_command
 
 # Derive base directory from target, or use current directory if none given
 [[ -d "$initial_target" ]] && init base_dir "$initial_target" || init base_dir "$(dirname "${initial_target:-$PWD/.}")"
@@ -560,15 +563,6 @@ if has tar; then
     init zip_dir_check 'tar -tf'
   fi
 fi
-
-# Default Command: Enter will run command with targets as arguments
-disable default_command
-
-# Source Command: Populates listing with stdout from command
-disable source_command
-
-# Preview Command: Enter will run command with targets as arguments
-disable preview_command
 
 
 # FILE STATE
@@ -773,6 +767,10 @@ main() {
   [[ $grep_mode ]] && fzf_options+=" --nth=2"
   [[ $statusline ]] && fzf_options+=" --header='$(sq "$BZB_STATUSLINE")'"
   [[ $preview ]] && fzf_options+=" --preview='$(sq "$fzf_preview")' --preview-window='right:62%:wrap'"
+  if [[ $watch_interval -gt 0 ]]; then
+    fzf_watch="reload:sleep $watch_interval;$(sq "$fzf_input")"
+    fzf_options+=" --bind 'backward-eof:$fzf_watch,focus:$fzf_watch'"
+  fi
   [[ $fzf_extra_options ]] && fzf_options+=" $fzf_extra_options"
 
   if [[ $autorecord && $autoplay ]]; then
@@ -863,6 +861,14 @@ main() {
     # Use ctrl-r to refresh the listing
     refresh-listing)
       main
+    ;;
+
+    # Use alt-w to set watch interval. Listing will refresh at the specified
+    # interval in seconds. A blank or zero value will cancel this behavior
+    watch)
+      disable watch_interval
+      input "Watch interval: " next_watch_interval "$watch_interval"
+      assign watch_interval "$next_watch_interval"
     ;;
 
     # Use alt-f to enter grep mode using search pattern specified at prompt

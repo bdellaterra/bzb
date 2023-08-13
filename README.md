@@ -74,6 +74,7 @@ alt-e       | create and (e)dit file named at prompt                            
 alt-d       | create (d)irectory named at prompt (trailing slash to enter)         | create-dir
 alt-l       | sym(l)ink path named at prompt into current directory                | create-link
 alt-s       | (s)ymlink targets into directory named at prompt                     | symlink
+alt-w       | (w)atch for activity and refresh afer specified number of seconds    | watch
 alt-b       | toggle (b)ookmark for current directory                              | toggle-bookmark
 ctrl-alt-b  | (b)ookmark targets                                                   | bookmark-targets
 ctrl-alt-u  | (u)nbookmark selected directories¹                                   | unbookmark
