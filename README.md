@@ -59,6 +59,7 @@ enter       | enter directory or edit file                                      
 escape      | exit file browser                                                    | exit
 right       | enter directory or edit file                                         | enter
 left        | go to parent directory (not moving past base directory)              | back
+ctrl-r      | refresh listing                                                      | refresh-listing                   
 alt-q       | (q)uick-launch targets using default program                         | launch
 alt-f       | grep/(f)ind pattern specified at prompt ('left' will exit grep mode) | grep
 ctrl-g      | cancel submenu or prompt / toggle (g)rep mode preserving pattern     | toggle-grep

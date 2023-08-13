@@ -167,6 +167,7 @@ map() {
 map 'exit'                    'esc'         "exit file browser"
 map 'enter'                   'right'       "enter directory or edit file"
 map 'back'                    'left'        "go to parent directory (not moving past base directory)"
+map 'refresh-listing'         'ctrl-r'      "refresh listing"
 map 'launch'                  'alt-q'       "(q)uick-launch targets using default program"
 map 'grep'                    'alt-f'       "grep/(f)ind pattern specified at prompt ('left' will exit grep mode)"
 map 'toggle-grep'             'ctrl-g'      "cancel submenu or prompt / toggle (g)rep mode preserving pattern"
@@ -857,6 +858,11 @@ main() {
       else
         next_targets=("${targets[@]}")
       fi
+    ;;
+
+    # Use ctrl-r to refresh the listing
+    refresh-listing)
+      main
     ;;
 
     # Use alt-f to enter grep mode using search pattern specified at prompt
