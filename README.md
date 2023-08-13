@@ -102,7 +102,7 @@ alt-o       | toggle sort (o)rder ascending/descending                          
 ctrl-alt-o  | toggle (s)orting of results (affects performance)                    | toggle-sort
 ctrl-alt-i  | restore (i)nitial view/sort settings                                 | initial-settings
 alt-v       | toggle visibility of pre(v)iew pane                                  | toggle-preview
-ctrl-alt-v  | toggle visibility of the status(l)ine                                | toggle-statusline
+ctrl-alt-l  | toggle visibility of the status(l)ine                                | toggle-statusline
 ctrl-alt-f  | toggle (f)ull/relative path for files and directories                | toggle-full-path
 ctrl-alt-r  | (r)ecord actions to file named at prompt¹                            | toggle-recording
 ctrl-alt-p  | (p)layback actions from file named at prompt¹                        | toggle-playback

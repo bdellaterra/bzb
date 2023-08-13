@@ -210,7 +210,7 @@ map 'toggle-sort-order'       'alt-o'       "toggle sort (o)rder ascending/desce
 map 'toggle-sort'             'ctrl-alt-o'  "toggle (s)orting of results (affects performance)"
 map 'initial-settings'        'ctrl-alt-i'  "restore (i)nitial view/sort settings"
 map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane"
-map 'toggle-statusline'       'ctrl-alt-v'  "toggle (v)isibility of the statusline"
+map 'toggle-statusline'       'ctrl-alt-l'  "toggle visibility of the status(l)ine"
 map 'toggle-full-path'        'ctrl-alt-f'  "toggle (f)ull/relative path for files and directories"
 map 'toggle-recording'        'ctrl-alt-r'  "(r)ecord actions to file named at prompt"                       '*'
 map 'toggle-playback'         'ctrl-alt-p'  "(p)layback actions from file named at prompt"                   '*'
