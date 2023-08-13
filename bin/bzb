@@ -144,7 +144,7 @@ bind '"\C-g":"\C-k\C-u
 "' '"\e\e":"\C-g"' &>/dev/null
 
 # Set fzf keybinds for movement and exit actions (Avoid spaces or quotes for these assignments)
-init fzf_bind '--bind=ctrl-g:ignore,esc:cancel'
+init fzf_bind "--bind 'ctrl-g:ignore,esc:cancel'"
 init fzf_submenu_bind '--bind=ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
 
 # Read overrides for action/key bindings
@@ -764,6 +764,8 @@ main() {
   [[ $grep_mode ]] && fzf_options+=" --nth=2"
   [[ $statusline ]] && fzf_options+=" --header='$(sq "$BZB_STATUSLINE")'"
   [[ $preview ]] && fzf_options+=" --preview='$(sq "$fzf_preview")' --preview-window='right:62%:wrap'"
+  [[ $fzf_extra_options ]] && fzf_options+=" $fzf_extra_options"
+  [[ "${action_keys['refresh-listing']}" ]] && fzf_options+=" --bind '${action_keys['refresh-listing']}:reload:$(sq "$fzf_input")'"
   if [[ $watch_interval -gt 0 ]]; then
     fzf_watch="reload:sleep $watch_interval;$(sq "$fzf_input")"
     fzf_options+=" --bind 'backward-eof:$fzf_watch,focus:$fzf_watch'"
@@ -853,11 +855,6 @@ main() {
       else
         next_targets=("${targets[@]}")
       fi
-    ;;
-
-    # Use ctrl-r to refresh the listing
-    refresh-listing)
-      main
     ;;
 
     # Use alt-w to set watch interval. Listing will refresh at the specified
