@@ -98,9 +98,11 @@ rel() {
   echo "$rel"
 }
 
+init continue 'echo;read -s -r -n 1 -p "(Press any key to continue)"'
+
 display_error() {
-  echo && last_error=$(printf 'Error: %s' "$@" 2>&1 | tee /dev/tty) && echo;
-  [[ ! $autoplay ]] && read -s -r -n 1 -p "(Press any key to continue)";
+  echo && last_error=$(printf 'Error: %s' "$@" 2>&1 | tee /dev/tty);
+  [[ ! $autoplay ]] && "$continue";
 }
 
 catch_commmand() { 
@@ -212,9 +214,8 @@ map 'toggle-statusline'       'ctrl-alt-v'  "toggle visibility of the status(l)i
 map 'toggle-full-path'        'ctrl-alt-f'  "toggle (f)ull/relative path for files and directories"
 map 'toggle-recording'        'ctrl-alt-r'  "(r)ecord actions to file named at prompt"                       '*'
 map 'toggle-playback'         'ctrl-alt-p'  "(p)layback actions from file named at prompt"                   '*'
-# DISABLED
-#map 'load-session'            'ctrl-alt-l'  "(l)oad session from file named at prompt"
-#map 'save-session'            'ctrl-alt-s'  "(s)ave session to file named at prompt"
+map 'list-from-command'       'ctrl-alt-s'  "poplate (l)ist from command at prompt (blank to clear)"
+map 'send-to-command'         'ctrl-alt-x'  "(s)end selected targets to command at prompt (blank to clear)"
 map 'terminal'                'alt-t'       "open a new (t)erminal/shell in current directory"               '**'
 map 'execute'                 'ctrl-alt-e'  "(e)xecute a single shell command in current directory"          '**'
 
@@ -260,6 +261,8 @@ Options:
 --alternate-directory=DIR,-ad=DIR  Initialize alternate directory at start
 --data-directory=DIR,-dd=DIR       Specify directory for storing sessions and other data
 --grep=PATTERN,-g=PATTERN          Start in grep mode, searching files for specified pattern
+--list-from-command,-lf            Populate listing from specified command
+--send-to-command,-st              Process targets using specified command (Sets "enter" action)
 --no-nested-grep,-NG               Disable searching of nested files/directories in grep mode
 --debug                            Show additional messages and error output
 --help                             Show this help text
@@ -344,6 +347,8 @@ for arg in "$@"; do
     -ad=*|--alt-dir=*|--alternate-directory=*) assign BZB_ALT_DIR "${arg#*=}"; shift ;;
     -dd=*|--data-dir=*|--data-directory=*) assign BZB_DATA_DIR "${arg#*=}"; shift ;;
     -g=*|--grep=*) enable BZB_GREP_MODE; assign BZB_GREP_QUERY "${arg#*=}"; shift ;;
+    -lf=*|--list-from=*=*) assign BZB_LIST_FROM_COMMAND "${arg#*=}"; shift ;;
+    -st=*|--send-to=*=*) assign BZB_LIST_FROM_COMMAND "${arg#*=}"; shift ;;
     -ng|--nested-grep) enable BZB_NESTED_GREP; shift ;;
     -NG|--no-nested-grep) disable BZB_NESTED_GREP; shift ;;
     # Save remaining options for fzf with quoting preserved
@@ -552,6 +557,12 @@ if has tar; then
   fi
 fi
 
+# List-from Command: Populates listing with stdout from command
+disable list_from_command
+
+# Send-to Command: Enter will run command with targets as arguments
+disable send_to_command
+
 
 # FILE STATE
 
@@ -601,6 +612,8 @@ save_session() {
       declare -p bookmarks hide ignore nested nested_grep sorted nested_sort reverse preview statusline full_path >> "$session"
       [[ "$zip_keep" ]] && declare -p zip_keep >> "$session"
       [[ "$grep_query" ]] && declare -p grep_query >> "$session"
+      [[ "$list_from_command" ]] && declare -p list_from_command >> "$session"
+      [[ "$send_to_command" ]] && declare -p send_to_command >> "$session"
       [[ ${#directory_queries[@]} ]] && declare -p directory_queries >> "$session"
     else
       display_error "Could not save session to '$1'"
@@ -671,6 +684,7 @@ declare -A initial_settings=([sorted]="$sorted" [preview]="$preview" [statusline
 
 main() {
   assign BZB_BASE_DIR "$base_dir"
+  assign BZB_CONTINUE "$continue"
   assign BZB_QUERY "$query"
   assign BZB_COLOR "$color"
   assign BZB_REVERSE "$reverse"
@@ -704,22 +718,26 @@ main() {
   assign BZB_DIR "$PWD"
 
   # Setup list/sort/preview commands
-  [[ $nested ]] && sort="$sort_nested" || sort="$sort_shallow"
-  [[ ! $nested || $nested_sort ]] && sort_pipe="${sorted:+ | $sort}" || sort_pipe=''
-  if [[ $grep_mode ]]; then
-    # Order grep results by number of matches descending
-    enable BZB_SORT_NUMERIC && toggle BZB_REVERSE
-    [[ $nested_grep ]] && grep="$grep_nested" || grep="$grep_shallow"
-    fzf_prompt=" --prompt='/$BZB_GREP_QUERY/'"
-    fzf_input=$(bash -c "echo \"$grep$sort_pipe\"")
-    fzf_preview=$(bash -c "echo \"$grep_mode_preview\"")
+  if [[ $list_from_command ]]; then
+    fzf_input="$list_from_command"
   else
-    [[ $nested ]] && find="$find_nested" || find="$find_shallow"
-    fzf_prompt=" --prompt='$(sq "${BZB_DIR#$BZB_BASE_DIR}")>'"   
-    fzf_input=$(bash -c "echo \"$find$no_leading_dots$sort_pipe\"")
-    fzf_preview="$find_mode_preview"
+    [[ $nested ]] && sort="$sort_nested" || sort="$sort_shallow"
+    [[ ! $nested || $nested_sort ]] && sort_pipe="${sorted:+ | $sort}" || sort_pipe=''
+    if [[ $grep_mode ]]; then
+      # Order grep results by number of matches descending
+      enable BZB_SORT_NUMERIC && toggle BZB_REVERSE
+      [[ $nested_grep ]] && grep="$grep_nested" || grep="$grep_shallow"
+      fzf_prompt=" --prompt='/$BZB_GREP_QUERY/'"
+      fzf_input=$(bash -c "echo \"$grep$sort_pipe\"")
+      fzf_preview=$(bash -c "echo \"$grep_mode_preview\"")
+    else
+      [[ $nested ]] && find="$find_nested" || find="$find_shallow"
+      fzf_prompt=" --prompt='$(sq "${BZB_DIR#$BZB_BASE_DIR}")>'"   
+      fzf_input=$(bash -c "echo \"$find$no_leading_dots$sort_pipe\"")
+      fzf_preview="$find_mode_preview"
+    fi
+    fzf_input+="$no_leading_dots"
   fi
-  fzf_input+="$no_leading_dots"
 
   # Prepare display to show status of toggle-settings
   status=()
@@ -777,6 +795,12 @@ main() {
     [[ $grep_mode ]] && fzf_command+="$no_grep_counts"
     { read -r query; read -r command; readarray -t targets; } < <(bash -c "$fzf_command")
 
+    BZB_TARGETS=''
+    for t in "${targets[@]}"; do
+      BZB_TARGETS+=" '$(sq "${BZB_DIR%/}/$t")'"
+    done
+    export BZB_TARGETS
+
     # Optionally preserve query for current directory
     if [[ $autoload_query ]]; then
       [[ $query || ( ! $query && ${directory_queries[$BZB_DIR]} ) ]] && directory_queries[$BZB_DIR]="$query"
@@ -809,17 +833,23 @@ main() {
     # Use left arrow to move up a directory, but not above base directory
     # If in grep mode, exit and resume browsing current directory
     back)
-      if [[ ! $grep_mode && "$PWD" != "$base_dir" ]]; then
-        next_targets=("..")
-      else
-        next_targets=('.')
-        disable grep_mode
+      if [[ ! $list_from_command ]]; then
+        if [[ $grep_mode ]]; then
+          next_targets=('.')
+          disable grep_mode
+        elif [[ "$PWD" != "$base_dir" ]]; then
+          next_targets=("..")
+        fi
       fi
     ;;
 
     # Use enter or right arrow to edit file or enter directory
     enter)
-      next_targets=("${targets[@]}")
+      if [[ $send_to_command ]]; then
+        assign action 'execute'
+      else
+        next_targets=("${targets[@]}")
+      fi
     ;;
 
     # Use alt-f to enter grep mode using search pattern specified at prompt
@@ -832,6 +862,20 @@ main() {
       else
         disable grep_mode
       fi
+    ;;
+
+    # Use ctrl-alt-l to populate list with output command specified at prompt
+    # A blank value will cancel this behavior
+    list-from-command)
+      input "List from command: " next_list_from_command "$list_from_command"
+      assign list_from_command "$next_list_from_command"
+    ;;
+
+    # Use ctrl-alt-s to send targets with command specified at prompt
+    # as the "enter" action. A blank value will cancel this behavior
+    send-to-command)
+      input "Send to command: " next_send_to_command "$send_to_command"
+      assign send_to_command "$next_send_to_command"
     ;;
 
     # Use ctrl-g to toggle in/out of grep mode (not changing search pattern)
@@ -1273,14 +1317,16 @@ main() {
       fi
     ;;
 
+  # Fall through to remaining cases
+  esac; case $action in
+
     # Use alt-t to open a new terminal/shell in current directory
     # Use ctrl-alt-e to execute a single command
     terminal|execute)
       if [[ $autoplay ]]; then
         /usr/bin/env bash -c "${targets[@]}"
       else
-        [[ $autoplay ]] && EXIT='echo;read -s -r -n 1 -p "(Press any key to continue)";exit' || EXIT='exit'
-        [[ "$action" = "execute" ]] && QUIT=";PROMPT_COMMAND='$EXIT'" || QUIT=''
+        [[ "$action" = "execute" ]] && QUIT=";PROMPT_COMMAND='$continue;exit'" || QUIT=''
         clear
         set +e
         # Trap each command to log previous command, commented out if exit status indicates failure
@@ -1289,13 +1335,14 @@ main() {
         rec_trap+='[[ $BZB_LAST_EXIT_CODE -ne 0 ]] && printf "# (EXIT_CODE $BZB_LAST_EXIT_CODE) "'
         rec_trap+=';[[ $BZB_LAST_COMMAND ]] && printf "execute %q\n" "$BZB_LAST_COMMAND"'
         rec_trap+=') >> '"$(printf '%q' "$recording_file")$QUIT"
-        PS1='>> ' /usr/bin/env bash --init-file <(echo trap\ "'$(sq "$rec_trap")'"\ DEBUG)
+        if [[ $send_to_command ]]; then
+          bash -c "$send_to_command"
+        else    
+          PS1='>> ' /usr/bin/env bash --init-file <(echo trap\ "'$(sq "$rec_trap")'"\ DEBUG)
+        fi
         set -e
       fi
     ;;
-
-  # Fall through to remaining cases
-  esac; case $action in
 
     # Use <DISABLED> to load session. May be triggered automatically by other actions,
     # in which case prompt will still appear if autoload_session setting is disabled
