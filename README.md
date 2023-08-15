@@ -24,7 +24,7 @@ LONG/SHORT OPTION                  | EFFECT
 --no-nested-sort,-NS               | Disable sorting of nested files/directories (affects performance)
 --no-statusline,-L                 | Disable statusline that shows current state of various settings
 --no-preview,-V                    | Disable preview pane that shows file/directory contents
---no-persist,-P                    | Exit browser after editing a file
+--no-persist,-P                    | Exit after editing a file
 --no-edit,-E                       | Log selections to file instead of launching editor
 --no-full-path,-F                  | Use relative paths instead of full/absolute paths
 --autosave-history,-ah             | Save queries so Ctrl-p and Ctrl-n will cycle through search history
@@ -39,6 +39,10 @@ LONG/SHORT OPTION                  | EFFECT
 --alternate-directory=DIR,-ad=DIR  | Initialize alternate directory at start
 --data-directory=DIR,-dd=DIR       | Specify directory for storing sessions and other data
 --grep=PATTERN,-g=PATTERN          | Start in grep mode, searching files for specified pattern
+--watch=NUMBER,-w=NUMBER           | Watch for activity and refresh afer specified number of seconds
+--default-command,-xc              | Execute specifed command as default action ('enter' action)
+--source-command,-sc               | Source listing from specified command
+--prview-command,-vc               | Execute specifed command to generate preview
 --no-nested-grep,-NG               | Disable searching of nested files/directories in grep mode
 --debug                            | Show additional messages and error output
 --help                             | Show this help text
@@ -104,7 +108,7 @@ alt-o       | toggle sort (o)rder ascending/descending                          
 ctrl-alt-o  | toggle (s)orting of results (affects performance)                    | toggle-sort
 ctrl-alt-i  | restore (i)nitial view/sort settings                                 | initial-settings
 alt-v       | toggle visibility of pre(v)iew pane                                  | toggle-preview
-ctrl-alt-l  | toggle visibility of the status(l)ine                                | toggle-statusline
+ctrl-alt-l  | toggle whether listing recurses into sym(l)inked directories         | toggle-follow-links
 ctrl-alt-f  | toggle (f)ull/relative path for files and directories                | toggle-full-path
 ctrl-alt-r  | (r)ecord actions to file named at prompt¹                            | toggle-recording
 ctrl-alt-p  | (p)layback actions from file named at prompt¹                        | toggle-playback
