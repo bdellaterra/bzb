@@ -212,7 +212,7 @@ map 'toggle-sort-order'       'alt-o'       "toggle sort (o)rder ascending/desce
 map 'toggle-sort'             'ctrl-alt-o'  "toggle (s)orting of results (affects performance)"
 map 'initial-settings'        'ctrl-alt-i'  "restore (i)nitial view/sort settings"
 map 'toggle-preview'          'alt-v'       "toggle visibility of pre(v)iew pane"
-map 'toggle-statusline'       'ctrl-alt-l'  "toggle visibility of the status(l)ine"
+map 'toggle-follow-links'     'ctrl-alt-l'  "toggle whether listing recurses into symlinked directories"
 map 'toggle-full-path'        'ctrl-alt-f'  "toggle (f)ull/relative path for files and directories"
 map 'toggle-recording'        'ctrl-alt-r'  "(r)ecord actions to file named at prompt"                       '*'
 map 'toggle-playback'         'ctrl-alt-p'  "(p)layback actions from file named at prompt"                   '*'
@@ -332,8 +332,10 @@ for arg in "$@"; do
     -P|--no-persist) disable BZB_PERSIST; shift ;;
     -e|--edit) enable BZB_EDIT; shift ;;
     -E|--no-edit) disable BZB_EDIT; shift ;;
-    -f|--full-path) enable BZB_FULL_PATH; shift ;;
-    -F|--no-full-path) disable BZB_FULL_PATH; shift ;;
+    -fp|--full-path) enable BZB_FULL_PATH; shift ;;
+    -FP|--no-full-path) disable BZB_FULL_PATH; shift ;;
+    -fl|--follow-links) enable BZB_FOLLOW_LINKS; shift;;
+    -FL|--no-follow-links) disable BZB_FOLLOW_LINKS; shift;;
     -ah|--autosave-history) enable BZB_AUTOSAVE_HISTORY; shift ;;
     -AH|--no-autosave-history) disable BZB_AUTOSAVE_HISTORY; shift ;;
     -aq|--autoload-query) enable BZB_AUTOLOAD_QUERY; shift ;;
@@ -395,7 +397,7 @@ enable edit
 # Default enabled/disabled settings
 [[ $edit ]] && enable persist || disable persist
 enable sorted preview statusline hide ignore nested_grep full_path
-disable alt_dir nested reverse autosave_history autoload_query autosave_session autoload_session autorecord autoplay watch_interval grep_mode fzf_extra_options default_command source_command preview_command
+disable alt_dir nested reverse autosave_history autoload_query autosave_session autoload_session autorecord autoplay watch_interval grep_mode fzf_extra_options default_command source_command preview_command follow_links
 
 # Derive base directory from target, or use current directory if none given
 [[ -d "$initial_target" ]] && init base_dir "$initial_target" || init base_dir "$(dirname "${initial_target:-$PWD/.}")"
@@ -411,15 +413,15 @@ init ln "ln -s"
 if has fd; then
   enable find_can_ignore
   init find_nested \
-    "fd \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore}"
+    "fd \${BZB_FOLLOW_LINKS:+--follow} \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore}"
   init find_shallow \
-    "fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore}"
+    "fd --max-depth 1 \${BZB_FOLLOW_LINKS:+--follow} \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore}"
 else
   disable find_can_ignore
   init find_nested \
-    "find . -not -name '.' \${BZB_HIDE/?*/-not -path '*/.*'}"
+    "find . \${BZB_FOLLOW_LINKS:+--follow} -not -name '.' \${BZB_HIDE/?*/-not -path '*/.*'}"
   init find_shallow \
-    "find . -maxdepth 1 -not -name '.' \${BZB_HIDE/?*/-not -path '*/.*'}"
+    "find . -maxdepth 1 \${BZB_FOLLOW_LINKS:+--follow} -not -name '.' \${BZB_HIDE/?*/-not -path '*/.*'}"
 fi
 readonly find_can_ignore
 
@@ -508,15 +510,16 @@ list_by_grep_count="$no_zero_counts | awk -F ':' '$(dq "$(sq '{ printf( "%s %s\n
 if has rg; then
   enable grep_can_ignore
   init grep_nested \
-    "rg \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore} --count --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $no_leading_dots $list_by_grep_count"
+    "rg \${BZB_FOLLOW_LINKS/?*/--follow} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore} --count --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $no_leading_dots $list_by_grep_count"
   init grep_shallow \
     "rg \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore} --count --maxdepth 1 --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $no_leading_dots $list_by_grep_count "
   init grep_mode_preview \
     "printf '%s' {} $no_grep_counts | xargs -0 cat | rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}'"
 else
   disable grep_can_ignore
+  [[ $BZB_FOLLOW_LINKS ]] && grep_recurse='-R' || grep_recurse='-r'
   init grep_nested \
-    "grep -r -i -s -c '\${BZB_GREP_QUERY}' .\${BZB_HIDE/?*/ | grep -v '.*\/\..*'}$no_leading_dots $list_by_grep_count"
+    "grep $grep_recurse -i -s -c '\${BZB_GREP_QUERY}' .\${BZB_HIDE/?*/ | grep -v '.*\/\..*'}$no_leading_dots $list_by_grep_count"
   init grep_shallow \
     "grep -i -s -c '\${BZB_GREP_QUERY}' "'$([[ ! $BZB_HIDE ]] && echo "*" || echo "{*,.*}")'"$no_leading_dots $list_by_grep_count"
   init grep_mode_preview \
@@ -607,7 +610,7 @@ save_session() {
       declare -p PWD > "$session"
       [[ "$base_dir" ]] && declare -p base_dir >> "$session"
       [[ "$alt_dir" ]] && declare -p alt_dir >> "$session"
-      declare -p bookmarks hide ignore nested nested_grep sorted nested_sort reverse preview statusline full_path >> "$session"
+      declare -p bookmarks hide ignore nested nested_grep sorted nested_sort reverse preview statusline full_path follow_links >> "$session"
       [[ "$zip_keep" ]] && declare -p zip_keep >> "$session"
       [[ "$grep_query" ]] && declare -p grep_query >> "$session"
       [[ "$default_command" ]] && declare -p default_command >> "$session"
@@ -676,7 +679,7 @@ dot() { [[ $full_path ]] && echo "$PWD" || echo '.'; }
 # MAIN
 
 # Save initial preferences so they can be restored later
-declare -A initial_settings=([sorted]="$sorted" [preview]="$preview" [statusline]="$statusline" [hide]="$hide" [ignore]="$ignore" [nested]="$nested" [nested_grep]="$nested_grep" [reverse]="$reverse" [nested_sort]="$nested_sort" [full_path]="$full_path")
+declare -A initial_settings=([sorted]="$sorted" [preview]="$preview" [statusline]="$statusline" [hide]="$hide" [ignore]="$ignore" [nested]="$nested" [nested_grep]="$nested_grep" [reverse]="$reverse" [nested_sort]="$nested_sort" [full_path]="$full_path" [follow_links]="$follow_links")
 
 # Optionally autoload browsing session
 [[ $autoload_session && -r "$session" ]] && . -- "$session" && restore_session "$session"
@@ -690,6 +693,7 @@ main() {
   assign BZB_NESTED "$nested"
   assign BZB_IGNORE "$ignore"
   assign BZB_HIDE "$hide"
+  assign BZB_FOLLOW_LINKS "$follow_links"
   disable BZB_SORT_NUMERIC
   assign BZB_GREP_QUERY "$(sq "$grep_query")" # escaped for single-quoting here
 
@@ -757,6 +761,7 @@ main() {
   [[ ! $sorted ]] && reverse_prefix='!' || reverse_prefix='-'
   [[ $reverse ]] && status+=("${reverse_prefix}O") || status+=("${reverse_prefix}o")
   [[ $full_path ]] && status+=("-f") || status+=("-F")
+  [[ $follow_links ]] && status+=("-l") || status+=("-L")
 
   assign BZB_STATUSLINE "${autorecord:+REC }${autoplay:+PLAY }[${status[@]}]"
 
@@ -934,7 +939,7 @@ main() {
       toggle preview
     ;;
 
-    # Use ctrl-alt-v to toggle visibility of statusline
+    # Unmapped: toggle visibility of statusline
     toggle-statusline)
       toggle statusline
     ;;
@@ -943,6 +948,12 @@ main() {
     toggle-full-path)
       toggle full_path
     ;;
+
+    # Use ctrl-alt-l to toggle following symlinks into linked directories
+    toggle-follow-links)
+      toggle follow_links
+    ;;
+
 
     # Use ctrl-alt-r to toggle recording actions to file named at prompt (This action is not recordable)
     toggle-recording|initial-recording)
