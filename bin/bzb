@@ -410,12 +410,19 @@ disable alt_dir nested reverse autosave_history autoload_query autosave_session 
 init ln "ln -s"
 
 # Find Commands: Prefer 'fd' over 'find' so ignored files are not listed
-if has fd; then
+if has fdfind; then
+  init fd_command 'fdfind'
+elif has fd; then
+  init fd_command 'fd'
+else
+  disable fd_command
+fi
+if [[ $fd_command ]]; then
   enable find_can_ignore
   init find_nested \
-    "fd \${BZB_FOLLOW_LINKS:+--follow} \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore}"
+    "$fd_command \${BZB_FOLLOW_LINKS:+--follow} \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore}"
   init find_shallow \
-    "fd --max-depth 1 \${BZB_FOLLOW_LINKS:+--follow} \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore}"
+    "$fd_command --max-depth 1 \${BZB_FOLLOW_LINKS:+--follow} \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore}"
 else
   disable find_can_ignore
   init find_nested \
