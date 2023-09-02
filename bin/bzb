@@ -146,8 +146,8 @@ fi
 bind '"\C-g":"\C-k\C-u
 "' '"\e\e":"\C-g"' &>/dev/null
 
-# Set fzf keybinds for movement and exit actions (Avoid spaces or quotes for these assignments)
-init fzf_bind "--bind 'ctrl-g:ignore,esc:cancel'"
+# Set fzf keybinds for movement, exit and toggle-all actions (Avoid spaces or quotes for these assignments)
+init fzf_bind "--bind 'ctrl-g:ignore,esc:cancel,ctrl-t:toggle-all'"
 init fzf_submenu_bind '--bind=ctrl-g:unix-line-discard+print-query,esc:unix-line-discard+print-query'
 
 # Read overrides for action/key bindings
