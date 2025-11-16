@@ -116,7 +116,7 @@ clear_fzf() { [[ $fzf_command && $no_clear ]] && tput rmcup; }
 # Prefer GNU core utilities
 enable prefer_gnu_coreutils
 if [[ $prefer_gnu_coreutils ]]; then
-for util in basename cat cp cut dirname env head ls mkdir mv pwd readlink realpath rm rmdir sed sort stat tac tail tee test touch tr uniq wc
+  for util in basename cat cp cut dirname env head ls mkdir mv pwd readlink realpath rm rmdir sed sort stat tac tail tee test touch tr uniq wc
   do
     has "g$util" && alias "$util"="g$util"
   done
@@ -124,7 +124,7 @@ fi
 
 # Prefer -I option to -i for removing files, if available
 rm -I '' 2>&1 | grep '\(unrecognized\|invalid\|illegal\) option' &>/dev/null && \
-    init rm_interactive 'rm -ri --' || init rm_interactive 'rm -rI --'
+  init rm_interactive 'rm -ri --' || init rm_interactive 'rm -rI --'
 
 # Canonicalize symlinks if support is available
 if readlink --canonicalize '' 2>&1 | grep '\(unrecognized\|invalid\|illegal\) option' &>/dev/null; then
@@ -229,7 +229,7 @@ version() {
 }
 
 usage() {
-cat <<USAGE
+  cat <<USAGE
 usage: $script_name [options] [target file or directory]
 
 Browse files using fzf. If no target is specified start in the current directory.
@@ -402,26 +402,26 @@ init ln "ln -s"
 if has fd; then
   enable find_can_ignore
   init find_nested \
-    "fd \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore}"
+       "fd \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore}"
   init find_shallow \
-    "fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore}"
+       "fd --max-depth 1 \${BZB_COLOR:+--color always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore}"
 else
   disable find_can_ignore
   init find_nested \
-    "find . -not -name '.' \${BZB_HIDE/?*/-not -path '*/.*'}"
+       "find . -not -name '.' \${BZB_HIDE/?*/-not -path '*/.*'}"
   init find_shallow \
-    "find . -maxdepth 1 -not -name '.' \${BZB_HIDE/?*/-not -path '*/.*'}"
+       "find . -maxdepth 1 -not -name '.' \${BZB_HIDE/?*/-not -path '*/.*'}"
 fi
 readonly find_can_ignore
 
 # Sort Command:
 enable parallel_sort
 init sort_shallow \
-  "LC_ALL=C sort \$([[ \$BZB_SORT_NUMERIC ]] && echo '-g' || echo '-fiu') \${BZB_REVERSE:+-r}"
+     "LC_ALL=C sort \$([[ \$BZB_SORT_NUMERIC ]] && echo '-g' || echo '-fiu') \${BZB_REVERSE:+-r}"
 if has parallel && test "$parallel_sort"; then
   enable nested_sort
   init sort_nested \
-    "LC_ALL=C parallel --pipe --block 64k sort \$([[ \$BZB_SORT_NUMERIC ]] && echo '-g' || echo '-fiu') \${BZB_REVERSE:+-r} 2>/dev/null"
+       "LC_ALL=C parallel --pipe --block 64k sort \$([[ \$BZB_SORT_NUMERIC ]] && echo '-g' || echo '-fiu') \${BZB_REVERSE:+-r} 2>/dev/null"
 else
   disable parallel_sort nested_sort
   init sort_nested "$sort_shallow"
@@ -431,40 +431,40 @@ readonly parallel_sort
 # Non-adjacent Uniq Command:
 if has nauniq; then
   init non_adj_uniq \
-    "nauniq"
+       "nauniq"
 elif has perl; then
   init non_adj_uniq \
-    "perl -ne '$(sq '!$read{$_}++ && print')'"
+       "perl -ne '$(sq '!$read{$_}++ && print')'"
 else
   # Fall back to regular uniq
   init non_adj_uniq \
-    "uniq"
+       "uniq"
 fi
 
 # Preview Commands:
 init preview_directory \
-  "ls \${BZB_COLOR:+--color=always} \${BZB_HIDE/?*/-a} -lh {}"
+     "ls \${BZB_COLOR:+--color=always} \${BZB_HIDE/?*/-a} -lh {}"
 init preview_text \
-  "cat {}"
+     "cat {}"
 # Consider file to be binary if more than a tiny fraction is non-printable characters
 init is_binary \
-  '( test $(head -qc 8192 {} 2>/dev/null | grep -so "[^[:print:]]" 2>/dev/null | wc -c) -gt 16 )'
+     '( test $(head -qc 8192 {} 2>/dev/null | grep -so "[^[:print:]]" 2>/dev/null | wc -c) -gt 16 )'
 
 if has file; then
   init preview_binary_file \
-    "file -L {}"
+       "file -L {}"
   init is_binary \
-    "( $is_binary"' || ( file -L {} | grep -q "compressed") )'
+       "( $is_binary"' || ( file -L {} | grep -q "compressed") )'
 else
   init preview_binary_file \
-    "stat -L {}"
+       "stat -L {}"
 fi
 
 if has less; then
   init is_previewable_binary_content \
-    '[[ $(bash -c "$(printf "$LESSOPEN" {})") ]]'
+       '[[ $(bash -c "$(printf "$LESSOPEN" {})") ]]'
   init preview_binary_content \
-    'echo && less {}'
+       'echo && less {}'
 else
   disable is_previewable_binary_content preview_binary_content
 fi
@@ -473,19 +473,19 @@ init preview_text_file "$preview_text"
 # Markdown Preview: Prefer 'mdv' if availble for better highlighting
 if has mdv; then
   init is_markdown \
-    '$( file -L {} | grep -q '"'.md:\|markdown'"' )'
+       '$( file -L {} | grep -q '"'.md:\|markdown'"' )'
   init preview_markdown \
-    'mdv {}'
+       'mdv {}'
   init preview_text_file \
-    "( $is_markdown && $preview_markdown || $preview_text )"
+       "( $is_markdown && $preview_markdown || $preview_text )"
 fi
 
 [[ $is_previewable_binary_content && $preview_binary_content ]] && init \
-  preview_binary_file "( $preview_binary_file && $is_previewable_binary_content && $preview_binary_content )"
+                                                                     preview_binary_file "( $preview_binary_file && $is_previewable_binary_content && $preview_binary_content )"
 init preview_file \
-  "( ! $is_binary && $preview_text_file || $preview_binary_file )"
+     "( ! $is_binary && $preview_text_file || $preview_binary_file )"
 init find_mode_preview \
-  "[[ -d {} ]] && $preview_directory || $preview_file"
+     "[[ -d {} ]] && $preview_directory || $preview_file"
 
 # Clear leading dots from paths
 no_leading_dots="| sed -E 's:\b\./::'"
@@ -499,19 +499,19 @@ list_by_grep_count="$no_zero_counts | awk -F ':' '$(dq "$(sq '{ printf( "%s %s\n
 if has rg; then
   enable grep_can_ignore
   init grep_nested \
-    "rg \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore} --count --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $no_leading_dots $list_by_grep_count"
+       "rg \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore} --count --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $no_leading_dots $list_by_grep_count"
   init grep_shallow \
-    "rg \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore} --count --maxdepth 1 --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $no_leading_dots $list_by_grep_count "
+       "rg \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore} --count --maxdepth 1 --ignore-case --no-messages '\${BZB_GREP_QUERY}' . $no_leading_dots $list_by_grep_count "
   init grep_mode_preview \
-    "printf '%s' {} $no_grep_counts | xargs -0 cat | rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}'"
+       "printf '%s' {} $no_grep_counts | xargs -0 cat | rg \${BZB_COLOR:+--color} \${BZB_COLOR:+always} \${BZB_HIDE/?*/--hidden} \${BZB_IGNORE/?*/--no-ignore} --ignore-case --no-messages --context 1 '\${BZB_GREP_QUERY}'"
 else
   disable grep_can_ignore
   init grep_nested \
-    "grep -r -i -s -c '\${BZB_GREP_QUERY}' .\${BZB_HIDE/?*/ | grep -v '.*\/\..*'}$no_leading_dots $list_by_grep_count"
+       "grep -r -i -s -c '\${BZB_GREP_QUERY}' .\${BZB_HIDE/?*/ | grep -v '.*\/\..*'}$no_leading_dots $list_by_grep_count"
   init grep_shallow \
-    "grep -i -s -c '\${BZB_GREP_QUERY}' "'$([[ ! $BZB_HIDE ]] && echo "*" || echo "{*,.*}")'"$no_leading_dots $list_by_grep_count"
+       "grep -i -s -c '\${BZB_GREP_QUERY}' "'$([[ ! $BZB_HIDE ]] && echo "*" || echo "{*,.*}")'"$no_leading_dots $list_by_grep_count"
   init grep_mode_preview \
-    "printf '%s' {} $no_grep_counts | xargs -0 cat | xargs cat | grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}'"
+       "printf '%s' {} $no_grep_counts | xargs -0 cat | xargs cat | grep \${BZB_COLOR:+--color=always} -i -s -C 1 '\${BZB_GREP_QUERY}'"
 fi
 readonly grep_can_ignore
 disable grep_query
@@ -630,12 +630,12 @@ record() {
 
 input() {
   if [[ $autoplay ]]; then
-   if [[ $next_input ]]; then
-     global $2="$next_input"
-   else
-     display_error "Cannot play back action with missing input"
-     toggle autoplay && main
-   fi
+    if [[ $next_input ]]; then
+      global $2="$next_input"
+    else
+      display_error "Cannot play back action with missing input"
+      toggle autoplay && main
+    fi
   else
     clear && read -rep "$1" -i "$3" "$2"
     [[ $autorecord ]] && global last_input="${!2}" || global last_input=''
